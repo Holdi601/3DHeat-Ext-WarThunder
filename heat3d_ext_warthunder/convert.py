@@ -636,7 +636,10 @@ def lives(r: Replay, all_units: list[Unit] | None = None) -> list[Life]:
                 continue
             # Killed while this run was seen, or within a moment of its last sample.
             died = min((t for t in deaths.get(uid, []) if run[0].t <= t <= run[-1].t + 1.0), default=None)
-            if died is not None and any(died + 1.0 < t <= run[-1].t + 2.0 for t in acts.get(uid, [])):
+            # Without an entity stream a uid acting after its death is a new unit by then. With one, the entity
+            # says who it is, and an act after a death is a weapon that was already on its way (a missile
+            # launched before the pilot was shot down still scores).
+            if u is None and died is not None and any(died + 1.0 < t <= run[-1].t + 2.0 for t in acts.get(uid, [])):
                 runs.insert(0, (u, [q for q in run if q.t > died]))
                 run = [q for q in run if q.t <= died]
                 if len(run) < 2:
@@ -991,13 +994,26 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
     for life in all_lives:
         for s in life.samples:
             buckets[int(s.t)].append((life, s))
+    created: dict[int, list[float]] = defaultdict(list)
+    for e in r.stream.entities:
+        if e.template in ecs.PROJECTILES:
+            created[e.eid & 0x3FFFFF].append(e.t)
     out = []
     for e in r.stream.entities:
         if e.template not in ecs.PROJECTILES:
             continue
         rel = ecs.release(e)
         idx = e.eid & 0x3FFFFF
-        track = [p for p in r.shells.get(idx, []) if e.t - 1 <= p[0] <= (e.destroyed if e.destroyed is not None else 1e12) + 1]
+        # The flight records name the entity's index; an index is given to the next weapon once this one is
+        # gone, so its flight ends at its removal or the next creation with that index, whichever comes first.
+        later = [c for c in created.get(idx, []) if c > e.t]
+        end = min(e.destroyed if e.destroyed is not None else 1e12, later[0] if later else 1e12)
+        track = [p for p in r.shells.get(idx, []) if e.t - 1 <= p[0] <= end + (1 if not later or end < later[0] else 0)]
+        # A flight is one continuous run: a pause of more than 5 s is another weapon's records.
+        for i in range(1, len(track)):
+            if track[i][0] - track[i - 1][0] > 5.0:
+                track = track[:i]
+                break
         guided = any(p[5] for p in track)
         kind = {"rocket+arh_shell": "missile", "bomb": "bomb", "torpedo": "torpedo", "payload": "payload",
                 "jettisoned": "jettisoned"}.get(e.template, "missile" if guided else "rocket")
@@ -1067,7 +1083,8 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
         if len(w.track) < 2:
             continue
         owner = _label(w.launcher) if w.launcher else "unknown launcher"
-        eid = w.entity.eid & 0x3FFFFF
+        # The whole eid (index and generation): an index is given to one weapon after another.
+        eid = w.entity.eid
         segments: list[list[Sample]] = [[]]
         for q in w.track:
             p = Sample(q[0], q[1], q[2], q[3])
