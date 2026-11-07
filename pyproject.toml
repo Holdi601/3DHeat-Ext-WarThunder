@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heat3d-ext-warthunder"
+version = "0.1.0"
+description = "War Thunder replays (.wrpl) into the Parquet tables the 3DHeat viewer reads"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Holdi601" }]
+requires-python = ">=3.10"
+dependencies = ["pyarrow>=15", "numpy>=1.24", "zstandard>=0.22"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[project.scripts]
+heat3d-wt-replay = "heat3d_ext_warthunder.cli:main"
+
+[tool.setuptools]
+packages = ["heat3d_ext_warthunder", "heat3d_update"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["local: checks against real replays on this machine; skipped where they are absent"]
