@@ -234,6 +234,21 @@ def test_a_packet_ahead_of_its_time_is_retimed():
     assert all(s.t == pytest.approx(2.75, abs=0.01) and s.retimed for s in moved[1:])
 
 
+def test_a_slow_aircraft_is_held_to_its_own_pace(tmp_path):
+    # A piston fighter at 120 m/s for 30 s; one sample corrected 140 m ahead (560 m/s for that step): under the
+    # jets' 750 m/s, over its own 1.6 x 120 m/s, floored at 250 m/s.
+    packets = []
+    for i in range(120):
+        z = 30.0 * i + (110.0 if i >= 60 else 0.0)
+        packets.append(synth.packet(2, 1000 + i * 250, synth.flight([(344, 0.0, 3000.0, z, 0)])))
+    f = tmp_path / "p.wrpl"
+    f.write_bytes(synth.replay(packets, compress="zlib"))
+    r = convert.read([f])
+    lives = convert.lives(r)
+    assert [life.id for life in lives] == ["344#1", "344#2"] and lives[0].limit == 250.0
+    assert r.breaks[0]["limit"] == 250 and r.breaks[0]["distance"] == 140
+
+
 def test_a_track_is_cut_where_the_unit_moves_faster_than_it_can(tmp_path):
     packets = [synth.packet(4, 0, synth.slots({0: (111, "Pilot One", 1)}))]
     for i in range(40):
@@ -263,5 +278,9 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
         d = json.loads(doc.read_text(encoding="utf-8"))
         steps = d["selfCheck"]["stepSpeed"]
         assert all(v["faster than possible"] == 0 for v in steps.values()), (f.name, steps)
+        assert all(v["faster than its own limit"] == 0 for v in steps.values()), (f.name, steps)
+        # The recording player's own aircraft is not extrapolated: its own pace never cuts it (only respawns do).
+        mine = {u for p in d["players"] if p["userId"] == str(d["authorUserId"]) for u in p["uids"]}
+        assert not [b for b in d["trackBreaks"] if b.get("uid") in mine and "limit" in b], f.name
         assert steps.get("aircraft", {"max": 0})["max"] <= convert.TOP_SPEED["air"], f.name
         assert d["selfCheck"]["recordVehicleMatchesEntity"] > 0 and not d["selfCheck"].get("recordVehicleDiffersFromEntity")

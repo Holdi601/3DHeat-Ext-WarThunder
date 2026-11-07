@@ -115,6 +115,8 @@ class Sample:
     uid: int = -1
     #: Given the time it stands for, not its packet's (see `_retime`).
     retimed: bool = False
+    #: Its unit's own speed limit (m/s; see `_own_limit`).
+    limit: float = 0.0
 
 
 @dataclass
@@ -153,6 +155,8 @@ class Life:
     #: The figure kind and the game's type ("fighter", "destroyer").
     figure: str = ""
     type: str = ""
+    #: The fastest step this life can take (m/s; see `_own_limit`).
+    limit: float = 0.0
 
     @property
     def id(self) -> str:
@@ -616,6 +620,14 @@ def lives(r: Replay, all_units: list[Unit] | None = None) -> list[Life]:
                                      "to": [round(s.x), round(s.y), round(s.z)], "distance": round(d),
                                      "seconds": round(dt, 3)})
             runs.append((u, [s]))
+        # A slow unit is held to its own pace: a piston fighter's client correction is no faster than a jet. The
+        # pace is the unit's (all its samples under one entity), so every piece of it is held to the same.
+        pace: dict[int, float] = {}
+        for u, run in runs:
+            pace.setdefault(id(u), 0.0)
+        for key in pace:
+            pace[key] = _own_limit([q for u, run in runs if id(u) == key for q in run], kind)
+        runs = [(u, piece) for u, run in runs for piece in _split_own(run, kind, uid, r, pace[id(u)])]
         # Lives are numbered per uid across both channels: a uid can come as an aircraft and as a ground unit.
         n = numbered.get(uid, 0)
         while runs:
@@ -639,9 +651,61 @@ def lives(r: Replay, all_units: list[Unit] | None = None) -> list[Life]:
                 run = keep
             life = Life(uid, kind, n, run, unit=u)
             life.died = died
+            life.limit = run[0].limit or TOP_SPEED[kind]
             out.append(life)
         numbered[uid] = n
     return out
+
+
+#: A life's own speed limit: this many times its own 95th-percentile step speed, ...
+OWN_FACTOR = 1.6
+#: ... within these bounds (m/s; a piston fighter's dive is under 250 m/s, a jet's top speed under 750).
+OWN_BOUNDS = {"air": (250.0, 750.0), "ground": (15.0, 40.0)}
+
+
+def _step_list(samples: list[Sample]) -> list[float]:
+    """Speeds of the steps 0.2 to 5 s long (shorter ones are timing jitter, longer ones gaps)."""
+    out = []
+    for a, b in zip(samples, samples[1:]):
+        dt = b.t - a.t
+        if 0.2 <= dt <= 5.0:
+            out.append(math.dist((a.x, a.y, a.z), (b.x, b.y, b.z)) / dt)
+    return out
+
+
+def _own_limit(samples: list[Sample], kind: str) -> float:
+    """
+    How fast this unit can go: 1.6 times its own 95th-percentile step speed,
+    no less than a piston fighter's dive (250 m/s) or a tank's 15 m/s, no
+    more than the kind's top speed. Checked on the recording player's own
+    aircraft, which the client does not extrapolate: this limit cuts it
+    nowhere in the four replays (see the README).
+    """
+    lo, hi = OWN_BOUNDS[kind]
+    v = sorted(_step_list(samples))
+    if len(v) < 20:
+        return hi
+    return max(lo, min(hi, OWN_FACTOR * v[int(len(v) * 0.95)]))
+
+
+def _split_own(run: list[Sample], kind: str, uid: int, r: Replay, limit: float) -> list[list[Sample]]:
+    """A run cut again where it steps faster than its unit's own limit (`_own_limit`); the cuts go to `r.breaks`."""
+    if len(run) < 2:
+        return [run]
+    for s in run:
+        s.limit = limit
+    pieces: list[list[Sample]] = [[run[0]]]
+    for s in run[1:]:
+        p = pieces[-1][-1]
+        dt = s.t - p.t
+        d = math.dist((p.x, p.y, p.z), (s.x, s.y, s.z))
+        if d > max(SLACK[kind], limit * dt):
+            r.breaks.append({"uid": uid, "kind": kind, "time": round(s.t, 3), "from": [round(p.x), round(p.y), round(p.z)],
+                             "to": [round(s.x), round(s.y), round(s.z)], "distance": round(d), "seconds": round(dt, 3),
+                             "limit": round(limit)})
+            pieces.append([])
+        pieces[-1].append(s)
+    return pieces
 
 
 def _relead(samples: list[Sample], r: Replay) -> list[Sample]:
@@ -667,7 +731,10 @@ def _relead(samples: list[Sample], r: Replay) -> list[Sample]:
             continue
         along = [v[k] * (c.t - b.t + lead) for k in range(3)]
         off = math.dist(step, along)
-        on_from_b = math.dist((b.x, b.y, b.z), (nxt.x, nxt.y, nxt.z)) <= SLACK["air"] + TOP_SPEED["air"] * (nxt.t - b.t)
+        # The next sample carries on from b (where b would be by then), not from c.
+        span = nxt.t - b.t
+        ahead = (b.x + v[0] * span, b.y + v[1] * span, b.z + v[2] * span)
+        on_from_b = math.dist(ahead, (nxt.x, nxt.y, nxt.z)) <= 30.0 + 0.3 * math.sqrt(vv) * span
         if off <= 150 and on_from_b:
             c.t += lead
             c.retimed = True
@@ -892,7 +959,7 @@ def _track(life: Life) -> str:
     "#<hex>" suffix keeps lives apart and is not shown as part of the name.
     """
     base = life.player or (life.vehicle if life.vehicle and life.vehicle != "dummy_plane" else f"uid {life.uid}")
-    return f"{base} #{life.uid * 64 + min(life.n, 63):x}"
+    return f"{base} #{life.uid * 4096 + min(life.n, 4095):x}"
 
 
 def _row(life: Life, s: Sample, event: str) -> dict[str, Any]:
@@ -1122,7 +1189,7 @@ def _travel_check(all_lives: list[Life]) -> dict[str, Any]:
             "within10Deg": round(sum(d <= 10 for d in diffs) / len(diffs), 3)}
 
 
-def _step_speeds(table_rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _step_speeds(table_rows: list[dict[str, Any]], limits: dict[str, float] | None = None) -> dict[str, Any]:
     """
     Per kind, the speed between consecutive rows of a track as the viewer
     joins them (m/s): median, 99th percentile, highest, and how many steps
@@ -1133,7 +1200,9 @@ def _step_speeds(table_rows: list[dict[str, Any]]) -> dict[str, Any]:
         tracks[row["track"]].append(row)
     by: dict[str, list[float]] = defaultdict(list)
     over: Counter = Counter()
-    for rs in tracks.values():
+    over_own: Counter = Counter()
+    limits = limits or {}
+    for track, rs in tracks.items():
         rs.sort(key=lambda row: row["time"])
         kind = rs[0]["kind"]
         dom = "weapon" if kind in ("missile", "rocket", "bomb", "torpedo", "payload", "jettisoned") else (
@@ -1146,11 +1215,13 @@ def _step_speeds(table_rows: list[dict[str, Any]]) -> dict[str, Any]:
             by[kind].append(d / dt)
             if d > max(SLACK[dom], TOP_SPEED[dom] * dt):
                 over[kind] += 1
+            if track in limits and d > max(SLACK[dom], limits[track] * dt):
+                over_own[kind] += 1
     out = {}
     for k, v in sorted(by.items()):
         v.sort()
         out[k] = {"steps": len(v), "median": round(v[len(v) // 2], 1), "p99": round(v[int(len(v) * 0.99)], 1),
-                  "max": round(v[-1], 1), "faster than possible": over[k]}
+                  "max": round(v[-1], 1), "faster than possible": over[k], "faster than its own limit": over_own[k]}
     return out
 
 
@@ -1322,7 +1393,7 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "packedGroundHeight": r.packed_height,
             "flightPacketsRetimed": r.retimed,
             "aircraftSamplesRetimed": r.releaded,
-            "stepSpeed": _step_speeds(table_rows),
+            "stepSpeed": _step_speeds(table_rows, {_track(l): l.limit for l in all_lives}),
             "trackBreaks": len(r.breaks),
         },
         "conventions": {
