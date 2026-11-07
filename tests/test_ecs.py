@@ -146,7 +146,7 @@ def test_ground_attitude_from_a_quaternion():
     assert got[4] is None and got[5] is None
 
 
-def battle_with_entities() -> bytes:
+def battle_with_entities(more: list[bytes] | None = None) -> bytes:
     """Two fighters (uids 344, 345) and a tank (177), created by the entity stream; 344 drops a bomb at 6 s."""
     air = [(20, "transform", "TMatrix"), (21, "team", "int"), (22, "unit__className", "ecs::string"),
            (23, "uid", "int"), (24, "unit__playerId", "int")]
@@ -181,6 +181,7 @@ def battle_with_entities() -> bytes:
             packets.append(synth.packet(6, 8100, synth.destruction([12])))
         if ms == 11000:
             packets.append(synth.packet(4, None, synth.kill(344, 0, "f_15a", 345, 7, "us_aim9l_sidewinder")))
+    packets += more or []
     packets.append(synth.packet(0, 21000, b""))
     return synth.replay(packets, {"timePlayed": 21.0, "authorUserId": "111", "author": "Pilot One"})
 
@@ -236,18 +237,36 @@ def test_a_packet_ahead_of_its_time_is_retimed():
 
 
 def test_a_slow_aircraft_is_held_to_its_own_pace(tmp_path):
-    # A piston fighter at 120 m/s for 30 s; one sample corrected 140 m ahead (560 m/s for that step): under the
-    # jets' 750 m/s, over its own 1.6 x 120 m/s, floored at 250 m/s.
+    # A piston fighter at 120 m/s for 30 s, weaving a little (its samples received, not dead-reckoned); one
+    # sample 140 m ahead (560 m/s for that step): under the jets' 750 m/s, over its own 1.6 x 120 m/s, floored
+    # at 250 m/s.
     packets = []
     for i in range(120):
         z = 30.0 * i + (110.0 if i >= 60 else 0.0)
-        packets.append(synth.packet(2, 1000 + i * 250, synth.flight([(344, 0.0, 3000.0, z, 0)])))
+        x = 0.5 * (i % 2)
+        packets.append(synth.packet(2, 1000 + i * 250, synth.flight([(344, x, 3000.0, z, 0)])))
     f = tmp_path / "p.wrpl"
     f.write_bytes(synth.replay(packets, compress="zlib"))
     r = convert.read([f])
     lives = convert.lives(r)
     assert [life.id for life in lives] == ["344#1", "344#2"] and lives[0].limit == 250.0
     assert r.breaks[0]["limit"] == 250 and r.breaks[0]["distance"] == 140
+
+
+def test_a_dead_reckoning_correction_does_not_cut(tmp_path):
+    # A distant piston fighter as a client replay has it: a received state each second, flown on straight in
+    # between and snapped 60 m to the next (480 m/s for that step); received to received it flies 120 m/s.
+    packets = []
+    for i in range(120):
+        k, d = divmod(i, 4)
+        x = 30.0 * k * k / 10.0  # its own path curves: each received state comes off the line
+        z = 120.0 * k + 30.0 * d
+        packets.append(synth.packet(2, 1000 + i * 250, synth.flight([(344, x, 3000.0, z, 0)])))
+    f = tmp_path / "d.wrpl"
+    f.write_bytes(synth.replay(packets, compress="zlib"))
+    lives = convert.lives(convert.read([f]))
+    assert [life.id for life in lives] == ["344#1"]
+    assert sum(s.extrapolated for s in lives[0].samples) > 50
 
 
 def test_a_track_is_cut_where_the_unit_moves_faster_than_it_can(tmp_path):
@@ -305,3 +324,45 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
             assert acc["table"]["over15g"] < acc["replay"]["over15g"], (f.name, dr)
         if names:
             assert d["selfCheck"]["vehicleNames"]["named"] >= 0.9 * d["selfCheck"]["vehicleNames"]["vehicles"], f.name
+
+
+def test_messages_to_units_name_their_entity(tmp_path):
+    """
+    Messages to units carry the unit's entity (index << 10 | generation): a projectile hit on 345 (entity 2) from
+    344, its engine rpm, its death. The hit becomes a shot row on 344's track aimed at 345, 2 m behind its centre.
+    """
+    more = [synth.packet(4, 10900, synth.unit_message(2, 0xF0E9, synth.hit_effect(344, 7, (-200, 0, 0)))),
+            synth.packet(4, 10950, synth.unit_message(1, 0xD047, synth.rpm(2400))),
+            synth.packet(4, 11000, synth.unit_message(2, 0xF04B, b""))]
+    f = tmp_path / "u.wrpl"
+    f.write_bytes(battle_with_entities(more))
+    tpath, jpath = convert.convert([f], tmp_path / "out")
+    rows = pq.read_table(tpath).to_pylist()
+    doc = json.loads(jpath.read_text(encoding="utf-8"))
+    shot = next(r for r in rows if r["event"] == "shot")
+    assert shot["player"] == "Pilot One" and shot["other"] == "Pilot Two" and shot["time"] == pytest.approx(10.9)
+    # 345 flies north at z = 1300 + 200 t; the hit point is 2 m behind it.
+    assert (shot["targetX"], shot["targetZ"]) == pytest.approx((50.0, 1300.0 + 200 * 9.9 - 2.0), abs=0.6)
+    assert shot["dirZ"] > 0.9  # 344 is behind and below it
+    dead = next(r for r in rows if r["event"] == "dead")
+    assert dead["player"] == "Pilot Two" and dead["time"] == pytest.approx(11.0)
+    one = [r for r in rows if r["player"] == "Pilot One" and r["event"] == "position" and r["time"] > 11]
+    assert {r["rpm"] for r in one[:3]} == {2400.0}
+    u = doc["selfCheck"]["unitMessages"]
+    assert u["messages"] == u["withEntity"] == 3 and u["projectileHits"] == 1
+    assert u["shooters"]["attackerAmongShooters"] == 1  # the kill at 11 s names 344, as the hit at 10.9 does
+    side = pq.read_table(tpath.with_name(tpath.name.replace(".parquet", ".messages.parquet"))).to_pylist()
+    assert {(r["message"], r["uid"]) for r in side if r["packet"] == 4} >= {("0xf0e9", 345), ("0xd047", 344)}
+
+
+def test_replicated_components_are_read(tmp_path):
+    """A replication packet (0x22): time, sequence, then per entity its eid, a block size and component values."""
+    w = synth.BitWriter()
+    w.raw(struct.pack("<I", 1234)).raw(struct.pack("<H", 7))
+    block = synth.BitWriter().flag(True).raw(bytes([21])).raw(struct.pack("<i", 2)).flag(False).bytes()
+    w.flag(True).raw(synth.eid(1)).raw(bytes([len(block)])).raw(block).flag(False)
+    more = [synth.packet(6, 9000, bytes([0x22]) + w.bytes())]
+    f = tmp_path / "r.wrpl"
+    f.write_bytes(battle_with_entities(more))
+    r = convert.read([f])
+    assert [(eid & 0x3FFFFF, comp, v) for _, eid, comp, _, v, _ in r.stream.replications] == [(1, "team", 2)]

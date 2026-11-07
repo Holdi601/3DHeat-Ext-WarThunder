@@ -359,3 +359,23 @@ def shells(records: list[tuple[int, int, float, float, float]]) -> bytes:
             body.flag(True).flag(True).u32(index << 10 | 2).flag(True).f32(x).f32(y).f32(z)
     payload = body.bytes()
     return b"\x02\x58" + le(0xF0DB, 2) + BitWriter().uleb(len(payload) * 8).bytes() + payload
+
+
+# ---------------------------------------------------------------- messages to units (mpi, an entity's ext UID)
+
+def unit_message(index: int, mid: int, body: bytes, generation: int = 0) -> bytes:
+    """A message to the unit whose entity is (index, generation): object 0x07FF, the ext UID, the message id, the body."""
+    return b"\xff\x07" + uleb(index << 10 | generation) + le(mid, 2) + body
+
+
+def hit_effect(shooter_uid: int, number: int, local_cm: tuple[int, int, int]) -> bytes:
+    """0xF0E9's body: field 1 a bit count and the hit (shooter, kind, number, 0, part, x y z in cm as sent: z left)."""
+    inner = le(shooter_uid, 2) + b"\x04" + le(number, 2) + b"\x00" + b"\xb0\x46" + struct.pack("<3h", *local_cm)
+    inner += bytes(22)
+    field = uleb(len(inner) * 8) + inner
+    return id_fields({1: (len(field) * 8, field)})
+
+
+def rpm(*values: int) -> bytes:
+    """0xD047's body: the engines' count in the high nibble, then each rpm (u16)."""
+    return bytes([len(values) << 4]) + b"".join(le(v, 2) for v in values)

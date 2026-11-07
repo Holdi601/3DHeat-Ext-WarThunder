@@ -593,7 +593,8 @@ FLIGHT_LAYOUTS = {
 }
 
 
-def read_flight(payload: bytes, layout: str = "2026") -> tuple[list[tuple[int, float, float, float, int]], str | None]:
+def read_flight(payload: bytes, layout: str = "2026", raw: list | None = None
+                ) -> tuple[list[tuple[int, float, float, float, int]], str | None]:
     """
     Type 2, the flight model: a bit-packed list of aircraft. Each entry starts
     with a flag - a new uid (LEB128, 11 bits) follows, or it is the previous
@@ -606,7 +607,9 @@ def read_flight(payload: bytes, layout: str = "2026") -> tuple[list[tuple[int, f
     list is not read.
 
     Returns (uid, x, y, z, attitude) per aircraft with data, and why the list
-    stopped early, if it did.
+    stopped early, if it did. With `raw`, each entry with data is also added
+    to it whole: (uid, its bit count, its bits as bytes, first bit first), so
+    the fields not read here stay at hand (see `flight_extras`).
     """
     form = FLIGHT_LAYOUTS[layout]
     r = Bits(payload)
@@ -614,6 +617,7 @@ def read_flight(payload: bytes, layout: str = "2026") -> tuple[list[tuple[int, f
     uid = 0
     try:
         while True:
+            start = r.pos
             uid = r.uleb() & NO_UID if r.flag() else uid + 1
             if uid == NO_UID:
                 return out, None
@@ -650,6 +654,13 @@ def read_flight(payload: bytes, layout: str = "2026") -> tuple[list[tuple[int, f
             if r.flag():
                 r.skip(r.u32())
             out.append((uid, x, y, z, attitude))
+            if raw is not None:
+                end = r.pos
+                n = end - start
+                r.pos = start
+                bits = r.bits(n)
+                r.pos = end
+                raw.append((uid, n, (bits << (-n % 8)).to_bytes((n + 7) // 8, "big")))
     except (EOFError, FormatError) as e:
         return out, str(e)
 
@@ -1147,3 +1158,206 @@ def read_shells(payload: bytes) -> list[tuple[int, int, float, float, float, boo
             if all(math.isfinite(v) and abs(v) < 1e7 for v in (x, y, z)):
                 out.append((group, ent >> 10, x, y, z, guided))
     return out
+
+
+# ---------------------------------------------------------------- messages to units
+
+#: Every type-4 packet is an mpi message of the Dagor Engine's daNet (prog/dagorInclude/daNet/mpi.h, BSD): the
+#: recipient object's id (u16), then - when the id's low 11 bits are all set - the object's "ext UID" (LEB128),
+#: then the message id (u16) and the message's payload. The game messages above are addressed to objects whose id's
+#: high byte is 0x58 (`kind 0x58`); a message to a unit carries the id 0x07FF (or 0x0FFF, 0x87FF, 0x8FFF) and, as
+#: its ext UID, the unit's ECS entity id: index << 10 | generation, the same entity the entity stream creates (on the
+#: air arcade battle 114,008 of 114,008 such messages name an entity alive at that moment).
+#: Names as the community lists them (ShioUmiusi/WTACRP, tools/wrpl_mpi_names.py); what is decoded is said below.
+UNIT_MESSAGES = {
+    0xD041: "D041", 0xD046: "UnitReloadGun", 0xD047: "FmwRpm", 0xD048: "D048", 0xD020: "GmSetGunAngles",
+    0xD0AD: "UnitDelayedStatusChange", 0xD0FE: "ProjectileHitReplay", 0xF015: "F015", 0xF016: "GmGroundExplosionSmokeEffect",
+    0xF018: "GmDoInactive", 0xF01B: "GmDoStartFire", 0xF01C: "GmDoStopFire", 0xF030: "F030", 0xF031: "F031",
+    0xF033: "UnitRepair", 0xF04B: "OnUnitDead", 0xF04D: "UnitDoExplosion", 0xF04F: "F04F", 0xF050: "UnitBailoutResponse",
+    0xF052: "F052", 0xF054: "UnitRearm", 0xF061: "F061", 0xF09A: "DvmUnreliableHpReflectionData", 0xF09F: "F09F",
+    0xF0A0: "GmDoSingleShotUnreliable", 0xF0A1: "F0A1", 0xF0AB: "DvmCutDecor", 0xF0B1: "UnitSingleShot",
+    0xF0BD: "UnitBulletRearm", 0xF0E6: "GmApplyExplosionImpulse", 0xF0E9: "UnitHitEffects", 0xF117: "F117",
+    0xF133: "UnitOnExplosion", 0xF13E: "F13E", 0xF144: "UnitOnHit", 0xF15F: "F15F",
+}
+
+
+def read_mpi(payload: bytes) -> tuple[int, int | None, int, int]:
+    """(object id, ext UID or None, message id, where the message's payload starts) of a type-4 packet."""
+    if len(payload) < 4:
+        raise FormatError("an mpi message shorter than its head")
+    oid = payload[0] | payload[1] << 8
+    at, ext = 2, None
+    if oid & 0x7FF == 0x7FF and oid != 0xFFFF:
+        ext, at = _uleb(payload, 2)
+    if at + 2 > len(payload):
+        raise FormatError("an mpi message shorter than its head")
+    return oid, ext, payload[at] | payload[at + 1] << 8, at + 2
+
+
+def entity_of(ext: int) -> tuple[int, int]:
+    """An ext UID as the ECS entity's (index, generation)."""
+    return ext >> 10, ext & 0x3FF
+
+
+def id_field_map(body: bytes) -> dict[int, tuple[int, bytes]]:
+    """A message payload's id fields (see `id_fields`): field number -> (width in bits, the bits as bytes, MSB first)."""
+    return {n: (len(v) * 8, v) for n, v in fields(b"\0\0\0\0" + body).items()}
+
+
+def _le16(b: bytes, at: int) -> int:
+    return b[at] | b[at + 1] << 8
+
+
+def read_hit_effect(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF0E9 UnitHitEffects, to the unit hit: one projectile's hit. Field 1 is a
+    bit stream (LEB128 bit count, then its bytes): the shooter's uid (u16),
+    a byte, a u16 the hit's number, a byte, a u16, and the hit point in the
+    unit's own frame as three int16 in cm (x forward, y up, z left; returned
+    in m as x forward, y up, z right). Checked
+    on the air arcade battle: of 148 hit and kill records with these messages
+    on the victim in the 3 s before, 147 have the record's attacker among
+    their shooters (the one other: the victim itself); the hit points lie on
+    the side of the unit that faces the shooter (2 m on average).
+    """
+    f = id_field_map(body).get(1)
+    if not f or f[0] < 128:
+        return None
+    raw = f[1]
+    _, at = _uleb(raw, 0)
+    if at + 14 > len(raw):
+        return None
+    v = raw[at:]
+    shooter = _le16(v, 0) & NO_UID
+    local = [x / 100.0 for x in struct.unpack_from("<3h", v, 8)]
+    return {"shooter": shooter, "local": (local[0], local[1], -local[2]), "number": _le16(v, 3), "kind": v[2],
+            "part": _le16(v, 6), "aligned": v[7] in (0x43, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4D, 0x23)}
+
+
+def read_unit_explosion(body: bytes) -> dict[str, Any] | None:
+    """0xF133 UnitOnExplosion: field 1 starts with the uid of whose shell it was (u16), then the hit's number as in 0xF0E9."""
+    f = id_field_map(body).get(1)
+    if not f or f[0] < 32:
+        return None
+    return {"shooter": _le16(f[1], 0) & NO_UID, "number": _le16(f[1], 3) if len(f[1]) >= 5 else None}
+
+
+def read_part_damage(body: bytes) -> dict[str, Any] | None:
+    """0xF13E, to the unit hit: a flag (1), a number (2, in clusters per vehicle: likely the part), a float (3, likely the damage), and a point in the unit's frame in m (4: x forward, y up, z left as sent)."""
+    f = id_field_map(body)
+    if 2 not in f or 3 not in f:
+        return None
+    out = {"flag": f[1][1][0] if 1 in f else None, "part": int.from_bytes(f[2][1][:4], "little"),
+           "value": round(struct.unpack("<f", f[3][1][:4])[0], 4)}
+    if 4 in f and len(f[4][1]) >= 12:
+        out["local"] = [round(x, 3) for x in struct.unpack_from("<3f", f[4][1])]
+    return out
+
+
+def read_rpm(body: bytes) -> list[int]:
+    """0xD047 FmwRpm: the engines' count in the first byte's high nibble, then each engine's rpm (u16). Checked: the recording player's rpm against its cockpit instrument 93, correlation 0.991, median 4 rpm apart."""
+    if not body:
+        return []
+    n = body[0] >> 4
+    return [_le16(body, 1 + 2 * i) for i in range(n) if 3 + 2 * i <= len(body)]
+
+
+def flight_extras(n: int, raw: bytes, layout: str = "2026") -> dict[str, Any]:
+    """
+    The fields of one flight-model entry (as `read_flight` keeps it) that the
+    table does not use, as far as their meaning is known: `velocityWord` the
+    u32 after the attitude (its top 12 bits follow the heading, correlation
+    0.77 on the recording player's aircraft, not decoded further), `controls`
+    the first two of the 7 bytes after it as three 4-bit values around 8 (the
+    middle one follows the roll rate, correlation -0.62: likely the ailerons;
+    the others not identified), `engines` per engine (flag, byte, u16, byte,
+    u16 as sent), the countermeasure list's length.
+    """
+    r = Bits(raw)
+    form = FLIGHT_LAYOUTS[layout]
+    if r.flag():
+        r.uleb()
+    r.bits(1)
+    r.bits(2)
+    head = (r.bits(1), r.u32(), r.bits(1))
+    small = (r.bits(3), r.bits(r.bits(4))) if r.flag() else None
+    numbers = []
+    for _ in range(_count(r.zigzag(), 4096)):
+        item = [r.zigzag()]
+        if form["nested"]:
+            item += [r.zigzag() for _ in range(max(0, r.zigzag()))]
+        numbers.append(item)
+    r.skip(96 + 32)
+    word = r.u32()
+    r.align()
+    seven = r.raw(7)
+    engines = []
+    for _ in range(_count(r.byte(), 15)):
+        has = r.flag()
+        b1 = r.byte()
+        w = r.u16() if has else None
+        b2 = r.byte() if r.flag() else None
+        tail = int.from_bytes(r.raw(form["engine"]), "little")
+        engines.append([b1, w, b2, tail])
+    return {"head": list(head), "small": list(small) if small else None, "numbers": numbers, "velocityWord": word,
+            "controls": [seven[0] & 15, seven[1] >> 4, seven[1] & 15], "seven": seven.hex(), "engines": engines}
+
+
+TRIGGER = 0xF028  # RunTriggerAction: a mission script's action
+HINT = 0xF0EC  # MissionPlayHint: a hint the mission shows or hides
+PROGRESS = (0xF07A, 0xF07C)  # MissionProgressData, MissionProgressTimeData
+CAMERA = 0xD043  # ReplayCameraParams: the recording player's camera
+_WORDS = re.compile(rb"[\x20-\x7e]{2,}")
+
+
+def read_trigger(payload: bytes) -> dict[str, Any]:
+    """
+    0xF028 RunTriggerAction / 0xF0EC MissionPlayHint: field 1 the action's
+    name (a length byte and the text; RunTriggerAction only), field 2 its
+    parameters as a compact blk whose layout is not read: its names and text
+    values are listed in the order they come (e.g. `set`, `target_marking`,
+    ..., `equal`, `t1_quest_units_squad`), the bytes kept as hex.
+    """
+    f = fields(payload)
+    name = f.get(1, b"")
+    params = f.get(2) or f.get(1, b"")
+    out: dict[str, Any] = {}
+    if 2 in f and name:
+        out["action"] = name[1 : 1 + name[0]].decode("utf-8", errors="replace")
+    out["words"] = [w.decode("ascii") for w in _WORDS.findall(params)]
+    out["raw"] = params.hex()
+    return out
+
+
+def read_camera(payload: bytes) -> dict[str, Any] | None:
+    """
+    0xD043 ReplayCameraParams, about 20 a second: field 1 a quaternion (4
+    floats), 2, 4 and 5 three floats each, 3 one float, 6 and 7 small numbers.
+    Which is the camera's position or offset is not checked; kept as floats.
+    """
+    f = fields(payload)
+    def floats(b: bytes) -> list[float]:
+        return [round(v, 5) for v in struct.unpack_from(f"<{len(b) // 4}f", b)] if len(b) >= 4 else []
+    if 1 not in f:
+        return None
+    return {"quat": floats(f[1]), "f2": floats(f.get(2, b"")), "f3": floats(f.get(3, b"")),
+            "f4": floats(f.get(4, b"")), "f5": floats(f.get(5, b"")),
+            "f6": f.get(6, b"").hex(), "f7": f.get(7, b"").hex()}
+
+
+def read_fields_hex(payload: bytes) -> dict[str, Any]:
+    """Any id-field message's fields as hex, by number (for messages whose fields are not named)."""
+    return {str(k): v.hex() for k, v in fields(payload).items()}
+
+
+def read_projectile_hit_replay(body: bytes) -> list[str]:
+    """
+    0xD0FE ProjectileHitReplay (the recording player's own hits and being hit,
+    a few a battle): its texts, which sit one bit off the byte grid - the
+    shooter's and the victim's names and vehicles, the weapon's blk
+    (`gameData/Weapons/cannonShVAKS.blk`) and the ammunition (`frag_i_t`).
+    """
+    n = int.from_bytes(body, "big")
+    size = len(body) * 8
+    shifted = ((n << 1) & ((1 << size) - 1)).to_bytes(len(body), "big")
+    return [w.decode("ascii") for w in re.findall(rb"[a-zA-Z0-9_./@#-]{3,}", shifted)]

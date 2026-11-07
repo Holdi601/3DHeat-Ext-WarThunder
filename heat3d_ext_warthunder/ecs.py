@@ -43,7 +43,18 @@ What War Thunder adds and the published source does not describe:
   checked on real replays: the median release point is 4 to 29 m from the
   nearest aircraft or ship at that moment.
 
-The entity message and replication packets (0x20 to 0x23) are counted, not read.
+* Replication (0x22, 0x23; `Connection::readReplicationPacket`,
+  `Object::deserializeComps`, `deserializeComponentReplication`): the sent
+  time (u32), a sequence number (u16), then while a bit is set an entity's
+  server eid, a block size (LEB128) and the block: while a bit is set a
+  component index (LEB128) and its value, read like a creation's. Checked:
+  the sequence numbers run on by one from packet to packet, and every block
+  ends where its size says when its values are of known types. A value of
+  War Thunder's own types (`BufferedHudData`) ends the block's reading; the
+  rest is kept as bytes.
+* Entity messages (0x20, 0x21): the target entity's server eid, then a
+  message class number whose width and meaning are set at run time; only the
+  entity is read.
 """
 
 from __future__ import annotations
@@ -163,6 +174,7 @@ KNOWN = set(_PLAIN) | {"bool", "TMatrix", "ecs::string", "ecs::EntityId", "ecs::
 PROJECTILES = {"rocket", "rocket+arh_shell", "bomb", "torpedo", "payload", "jettisoned"}
 
 CREATION, DESTRUCTION = 0x24, 0x26
+MESSAGE, REPLICATION = 0x20, 0x22
 
 
 class Unknown(Exception):
@@ -325,6 +337,10 @@ class Stream:
         self._live: dict[int, Entity] = {}
         self.counts: Counter = Counter()
         self.problems: Counter = Counter()
+        #: Component values replicated after creation: (t, eid, component, type, value; None when not read, then the bytes).
+        self.replications: list[tuple[float, int, str, str, Any, bytes]] = []
+        #: Entity messages: (t, the target's eid, the rest of the packet).
+        self.messages: list[tuple[float, int, bytes]] = []
 
     def feed(self, payload: bytes, t: float) -> None:
         if not payload:
@@ -346,8 +362,39 @@ class Stream:
                     e = self._live.pop(read_eid(r), None)
                     if e is not None and e.destroyed is None:
                         e.destroyed = t
+            elif kind in (REPLICATION, REPLICATION + 1):
+                self._replication(payload, t)
+            elif kind in (MESSAGE, MESSAGE + 1):
+                eid = read_eid(r)
+                self.messages.append((t, eid, payload[r.pos >> 3 :]))
         except (FormatError, EOFError, IndexError, struct.error) as ex:
             self.problems[f"{kind:#04x}: {type(ex).__name__}"] += 1
+
+    def _replication(self, payload: bytes, t: float) -> None:
+        body = payload[1:]
+        if payload[0] == REPLICATION + 1:
+            body = body[:4] + lz4_block(body[4:])
+        r = Bits(body)
+        r.u32()  # the time it was sent
+        r.u16()  # the sequence number
+        while r.flag():
+            eid = read_eid(r)
+            size = r.uleb()
+            block = r.bits(size * 8).to_bytes(size, "big") if size else b""
+            b = Bits(block)
+            while b.pos < b.n and b.flag():
+                cid = _compressed(b)
+                if cid not in self.components:
+                    self.replications.append((t, eid, f"#{cid}", "?", None, block[b.pos >> 3 :]))
+                    break
+                name, kind = self._name(cid), self._kind(cid)
+                at = b.pos
+                try:
+                    v = value(b, kind, self.keys)
+                except (Unknown, FormatError, EOFError, struct.error):
+                    self.replications.append((t, eid, name, kind, None, block[at >> 3 :]))
+                    break
+                self.replications.append((t, eid, name, kind, v, b""))
 
     def _template(self, r: Bits) -> tuple[str, list[int]]:
         tid = r.uleb()

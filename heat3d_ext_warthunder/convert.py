@@ -71,7 +71,7 @@ HINTS = {
         "extra": ["event", "player", "userId", "life", "Vehicle", "VehicleName", "VehicleShortName", "VehicleNameKey",
                   "kind", "type", "uid", "ai", "isPlayer", "other", "weapon", "heading", "pitch", "roll", "speed", "alive",
                   "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
-                  "rollRaw"],
+                  "rollRaw", "targetX", "targetY", "targetZ", "rpm"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -118,6 +118,10 @@ COLUMNS = [
     ("headingRaw", "f32"),
     ("pitchRaw", "f32"),
     ("rollRaw", "f32"),
+    ("targetX", "f32"),
+    ("targetY", "f32"),
+    ("targetZ", "f32"),
+    ("rpm", "f32"),
 ]
 
 
@@ -252,6 +256,10 @@ class Replay:
     weather: list[dict[str, Any]] = field(default_factory=list)
     objects: dict[str, dict[str, Any]] = field(default_factory=dict)
     cockpit: list[tuple[float, dict[int, float]]] = field(default_factory=list)
+    triggers: list[dict[str, Any]] = field(default_factory=list)
+    hints: list[dict[str, Any]] = field(default_factory=list)
+    progress: list[dict[str, Any]] = field(default_factory=list)
+    camera: list[dict[str, Any]] = field(default_factory=list)
     #: Single aircraft samples ahead of their time, re-timed (see `_relead`).
     releaded: int = 0
     #: Where a track was cut because its unit moved faster than it can (see `lives`).
@@ -262,8 +270,14 @@ class Replay:
     packed_height: dict[str, Any] = field(default_factory=dict)
     #: Samples left out of the table, by why.
     dropped: Counter = field(default_factory=Counter)
-    #: Every message id seen, by "type" or "type/0xid" (ff-family by its first bytes), for the record of what is read.
+    #: Every message id seen, by "type" or "type/0xid" ("4/unit/0xid" for messages to a unit), for the record.
     seen_ids: Counter = field(default_factory=Counter)
+    #: Messages to units (see wrpl.read_mpi): (t, ext UID, message id, payload), resolved by `unit_messages`.
+    unit_msgs: list[tuple[float, int, int, bytes]] = field(default_factory=list)
+    #: Packets no reader here takes, kept whole for the messages sidecar: (t, packet type, message id or None, payload).
+    raw: list[tuple[float, int, int | None, bytes]] = field(default_factory=list)
+    #: Every flight-model entry whole: (t, uid, bit count, bits), for the flight sidecar (see `flight_table`).
+    flight_raw: list[tuple[float, int, int, bytes]] = field(default_factory=list)
 
 
 def _decompress():
@@ -283,6 +297,11 @@ _MORE = {
     wrpl.DETECTED: (wrpl.read_detected, "detections"),
     wrpl.UNIT_STATE: (wrpl.read_unit_state, "unit_states"),
     wrpl.WEATHER: (wrpl.read_weather, "weather"),
+    wrpl.TRIGGER: (wrpl.read_trigger, "triggers"),
+    wrpl.HINT: (wrpl.read_trigger, "hints"),
+    wrpl.PROGRESS[0]: (wrpl.read_fields_hex, "progress"),
+    wrpl.PROGRESS[1]: (wrpl.read_fields_hex, "progress"),
+    wrpl.CAMERA: (wrpl.read_camera, "camera"),
 }
 
 
@@ -290,9 +309,12 @@ def _id_key(pk: wrpl.Packet) -> str:
     p = pk.payload
     if pk.type == 4 and pk.message is not None:
         return f"4/{pk.message:#06x}"
-    if pk.type == 4 and len(p) >= 7 and p[0] == 0xFF:
-        # Unit-addressed messages: ff, a flag byte, a length or flag byte, an object (2 bytes), the message id.
-        return f"4/ff{p[1]:02x}/{p[5] | p[6] << 8:#06x}"
+    if pk.type == 4 and len(p) >= 5 and p[0] == 0xFF:
+        # Messages to a unit: the object id, the unit's entity (LEB128), the message id (see wrpl.read_mpi).
+        try:
+            return f"4/unit/{wrpl.read_mpi(p)[2]:#06x}"
+        except (wrpl.FormatError, IndexError):
+            return "4/unit/?"
     if pk.type == 6 and p:
         return f"6/{p[0]:#04x}"
     return str(pk.type)
@@ -340,11 +362,15 @@ def read(paths: list[Path]) -> Replay:
             t = pk.ms / 1000.0
             if pk.type == 2:
                 seen["flight"] += 1
-                entries, err = wrpl.read_flight(pk.payload, r.layout or "2026")
+                whole: list = []
+                entries, err = wrpl.read_flight(pk.payload, r.layout or "2026", whole)
                 if err:
-                    # A list that does not parse to its end is not trusted at all.
+                    # A list that does not parse to its end is not trusted at all; it is kept whole.
                     problems["flight"] += 1
                     entries = []
+                    r.raw.append((t, 2, None, pk.payload))
+                else:
+                    r.flight_raw += [(t, *w) for w in whole]
                 frames.append((t, [Sample(t, x, y, z, att, uid=uid) for uid, x, y, z, att in entries
                                    if _plausible(x, y, z)]))
             elif pk.type == 3:
@@ -355,6 +381,16 @@ def read(paths: list[Path]) -> Replay:
             elif pk.type == 6:
                 seen["entity"] += 1
                 r.stream.feed(pk.payload, t)
+                if pk.payload and pk.payload[0] not in (0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26):
+                    r.raw.append((t, 6, pk.payload[0], pk.payload))
+            elif pk.type == 4 and pk.payload[:1] == b"\xff":
+                try:
+                    _, ext, mid, at = wrpl.read_mpi(pk.payload)
+                    seen["unit"] += 1
+                    r.unit_msgs.append((t, ext, mid, pk.payload[at:]))
+                except (wrpl.FormatError, IndexError):
+                    problems["unit"] += 1
+                    r.raw.append((t, 4, None, pk.payload))
             elif pk.type == 4:
                 m = pk.message
                 name = "hit"
@@ -399,8 +435,15 @@ def read(paths: list[Path]) -> Replay:
                         v = reader(pk.payload)
                         if v is not None:
                             getattr(r, where).append({"t": round(t, 3), **v})
+                        if m == wrpl.CAMERA:
+                            r.raw.append((t, 4, m, pk.payload))  # the table thins the camera; the sidecar keeps all
+                    else:
+                        r.raw.append((t, 4, m, pk.payload))
                 except (wrpl.FormatError, EOFError, IndexError, ValueError, struct.error):
                     problems[name] += 1
+                    r.raw.append((t, 4, m, pk.payload))
+            elif pk.type not in (0, 1):
+                r.raw.append((t, pk.type, None, pk.payload))
     r.retimed = _retime(frames)
     for _, samples in frames:
         for smp in samples:
@@ -650,11 +693,14 @@ def lives(r: Replay, all_units: list[Unit] | None = None) -> list[Life]:
 
         if kind == "air":
             samples = _relead(samples, r)
+            # A step out of the client's dead reckoning is measured from the last state it received (see `_from`).
+            for q, e in zip(samples, _dead_reckoned(samples)):
+                q.extrapolated = e
         runs: list[tuple[Unit | None, list[Sample]]] = []
         for s in samples:
             u = owner(s.t)
             if runs and runs[-1][0] is u:
-                p = runs[-1][1][-1]
+                p = _from(runs[-1][1], s)
                 dt = s.t - p.t
                 d = math.dist((p.x, p.y, p.z), (s.x, s.y, s.z))
                 if dt <= GAP[kind] and d <= max(SLACK[kind], TOP_SPEED[kind] * dt):
@@ -736,6 +782,36 @@ def _own_limit(samples: list[Sample], kind: str) -> float:
     return max(lo, min(hi, OWN_FACTOR * v[int(len(v) * 0.95)]))
 
 
+def _from(run: list[Sample], s: Sample) -> Sample:
+    """
+    The sample a step to `s` is measured from: the run's last sample, or, when
+    that is the client's dead reckoning and `s` is not, the last state the
+    client received before it. A distant aircraft flown on straight for a
+    while and then snapped to its next update has not moved faster than it
+    can: received state to received state, its pace is its own (on the air
+    arcade battle this keeps hundreds of players' tracks whole that were cut
+    at each correction).
+    """
+    p = run[-1]
+    if not p.extrapolated or s.extrapolated or len(run) < 2:
+        return p
+    # Only a correction: s is no further than DR_SNAP from where the dead reckoning would have had it.
+    o = run[-2]
+    f = (s.t - p.t) / (p.t - o.t) if p.t > o.t else 0.0
+    ahead = (p.x + (p.x - o.x) * f, p.y + (p.y - o.y) * f, p.z + (p.z - o.z) * f)
+    if math.dist(ahead, (s.x, s.y, s.z)) > DR_SNAP:
+        return p
+    for q in reversed(run):
+        if not q.extrapolated:
+            return q
+    return p
+
+
+#: The largest correction of a dead-reckoned aircraft taken as one (m): on the air arcade battle the client's snaps
+#: are 6 m at the median, 40 m at the 90th and 75 m at the 99th percentile; a respawn moves kilometres.
+DR_SNAP = 300.0
+
+
 def _split_own(run: list[Sample], kind: str, uid: int, r: Replay, limit: float) -> list[list[Sample]]:
     """A run cut again where it steps faster than its unit's own limit (`_own_limit`); the cuts go to `r.breaks`."""
     if len(run) < 2:
@@ -744,7 +820,7 @@ def _split_own(run: list[Sample], kind: str, uid: int, r: Replay, limit: float) 
         s.limit = limit
     pieces: list[list[Sample]] = [[run[0]]]
     for s in run[1:]:
-        p = pieces[-1][-1]
+        p = _from(pieces[-1], s)
         dt = s.t - p.t
         d = math.dist((p.x, p.y, p.z), (s.x, s.y, s.z))
         if d > max(SLACK[kind], limit * dt):
@@ -759,8 +835,10 @@ def _split_own(run: list[Sample], kind: str, uid: int, r: Replay, limit: float) 
 def _relead(samples: list[Sample], r: Replay) -> list[Sample]:
     """
     One aircraft's sample now and then leads its track like a whole packet
-    does (see `_retime`): it lies ahead along the flight path by 0.3 s or
-    more, and the next sample carries on from the one before it. Such a
+    does (see `_retime`), or lags it (a state that came late: on the air
+    arcade battle single samples 0.4 s behind, 30 m back along the path): it
+    lies ahead or behind along the flight path by 0.3 s or more, and the next
+    sample carries on from the one before it. Such a
     sample is given the time it stands for, as `_retime` does for packets.
     """
     out = list(samples)
@@ -775,8 +853,8 @@ def _relead(samples: list[Sample], r: Replay) -> list[Sample]:
             continue
         step = (c.x - b.x, c.y - b.y, c.z - b.z)
         lead = (step[0] * v[0] + step[1] * v[1] + step[2] * v[2]) / vv - (c.t - b.t)
-        if lead < RETIME_MIN_SHIFT:
-            continue
+        if abs(lead) < RETIME_MIN_SHIFT:
+            continue  # on time (a lag of 0.3 s or more is a late state, re-timed the same way)
         along = [v[k] * (c.t - b.t + lead) for k in range(3)]
         off = math.dist(step, along)
         # The next sample carries on from b (where b would be by then), not from c.
@@ -1385,15 +1463,20 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
     return out
 
 
-def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = None) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
+def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = None,
+         rpm: dict[int, tuple] | None = None, extra: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = list(extra or [])
     by_uid: dict[int, list[Life]] = defaultdict(list)
+    rpm = rpm or {}
     for life in all_lives:
         by_uid[life.uid].append(life)
         until = life.wreck_until()
+        series = rpm.get(life.uid) if life.kind == "air" else None
         for s, v in zip(life.samples, _speeds(life.samples)):
             row = _row(life, s, "position")
             row["speed"] = v
+            if series:
+                row["rpm"] = _rpm_at(series, s.t)
             row["alive"] = 0.0 if until is not None and life.died < s.t <= until else 1.0
             a = _attitude(s)
             if a:
@@ -1563,6 +1646,346 @@ def table(data: list[dict[str, Any]]):
     return pa.Table.from_arrays(arrays, schema=schema)
 
 
+# ---------------------------------------------------------------- messages to units
+
+
+@dataclass
+class UnitMessage:
+    """One message to a unit (see wrpl.read_mpi), with the entity it was sent to."""
+
+    t: float
+    mid: int
+    entity: ecs.Entity | None
+    body: bytes
+
+    @property
+    def uid(self) -> int | None:
+        return self.entity.uid if self.entity is not None else None
+
+
+def unit_messages(r: Replay) -> list[UnitMessage]:
+    """
+    Every message to a unit with its entity: the one whose eid (index and
+    generation) is the message's ext UID and that was created by then (the
+    last such; an index and generation can come again after the entity is
+    gone).
+    """
+    made: dict[tuple[int, int], list[ecs.Entity]] = defaultdict(list)
+    for e in r.stream.entities:
+        made[(e.eid & 0x3FFFFF, e.eid >> 22)].append(e)
+    out = []
+    for t, ext, mid, body in r.unit_msgs:
+        cands = made.get(wrpl.entity_of(ext), [])
+        e = None
+        for c in cands:
+            if c.t - 1.0 <= t:
+                e = c
+        out.append(UnitMessage(t, mid, e, body))
+    return out
+
+
+#: Messages to units that become event rows at the unit: message id -> event.
+UNIT_EVENTS = {
+    0xF04B: "dead",          # OnUnitDead: every kill record's victim has one within 2 s (97 of 97, air arcade)
+    0xF050: "bailout",       # UnitBailoutResponse
+    0xF033: "repair",        # UnitRepair
+    0xF054: "rearm",         # UnitRearm
+    0xF0BD: "bullet_rearm",  # UnitBulletRearm
+    0xD046: "reload",        # UnitReloadGun
+    0xF01B: "fire_start",    # an AA gun opens fire (each is followed by 0xF01C)
+    0xF01C: "fire_stop",     # GmDoStopFire
+    0xF0B1: "gun_shot",      # UnitSingleShot: a gun's single shot (heavy AA and artillery)
+    0xF0A0: "gun_shot",      # GmDoSingleShotUnreliable
+}
+
+
+def _rotate(s: Sample, local: tuple[float, float, float]) -> tuple[float, float, float] | None:
+    """A point in a unit's own frame (x forward, y up, z right; m) in the game's axes, by the sample's attitude."""
+    a = s.smooth_angles or _angles(s)
+    if a is None:
+        return None
+    h, p, rl = (math.radians(v) for v in a)
+    fwd = (math.sin(h) * math.cos(p), math.sin(p), math.cos(h) * math.cos(p))
+    right0 = (math.cos(h), 0.0, -math.sin(h))
+    up0 = (-math.sin(h) * math.sin(p), math.cos(p), -math.cos(h) * math.sin(p))
+    c, sn = math.cos(rl), math.sin(rl)
+    right = tuple(right0[k] * c - up0[k] * sn for k in range(3))
+    up = tuple(up0[k] * c + right0[k] * sn for k in range(3))
+    return tuple(s_ + fwd[k] * local[0] + up[k] * local[1] + right[k] * local[2]
+                 for k, s_ in enumerate((s.x, s.y, s.z)))
+
+
+def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """
+    Rows from the messages to units, and their check:
+
+    * `shot`: one row per projectile that hit a unit (0xF0E9), at the
+      shooter's position at the moment of the hit, `targetX/Y/Z` the hit point
+      (the unit hit, moved by the hit point in its own frame), the direction
+      towards it, `other` the unit hit. Hits only: a shot that missed is not
+      in a client replay.
+    * `gun_shot`, `fire_start`, `fire_stop` of AA guns and artillery, and
+      `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` at the unit
+      (`UNIT_EVENTS`); a static gun without a track at the place its entity
+      was created.
+    """
+    by_uid: dict[int, list[Life]] = defaultdict(list)
+    for life in all_lives:
+        by_uid[life.uid].append(life)
+
+    def where(uid: int | None, t: float) -> tuple[Life | None, Sample | None]:
+        if uid is None:
+            return None, None
+        life = _life_at(by_uid.get(uid, []), t)
+        return life, _at_time(life, t, near=1.0) if life else None
+
+    def static(e: ecs.Entity | None) -> tuple[float, float, float] | None:
+        tm = e.comps.get("transform") if e is not None else None
+        return tuple(tm["pos"]) if isinstance(tm, dict) and tm.get("pos") else None
+
+    entity_by_uid: dict[int, list[ecs.Entity]] = defaultdict(list)
+    for e in r.stream.entities:
+        if e.uid is not None:
+            entity_by_uid[e.uid].append(e)
+
+    def entity_at(uid: int, t: float) -> ecs.Entity | None:
+        best = None
+        for e in entity_by_uid.get(uid, []):
+            if e.t - 1.0 <= t:
+                best = e
+        return best
+
+    out: list[dict[str, Any]] = []
+    check: Counter = Counter()
+    for m in msgs:
+        if m.mid == 0xF0E9:
+            try:
+                hit = wrpl.read_hit_effect(m.body)
+            except (wrpl.FormatError, EOFError, IndexError, struct.error):
+                check["hitEffectsNotRead"] += 1
+                continue
+            if hit is None or m.uid is None:
+                check["hitEffectsNotRead"] += 1
+                continue
+            check["projectileHits"] += 1
+            victim, vs = where(m.uid, m.t)
+            shooter, ss = where(hit["shooter"], m.t)
+            target = None
+            if vs is not None:
+                target = _rotate(vs, hit["local"]) if hit["aligned"] else None
+                target = target or (vs.x, vs.y, vs.z)
+            if ss is None:
+                pos = static(entity_at(hit["shooter"], m.t))
+                if pos is None:
+                    check["shotWithoutShooterPlace"] += 1
+                    continue
+                row = {"time": m.t, "event": "shot", "track": "", "player": _uid_label(hit["shooter"]),
+                       "uid": hit["shooter"], "kind": "effect", "x": pos[0], "y": pos[1], "z": pos[2]}
+            else:
+                row = {**_row(shooter, ss, "shot"), "time": m.t}
+                pos = (ss.x, ss.y, ss.z)
+            row["other"] = _label(victim) if victim else _uid_label(m.uid)
+            if target is not None:
+                d = [target[k] - pos[k] for k in range(3)]
+                n = math.sqrt(sum(c * c for c in d))
+                row.update(targetX=target[0], targetY=target[1], targetZ=target[2])
+                if n > 0:
+                    row.update(dirX=d[0] / n, dirY=d[1] / n, dirZ=d[2] / n)
+                check["shotsWithTarget"] += 1
+            out.append(row)
+        elif m.mid in UNIT_EVENTS:
+            event = UNIT_EVENTS[m.mid]
+            check[event] += 1
+            life, s = where(m.uid, m.t)
+            if s is not None:
+                out.append({**_row(life, s, event), "time": m.t})
+                continue
+            pos = static(m.entity)
+            if pos is None:
+                check[f"{event}WithoutPlace"] += 1
+                continue
+            out.append({"time": m.t, "event": event, "track": "", "uid": m.uid, "kind": "effect",
+                        "player": f"{m.entity.class_name.rpartition('/')[2]} #{m.uid}" if m.uid is not None else "",
+                        "Vehicle": m.entity.class_name.rpartition("/")[2], "ai": True, "isPlayer": False,
+                        "x": pos[0], "y": pos[1], "z": pos[2]})
+    return out, dict(check)
+
+
+def rpm_series(msgs: list[UnitMessage]) -> dict[int, tuple[list[float], list[list[int]]]]:
+    """Each uid's engine rpm over time (0xD047 FmwRpm): uid -> (times, rpm per engine)."""
+    out: dict[int, tuple[list[float], list[list[int]]]] = {}
+    for m in msgs:
+        if m.mid == 0xD047 and m.uid is not None:
+            v = wrpl.read_rpm(m.body)
+            if v:
+                ts, vs = out.setdefault(m.uid, ([], []))
+                ts.append(m.t)
+                vs.append(v)
+    return out
+
+
+def _rpm_at(series: tuple[list[float], list[list[int]]] | None, t: float) -> float | None:
+    """The rpm sent last before t (within 2 s): the mean over the engines."""
+    if not series:
+        return None
+    ts, vs = series
+    i = bisect.bisect_right(ts, t) - 1
+    if i < 0 or t - ts[i] > 2.0:
+        return None
+    return sum(vs[i]) / len(vs[i])
+
+
+def _rpm_check(r: Replay, series: dict[int, tuple], all_lives: list[Life]) -> dict[str, Any]:
+    """The recording player's rpm (0xD047) against its own cockpit instrument 93 at the same moments."""
+    author = str(r.results.get("authorUserId") or "")
+    mine = {l.uid for l in all_lives if author and l.user_id == author}
+    inst = [(t, d[93]) for t, d in r.cockpit if 93 in d]
+    ts = [t for t, _ in inst]
+    pairs = []
+    for uid in mine:
+        for t, v in zip(*series.get(uid, ([], []))):
+            i = bisect.bisect_left(ts, t)
+            if i < len(ts) and abs(ts[i] - t) < 0.2:
+                pairs.append((sum(v) / len(v), inst[i][1]))
+    if len(pairs) < 10:
+        return {"pairs": len(pairs)}
+    xs, ys = [a for a, _ in pairs], [b for _, b in pairs]
+    mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+    sxy = sum((a - mx) * (b - my) for a, b in pairs)
+    sxx, syy = sum((a - mx) ** 2 for a in xs), sum((b - my) ** 2 for b in ys)
+    diffs = sorted(abs(a - b) for a, b in pairs)
+    return {"pairs": len(pairs), "correlation": round(sxy / math.sqrt(sxx * syy), 4) if sxx and syy else None,
+            "medianDifference": round(diffs[len(diffs) // 2], 1)}
+
+
+def _shooter_check(r: Replay, msgs: list[UnitMessage]) -> dict[str, Any]:
+    """Each hit or kill record's attacker against the shooters of the projectile hits (0xF0E9, 0xF133) on its victim in the 3 s before."""
+    shooters: dict[int, list[tuple[float, int]]] = defaultdict(list)
+    for m in msgs:
+        if m.uid is None or m.mid not in (0xF0E9, 0xF133):
+            continue
+        try:
+            v = wrpl.read_hit_effect(m.body) if m.mid == 0xF0E9 else wrpl.read_unit_explosion(m.body)
+        except (wrpl.FormatError, EOFError, IndexError, struct.error):
+            continue
+        if v:
+            shooters[m.uid].append((m.t, v["shooter"]))
+    out: Counter = Counter()
+    for rec in [*r.hits, *({**k, "uid": k.get("killerUid")} for k in r.kills)]:
+        v, a = rec.get("victimUid"), rec.get("uid")
+        if a in (None, wrpl.NO_UID) or v in (None, wrpl.NO_UID):
+            continue
+        near = {s for t, s in shooters.get(v, []) if rec["t"] - 3.0 <= t <= rec["t"] + 0.5}
+        out["noProjectileHitNear" if not near else "attackerAmongShooters" if a in near else "attackerNotAmongShooters"] += 1
+    return dict(out)
+
+
+def _death_check(r: Replay, msgs: list[UnitMessage]) -> dict[str, Any]:
+    """OnUnitDead (0xF04B) against the kill records: how many kills have one for their victim within 2 s."""
+    dead: dict[int, list[float]] = defaultdict(list)
+    for m in msgs:
+        if m.mid == 0xF04B and m.uid is not None:
+            dead[m.uid].append(m.t)
+    kills = [k for k in r.kills if k.get("victimUid") not in (None, wrpl.NO_UID)]
+    return {"onUnitDead": sum(len(v) for v in dead.values()), "kills": len(kills),
+            "killsWithOnUnitDead": sum(1 for k in kills if any(abs(t - k["t"]) <= 2 for t in dead.get(k["victimUid"], [])))}
+
+
+def flight_table(r: Replay):
+    """
+    The flight sidecar: every flight-model entry of every aircraft, whole (its
+    bits), with the fields the table does not use as far as they are known
+    (`wrpl.flight_extras`): the u32 after the attitude, three 4-bit control
+    values, the engines' fields. The time is the packet's (before re-timing).
+    """
+    import pyarrow as pa
+
+    cols: dict[str, list] = {k: [] for k in ("time", "uid", "bits", "entry", "velocityWord", "control1", "control2",
+                                             "control3", "engines")}
+    for t, uid, n, bits in r.flight_raw:
+        try:
+            x = wrpl.flight_extras(n, bits, r.layout or "2026")
+        except (wrpl.FormatError, EOFError):
+            x = {}
+        c = x.get("controls") or [None, None, None]
+        cols["time"].append(t)
+        cols["uid"].append(uid)
+        cols["bits"].append(n)
+        cols["entry"].append(bits)
+        cols["velocityWord"].append(x.get("velocityWord"))
+        cols["control1"].append(c[0])
+        cols["control2"].append(c[1])
+        cols["control3"].append(c[2])
+        cols["engines"].append(json.dumps(x["engines"]) if x.get("engines") else "")
+    return pa.table({
+        "time": pa.array(cols["time"], pa.float64()), "uid": pa.array(cols["uid"], pa.int16()),
+        "bits": pa.array(cols["bits"], pa.int32()), "entry": pa.array(cols["entry"], pa.binary()),
+        "velocityWord": pa.array(cols["velocityWord"], pa.uint32()),
+        "control1": pa.array(cols["control1"], pa.int8()), "control2": pa.array(cols["control2"], pa.int8()),
+        "control3": pa.array(cols["control3"], pa.int8()),
+        "engines": pa.array(cols["engines"], pa.string()).dictionary_encode(),
+    })
+
+
+def messages_table(r: Replay, msgs: list[UnitMessage]):
+    """
+    The sidecar: every message to a unit and every packet no reader here
+    takes, whole, so nothing of the replay is lost to the table: time, packet
+    type, message id and its community name, the unit's uid, entity id and
+    template where the message names one, its id fields as hex where it has
+    them, and the payload.
+    """
+    import pyarrow as pa
+
+    cols: dict[str, list] = {k: [] for k in ("time", "packet", "message", "name", "uid", "eid", "template",
+                                             "vehicle", "fields", "payload")}
+
+    def add(t, ptype, mid, uid, e, body, name=None, fields=None):
+        cols["time"].append(t)
+        cols["packet"].append(ptype)
+        cols["message"].append(f"{mid:#06x}" if mid is not None else "")
+        cols["name"].append(name if name is not None else wrpl.UNIT_MESSAGES.get(mid, "") if mid is not None else "")
+        cols["uid"].append(uid)
+        cols["eid"].append(e.eid if e is not None else None)
+        cols["template"].append(e.template if e is not None else "")
+        cols["vehicle"].append(e.class_name.rpartition("/")[2] if e is not None else "")
+        f = fields or ""
+        if fields is None and ptype == 4 and body:
+            try:
+                f = json.dumps({str(n): v.hex() for n, (_, v) in wrpl.id_field_map(body).items()})
+            except (wrpl.FormatError, EOFError, IndexError, ValueError):
+                f = ""
+        cols["fields"].append(f)
+        cols["payload"].append(bytes(body))
+
+    for m in msgs:
+        add(m.t, 4, m.mid, m.uid, m.entity, m.body)
+    by_eid = {e.eid: e for e in r.stream.entities}
+    for t, eid, comp, kind, v, rest in r.stream.replications:
+        e = by_eid.get(eid)
+        add(t, 6, 0x22, e.uid if e else None, e, rest, name=comp,
+            fields=json.dumps({"type": kind, "value": _jsonable(v)}) if v is not None else json.dumps({"type": kind}))
+    for t, eid, rest in r.stream.messages:
+        e = by_eid.get(eid)
+        add(t, 6, 0x20, e.uid if e else None, e, rest, name="entity message")
+    for t, ptype, mid, payload in r.raw:
+        add(t, ptype, mid, None, None, payload[4:] if ptype == 4 and mid is not None else payload)
+    order = sorted(range(len(cols["time"])), key=lambda i: cols["time"][i])
+    arrays = {k: [v[i] for i in order] for k, v in cols.items()}
+    return pa.table({
+        "time": pa.array(arrays["time"], pa.float64()),
+        "packet": pa.array(arrays["packet"], pa.int8()),
+        "message": pa.array(arrays["message"], pa.string()).dictionary_encode(),
+        "name": pa.array(arrays["name"], pa.string()).dictionary_encode(),
+        "uid": pa.array(arrays["uid"], pa.int16()),
+        "eid": pa.array(arrays["eid"], pa.int64()),
+        "template": pa.array(arrays["template"], pa.string()).dictionary_encode(),
+        "vehicle": pa.array(arrays["vehicle"], pa.string()).dictionary_encode(),
+        "fields": pa.array(arrays["fields"], pa.string()),
+        "payload": pa.array(arrays["payload"], pa.binary()),
+    })
+
+
 # ---------------------------------------------------------------- the match
 
 
@@ -1584,6 +2007,16 @@ INSTRUMENTS = {
     40: "altitude, m (the author's track height: ratio 1.0007, correlation 0.999 in an air battle)",
     64: "compass heading, degrees (the author's track heading: correlation 0.95)",
 }
+
+
+def _thin(items: list[dict[str, Any]], step: float) -> list[dict[str, Any]]:
+    """Every item at least `step` seconds after the one kept before (all of them stay in the messages sidecar)."""
+    out, last = [], -1e9
+    for x in items:
+        if x["t"] - last >= step:
+            out.append({"time": x["t"], **{k: v for k, v in x.items() if k != "t"}})
+            last = x["t"]
+    return out
 
 
 def _jsonable(v: Any) -> Any:
@@ -1711,6 +2144,7 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
     events = Counter(row["event"] for row in table_rows)
     start = datetime.fromtimestamp(h["startTime"], tz=timezone.utc).isoformat() if h.get("startTime") else None
     slot_list = [{"pid": pid, **v} for pid, v in sorted(r.slots.items())]
+    by_eid = {e.eid: e for e in r.stream.entities}
     unit_list = []
     for u in all_units:
         e = u.entity
@@ -1784,6 +2218,11 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
                        for d in r.detections],
         "unitStates": [{**s, "unit": who(s.get("uid"), None, s["t"])} for s in r.unit_states],
         "authorInstruments": {"known": {str(k): v for k, v in INSTRUMENTS.items()}, "series": dict(instruments)},
+        "triggers": [{"time": x["t"], "action": x.get("action", ""), "words": x["words"], "raw": x["raw"]}
+                     for x in r.triggers],
+        "hints": [{"time": x["t"], "words": x["words"]} for x in r.hints],
+        "missionProgress": [{"time": x["t"], **{k: v for k, v in x.items() if k != "t"}} for x in r.progress],
+        "camera": _thin(r.camera, 0.25),
         "trackBreaks": _break_reasons(r, {l.uid for l in all_lives if l.user_id and l.user_id == str(r.results.get("authorUserId"))}),
         "chat": [{"time": round(c["t"], 3), "sender": c.get("sender", ""), "text": c.get("text", "")}
                  for c in r.chat],
@@ -1804,6 +2243,11 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "groundHz": _rate(all_lives, "ground"),
             "entities": len(r.stream.entities),
             "entityTemplates": dict(Counter(e.template for e in r.stream.entities)),
+            "replicatedComponents": {f"{k[0]} {k[1]}": n for k, n in Counter(
+                ((by_eid[eid].template if eid in by_eid else "?"), comp)
+                for _, eid, comp, _, _, _ in r.stream.replications).most_common()},
+            "replicatedNotRead": sum(1 for x in r.stream.replications if x[4] is None),
+            "entityMessages": len(r.stream.messages),
             "weapons": len(all_weapons),
             "weaponsWithFlight": sum(1 for w in all_weapons if len(w.track) >= 2),
             "packets": dict(r.packets),
@@ -1869,7 +2313,8 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
 #: Message ids this converter reads (the rest is counted under messageIdsNotRead).
 _READ_IDS = {"2", "3", "0", "1", "6/0x24", "6/0x25", "6/0x26"} | {
     f"4/{m:#06x}" for m in (wrpl.KILL, wrpl.CRITICAL, wrpl.SEVERE, wrpl.SLOTS, wrpl.GROUND_CLIENT, wrpl.GROUND_SERVER,
-                            wrpl.COCKPIT, wrpl.OBJECTS, *wrpl.SHELLS, *_MORE)}
+                            wrpl.COCKPIT, wrpl.OBJECTS, *wrpl.SHELLS, *_MORE)} | {
+    f"4/unit/{m:#06x}" for m in (0xF0E9, 0xF133, 0xD047, *UNIT_EVENTS)}
 
 
 def _folder(u: Unit | None) -> str:
@@ -1967,7 +2412,13 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     more["deadReckoning"] = smooth(all_lives, author, smoothing)
     more["aircraftAttitude"] = _attitude_check(all_lives, author)
     all_weapons = weapons(r, all_lives)
-    data = rows(r, all_lives, all_weapons)
+    msgs = unit_messages(r)
+    rpm = rpm_series(msgs)
+    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives)
+    more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
+                                rpm=_rpm_check(r, rpm, all_lives),
+                                withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
+    data = rows(r, all_lives, all_weapons, rpm, extra)
     more["identity"] = _identity_check(data, roster)
     name = match_name(r.header)
     folder = Path(out) / (r.header["map"] or "unknown")
@@ -1975,6 +2426,10 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     tpath = folder / f"{name}.parquet"
     jpath = folder / f"{name}.match.json"
     pq.write_table(table(data), tpath, compression="snappy", row_group_size=256_000)
+    pq.write_table(messages_table(r, msgs), folder / f"{name}.messages.parquet", compression="zstd")
+    pq.write_table(flight_table(r), folder / f"{name}.flight.parquet", compression="zstd")
     doc = summary(r, all_lives, data, check, all_units, all_weapons, more, names)
+    doc["projectileHitReplays"] = [{"time": round(m.t, 3), "uid": m.uid, "texts": wrpl.read_projectile_hit_replay(m.body)}
+                                   for m in msgs if m.mid == 0xD0FE]
     jpath.write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
     return tpath, jpath

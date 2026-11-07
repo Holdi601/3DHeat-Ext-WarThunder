@@ -65,7 +65,7 @@ reading instructions, so the viewer needs no form filled in.
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop`, `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units) |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
 | `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
@@ -83,6 +83,8 @@ reading instructions, so the viewer needs no form filled in.
 | `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below). The hints say so under `conventions` |
 | `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see below) |
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
+| `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
+| `rpm` | an aircraft's engine rpm (the mean over its engines) as last sent, within 2 s |
 | `speed` | m/s over about two seconds of the track (worked out here; the replay sends no speed for other units) |
 | `alive` | 0 for a unit's samples after its death (its wreck), for at most 60 s or until the game removes it |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
@@ -104,6 +106,9 @@ mission, battle class, session id, start time and author, and:
 | `detections`, `unitStates` | `UnitDetected` pairs of units; a message (0xF093) with a unit's position, attitude and velocity whose meaning is not known |
 | `authorInstruments` | the recording player's cockpit values (`ReplayCockpitParams`) by instrument number, at most one per second; `known` says which were checked |
 | `chat` | every chat line |
+| `triggers`, `hints`, `missionProgress` | the mission script's actions (RunTriggerAction), its hints, its progress messages |
+| `camera` | the recording player's replay camera every 0.25 s |
+| `projectileHitReplays` | the recording player's own hits and being hit, with weapon and ammunition |
 | `results` | the whole results blk as the game wrote it |
 | `counts` | rows, events, lives, kinds, samples, entities by template, weapons, packets read and not read, every message id seen and those not read, samples dropped |
 | `trackBreaks` | every cut of a track for a step faster than the unit can go: where, how far, how fast, and what it most likely is |
@@ -124,6 +129,7 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Packet stream (zlib in 2025, zstd in 2026) | all files, every packet framed |
 | Aircraft positions and attitude (flight model, 2026 layout) | all four: 4 samples a second, no packet left unread; the heading checked against the direction of travel |
 | Flight packets ahead of their time | now and then a client replay's flight packet holds every other aircraft where it will be about 0.75 s later (the client's extrapolation after a network hitch; the recording player's own aircraft is not ahead), and the next packet is back on time - read at the packet's time each aircraft leaps forward and back at up to 30,000 km/h. The lead is measured per packet (each aircraft's step along its velocity against the time elapsed, from its last on-time samples); when most moving aircraft agree, each one that leads is given the time it stands for. air_afghan has 4 such packets, air_denmark 5. Single aircraft samples that lead the same way are re-timed too. A re-timed sample that then lands within 0.2 s of the sample the game sent for that moment is left out (counted). The packets' own bytes (entries, the tail with the recording player's position) carry no mark of it |
+| Dead-reckoning snaps | a step out of a dead-reckoned run (see below) is measured from the last received state when the snap is at most 300 m: the client's corrections no longer cut tracks (arcade: about 770 lives before, 485 now; one player's 24 tracks are 12, its respawns) |
 | Teleports | a track is cut where its unit moves further than it can: first against its kind (aircraft 750 m/s, ground and ships 40 m/s, weapons 1800 m/s, above a slack of 60, 8 and 40 m), then against its own pace - 1.6 times the 95th percentile of its own steps (0.2 to 5 s long) over all its samples under one entity, no less than 250 m/s for aircraft (a piston fighter's dive) and 15 m/s on the ground, no more than the kind's limit - so a piston fighter's client correction is caught although a jet could fly it. Each cut is listed in `trackBreaks` with its likely cause and, for a pace cut, the unit's limit: a point several cuts lead to (respawn or rearm at a spawn), the recording player's own aircraft moved by the game (its own position in the packet tail moves the same way; once in air_afghan, 2.4 km in mid-air), or a distant unit corrected after the client extrapolated it. Checked on the recording player's own aircraft, which the client does not extrapolate: its own pace cuts it nowhere in the three air replays (only respawns do), its fastest kept steps are 226 m/s (I-185, limit 315) and 569-577 m/s (Eurofighter), and at its one arcade respawn the cockpit altitude runs on at the new spawn. Cuts per replay: 61 to 607 (spain's 387 pace cuts are corrections of distant piston aircraft). After the fixes no step between consecutive rows of any track is faster than its kind or its own pace allows in the four replays (`selfCheck.stepSpeed`; spain's aircraft at most 388 m/s, the jets' at most 739). Ships and boats still show up to 108 m/s between samples 0.02-0.08 s apart: the recording player's own ship comes 25 times a second, stamped at frame times, and steps of under 8 m over such short times read fast; their 99th percentile is 34-36 m/s |
 | Ground and ship positions (0xF073 / 0xF074) | all four, no packet left unread. Heading, pitch and roll from the 16-bit attitude: the heading is within 1.4 to 2 degrees (median) of the direction of travel of moving ships and tanks, the pitch follows the slope (correlation 0.94). Some ships send a quaternion instead; its heading is within 2.5 degrees. Ships sit at the water level (median height 0.0 to 0.4 m on the two maps with sea) |
 | Packed ground heights | positions packed in 64 bits count their height from -100 m on three maps and from 1405 m on air_afghan (its water level 1505 m less 100): measured on each replay from units seen in both forms and from their creation points, and added (`selfCheck.packedGroundHeight`; air_afghan: 20 pairs, spread 8 m) |
@@ -142,30 +148,77 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Wrecks | a unit's samples after its death keep coming (a ship sinks 90 m over minutes): marked `alive` 0 for 60 s or until the game removes the unit; a ground unit's later samples are dropped (counted in `counts.droppedSamples`); aircraft keep theirs, as a few AI aircraft fly on after a kill names them |
 | Aircraft positions, version 101286 and server replays (2025) | not read: their flight packets have a different layout |
 
+### Messages to units
+
+Every type-4 packet is an mpi message of the Dagor Engine's daNet
+(`prog/dagorInclude/daNet/mpi.h`, `prog/engine/daNet/ext/mpi.cpp`): the
+recipient object's id (u16), then - when its low 11 bits are all set - the
+object's ext UID (LEB128), the message id (u16) and the payload. The game
+messages above go to objects `0x58xx`; a message to a unit carries the id
+0x07FF (0x0FFF, 0x87FF, 0x8FFF) and as its ext UID the unit's ECS entity id,
+`index << 10 | generation`, the entity the entity stream created. Checked: all
+114,008 (arcade), 91,346 (naval), 185,561 and 295,241 (sim) such messages name
+an entity alive at that moment. Read from them:
+
+| Message | What, and the check |
+|---|---|
+| 0xF0E9 UnitHitEffects | one projectile's hit on the unit: the shooter's uid and the hit point in the unit's frame (int16 cm; x forward, y up, z left). Becomes a `shot` row (below). Of the hit and kill records with these messages on the victim in the 3 s before, the record's attacker is among their shooters in 147 of 148, 97 of 99, 222 of 223 and 355 of 359; shooter-to-hit range median 309 m, 99th percentile 952 m (arcade); the hit points lie on the side facing the shooter |
+| 0xF133 UnitOnExplosion | the same shooter uid (used in the check) |
+| 0xF04B OnUnitDead | `dead` rows: every kill record's victim has one within 2 s (97 of 97, 63 of 63, 112 of 112, 219 of 219); the others are deaths without a kill record (crashes, ground targets) |
+| 0xD047 FmwRpm | the engines' rpm: the `rpm` column. The recording player's against its own cockpit instrument 93: correlation 0.973 to 0.996, median 4.6 to 8 rpm apart |
+| 0xF0B1 UnitSingleShot, 0xF0A0 GmDoSingleShotUnreliable | `gun_shot` rows: single shots of heavy AA and artillery (90 mm, 88 mm, 152 mm), at the gun |
+| 0xF01B, 0xF01C GmDoStopFire | `fire_start`, `fire_stop` rows: bursts of the 40 mm AA guns (pairs, 171/169) |
+| 0xF050 UnitBailoutResponse, 0xF033 UnitRepair, 0xF054 UnitRearm, 0xF0BD UnitBulletRearm, 0xD046 UnitReloadGun | `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` rows |
+| 0xD0FE ProjectileHitReplay | the recording player's own hits and being hit (two a battle): names, vehicles, the weapon's blk and the ammunition (`gameData/Weapons/cannonShVAKS.blk`, `frag_i_t`); in `projectileHitReplays` |
+| the rest (0xD041 on bombers, 0xD048, 0xF13E part damage with a float and a point in the unit's frame, 0xF031, 0xF117, 0xF09A HP, 0xD020 gun angles, ...) | in the messages sidecar with their unit and fields; their meaning is not checked |
+
+Names are the community's (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
+
+### The sidecars
+
+Next to each table, so that nothing of the replay is lost to it:
+
+- `<match>.messages.parquet`: every message to a unit (time, message id and
+  name, uid, eid, template, vehicle, its id fields as hex, the payload), every
+  replicated component value (packet 6, `name` the component, `fields` its
+  value), every entity message (with its entity) and every packet no reader
+  here takes, whole.
+- `<match>.flight.parquet`: every flight-model entry of every aircraft whole
+  (its bits), with what is known of the fields the table does not use: three
+  4-bit control values around 8 (the middle one follows the roll rate,
+  correlation -0.62: likely the ailerons), the u32 after the attitude (its top
+  bits follow the heading, correlation 0.77), each engine's fields.
+
+### Also read
+
+- **Entity-stream replication** (0x22, 0x23; `Connection::readReplicationPacket`,
+  `Object::deserializeComps`): the sent time, a sequence number (running on by
+  one), per entity its eid and a block of component values. Read: ship repair
+  and unwatering timers, consumables' counts (`mod__count` of toolkits,
+  extinguishers, smoke), owner and team changes, tank engine overheat; War
+  Thunder's own `BufferedHudData` is kept as bytes. Counted in
+  `counts.replicatedComponents`; the values in the messages sidecar.
+- **RunTriggerAction** (0xF028, the mission script's actions, e.g.
+  `unitSetIndication`) and **MissionPlayHint** (0xF0EC): the action and the
+  words of its parameters (`triggers`, `hints`); the parameter blk's layout is
+  not read, its bytes are kept.
+- **Mission progress** (0xF07A, 0xF07C): fields as hex (`missionProgress`).
+- **The replay camera** (0xD043, about 20 a second): a quaternion and float
+  triples (`camera`, every 0.25 s; all in the sidecar). Which triple is the
+  camera's position is not checked.
+
 What stays unread, and why:
 
-- **Unit-addressed messages** (`ff07 81 ...` / `ff0f 81 ...`, by far the most
-  packets: engine RPM 0xD047, 0xD041, hit effects 0xF0E9, single shots 0xF0B1,
-  gun fire 0xF0A0, unit death 0xF04B, ...): a bit-packed object address comes
-  before the message id, and how it names the unit (it is not the uid) was
-  not worked out; their bodies are game-specific. Counted by id in
-  `counts.messageIdsNotRead`.
-- **Entity messages and component replication** (packet type 6, kinds 0x20 to
-  0x23): component updates over time (scores, repair, fire). Their layout is
-  in the Dagor source, but most values are War Thunder's own types, and the
-  message classes are numbered at run time.
-- **ReflectionData** (0xF02D) beyond the player slots: per-object tables of
-  numbered fields (units, mission state, scores) without names.
-- **The replay camera** (0xD043), **RunTriggerAction** (0xF028),
-  **RedundancyReflectionData** (0xF0AA), mission progress (0xF07A/0xF07C),
-  hints (0xF0EC): not read.
-- **Fuel, ammunition, throttle, gear and flaps of other units**: the flight
-  model's entries hold engines, sensors and countermeasures, whose sizes are
-  read and skipped; their meaning is not known. The recording player's
-  instruments include them, but unnamed.
-- **Projectile names**: the weapon's id (e.g. `us_aim_120d`) is only in kill
-  records; a released weapon's entity holds its state, not its name.
-- **Shells and bullets**: not sent as entities or flights (see Gunfire).
+- **Entity messages** (0x20, 0x21): the message classes are numbered at run
+  time and their bodies are War Thunder's; kept whole with their entity.
+- **ReflectionData** (0xF02D) beyond the player slots, **RedundancyReflectionData**
+  (0xF0AA): numbered fields without names; kept whole.
+- **Fuel, ammunition, throttle, gear and flaps of other units**: in the flight
+  entries (sidecar), not identified: the recording player's instruments have
+  numbers, not names, to check them against.
+- **Released weapons' names**: a bomb's or rocket's entity holds its position,
+  attitude and velocity, not its name; kill records name the weapon of a kill.
+- **Shots that missed**: a client replay holds the hits only (see Gunfire).
 
 ### Dead reckoning, and the smoother
 
@@ -217,17 +270,15 @@ The 10-bit angles step 0.18 degrees. Ground units' roll sense is not checked.
 
 ### Gunfire
 
-The replay holds no gunfire to draw tracers from. Shells and bullets are not
-entities, and the weapons-in-flight messages hold only rockets, missiles,
-bombs and torpedoes. The recording player's instruments (0xD04A, 41 of them in
-the arcade battle) hold no ammunition count. Checked at his hits: no
-instrument and no bit of his flight entry changes with firing. The
-unit-addressed 0xF0A0 ("gun fire") and 0xF0B1 ("single shots") messages
-have a body that never changes (no direction, no count). Their object address
-is not a uid or an eid: it equals the eid of the 88 mm flak guns created at
-the start, and of nothing after. Their timing matches the recording player's
-hits no better than chance. What there is: hits, kills and destroyed modules
-with who dealt them, and explosions and flak bursts with their position.
+Every projectile that hit a unit is in the replay (0xF0E9, above): a `shot`
+row at the shooter's position at the moment of the hit, `targetX/Y/Z` the hit
+point (the unit hit, moved by the hit point in its frame, turned by its
+attitude), the direction towards it, `other` the unit hit. Shells and bullets
+that missed are not sent: they are not entities, the weapons-in-flight
+messages hold only rockets, missiles, bombs and torpedoes, and the recording
+player's own instruments hold no ammunition count. Heavy AA and artillery
+send each single shot (`gun_shot`, no direction), 40 mm AA guns their bursts
+(`fire_start`, `fire_stop`).
 
 ## Levels (`heat3d-wt-level`)
 
@@ -338,10 +389,13 @@ it knows of the format comes from:
 
 - Gaijin's Dagor Engine source (github.com/GaijinEntertainment/DagorEngine,
   BSD 3-Clause): `prog/engine/daECS/net/network.cpp`, `connection.cpp`,
-  `serialize.cpp`, `compression.h` and `prog/engine/daECS/core/baseIo.cpp`,
+  `object.cpp`, `serialize.cpp`, `compression.h` and `prog/engine/daECS/core/baseIo.cpp`,
   `componentTypes.cpp` for the entity stream (`ecs.py`). Component and type
   names are matched by their FNV-1a hashes against words of the game's own
   archives; `ecs.py` lists the names found.
+- The same source's `prog/dagorInclude/daNet/mpi.h`, `prog/engine/daNet/ext/mpi.cpp`
+  and `daNet/bitStream.h`: how a message names the object it is for
+  (`wrpl.read_mpi`).
 - ShioUmiusi/WTACRP (MIT): `docs/REPLAY-FORMAT.md`, `docs/REPLAY-DECODE.md`,
   `docs/REPLAY-DECODE-ECS.md`, `docs/QUICK-REF.md`, and its own parser
   `web/wrpl-parse.js`, read for the bit layouts of the flight model, ground
