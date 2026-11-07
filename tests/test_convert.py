@@ -65,7 +65,8 @@ def test_writes_map_folder_and_hints(converted):
     assert path.parent.name == "avg_test_land"
     hints = json.loads(t.schema.metadata[b"heat3d"])
     assert hints["axes"] == {"up": "y", "flipX": False, "flipY": False, "flipZ": True, "scale": 1}
-    assert hints["columns"]["personId"] == "player" and hints["columns"]["lookMode"] == "vector"
+    assert hints["columns"]["personId"] == "track" and hints["columns"]["lookMode"] == "vector"
+    assert "sessionId" not in hints["columns"]  # a life is a track of its own, not a match to pick
     assert all(c in t.schema.names for c in hints["columns"]["extra"])
     assert "Vehicle" in t.schema.names
 
@@ -78,12 +79,13 @@ def test_tracks_and_identity(converted):
     assert one[0]["kind"] == "aircraft" and one[0]["life"] == "344#1"
     # Flying north: the look vector points +z, the heading is about 0.
     assert one[0]["dirZ"] == pytest.approx(1, abs=0.01) and min(one[0]["heading"], 360 - one[0]["heading"]) < 0.5
-    two = [r for r in rows if r["player"] == "Pilot Two"]
-    # Named by the kill's victim pid; the vehicle is the only aircraft Two had.
-    assert {r["Vehicle"] for r in two} == {"mig_29smt_9_19"}
-    assert {r["event"] for r in two} >= {"position", "wreck", "death", "hit_critical"}
+    # Without an entity stream nothing names uid 345: a kill's "victim pid" is not the victim's slot.
+    two = [r for r in rows if r["player"] == "uid 345"]
+    assert {r["event"] for r in two} >= {"position", "death", "hit_critical"}
+    assert {r["alive"] for r in two if r["event"] == "position" and r["time"] > 11} == {0.0}  # the falling wreck
     tank = [r for r in rows if r["kind"] == "ground"]
     assert len(tank) == 21 and tank[0]["player"] == "uid 177" and tank[0]["Vehicle"] == ""
+    assert tank[0]["heading"] == pytest.approx(90.0) and tank[0]["speed"] == pytest.approx(1.0, abs=0.01)
 
 
 def test_kill_rows_where_it_happened(converted):
@@ -91,7 +93,7 @@ def test_kill_rows_where_it_happened(converted):
     rows = t.to_pylist()
     kill = next(r for r in rows if r["event"] == "kill")
     death = next(r for r in rows if r["event"] == "death")
-    assert kill["player"] == "Pilot One" and kill["other"] == "Pilot Two" and kill["weapon"] == "us_aim9l_sidewinder"
+    assert kill["player"] == "Pilot One" and kill["other"] == "uid 345" and kill["weapon"] == "us_aim9l_sidewinder"
     assert kill["time"] == pytest.approx(11.0)
     assert (death["x"], death["z"]) == pytest.approx((50.0, 1300.0 + 200 * 10))
     assert (kill["x"], kill["z"]) == pytest.approx((0.0, 1000.0 + 200 * 10))
@@ -100,7 +102,7 @@ def test_kill_rows_where_it_happened(converted):
 def test_match_document(converted):
     _, doc, _ = converted
     assert doc["format"] == "heat3d-wt-replay-match" and doc["map"] == "avg_test_land"
-    assert doc["kills"][0]["killer"] == "Pilot One" and doc["kills"][0]["victim"] == "Pilot Two"
+    assert doc["kills"][0]["killer"] == "Pilot One" and doc["kills"][0]["victim"] == "uid 345"
     assert doc["chat"] == [{"time": 15.0, "sender": "Pilot One", "text": "gg"}]
     c = doc["counts"]
     assert c["aircraftUids"] == 2 and c["groundUids"] == 1

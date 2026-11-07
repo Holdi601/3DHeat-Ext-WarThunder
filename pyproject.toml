@@ -4,19 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "heat3d-ext-warthunder"
-version = "0.1.0"
-description = "War Thunder replays (.wrpl) into the Parquet tables the 3DHeat viewer reads"
+version = "0.2.0"
+description = "War Thunder replays (.wrpl) into the Parquet tables the 3DHeat viewer reads, and its levels into .glb"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Holdi601" }]
 requires-python = ">=3.10"
-dependencies = ["pyarrow>=15", "numpy>=1.24", "zstandard>=0.22"]
+dependencies = ["pyarrow>=15", "numpy>=1.24", "zstandard>=0.22", "pillow>=10"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
 
 [project.scripts]
 heat3d-wt-replay = "heat3d_ext_warthunder.cli:main"
+heat3d-wt-level = "heat3d_ext_warthunder.levelcli:main"
 
 [tool.setuptools]
 packages = ["heat3d_ext_warthunder", "heat3d_update"]

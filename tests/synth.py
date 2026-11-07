@@ -285,3 +285,77 @@ def replay(packets: list[bytes], results: dict | None = None, compress: str = "z
         struct.pack_into("<I", h, 684, len(body))
         body = bytes(h) + packed + blk(results)
     return body
+
+
+# ---------------------------------------------------------------- the entity stream (packet type 6)
+
+def eid(index: int) -> bytes:
+    """A short server eid (generation 0 or 1 in its 2-byte form)."""
+    return le(index << 2 | 1, 2)
+
+
+def template(tid: int, name: str, comps: list[tuple[int, str, str]]) -> bytes:
+    """A template the first time: its index, name and components (index, name, type), each with its two hashes."""
+    from heat3d_ext_warthunder.ecs import fnv1a
+
+    out = BitWriter().uleb(tid).raw(text(name)).u16(len(comps))
+    for cid, cname, ctype in comps:
+        out.uleb(cid).u32(fnv1a(cname)).u32(fnv1a(ctype))
+    return out.bytes()
+
+
+def construction(head: bytes, entries: list[tuple[int, bytes | BitWriter]]) -> bytes:
+    """A creation block: the template, no new keys, the count, then (index step, value) per written component."""
+    body = BitWriter().raw(head).raw(b"\x00").raw(bytes([len(entries)])).align()
+    for step, value in entries:
+        body.raw(bytes([step]))
+        if isinstance(value, BitWriter):
+            body.out += value.out
+        else:
+            body.raw(value)
+    return body.bytes()
+
+
+def creation(blocks: list[tuple[int, bytes]], compress: bool = False) -> bytes:
+    """A creation packet: the count less one, then per entity its eid, block size and block."""
+    body = bytes([len(blocks) - 1]) + b"".join(eid(i) + uleb(len(b)) + b for i, b in blocks)
+    if not compress:
+        return b"\x24" + body
+    return b"\x25" + lz4_literals(body)
+
+
+def destruction(indexes: list[int]) -> bytes:
+    return b"\x26" + bytes([len(indexes) - 1]) + b"".join(eid(i) for i in indexes)
+
+
+def lz4_literals(data: bytes) -> bytes:
+    """An LZ4 block of one literal run (a valid block: the last sequence has literals only)."""
+    n = len(data)
+    out = bytearray([(15 if n >= 15 else n) << 4])
+    if n >= 15:
+        k = n - 15
+        while k >= 255:
+            out.append(255)
+            k -= 255
+        out.append(k)
+    return bytes(out) + data
+
+
+def tmatrix(x: float, y: float, z: float) -> bytes:
+    return b"\x80" + bytes(7) + struct.pack("<3f", x, y, z)
+
+
+def projectile_blob(pos: tuple[float, float, float], quat: tuple[float, ...], vel: tuple[float, float, float]) -> bytes:
+    return bytes(range(1, 15)) + struct.pack("<3f", *pos) + struct.pack("<4f", *quat) + struct.pack("<3f", *vel) + bytes(8)
+
+
+def shells(records: list[tuple[int, int, float, float, float]]) -> bytes:
+    """A weapons-in-flight payload: (group, eid index, x, y, z) per record, raw floats, no tails."""
+    body = BitWriter()
+    for group in range(3):
+        mine = [r for r in records if r[0] == group]
+        body.raw(bytes([len(mine)]))
+        for _, index, x, y, z in mine:
+            body.flag(True).flag(True).u32(index << 10 | 2).flag(True).f32(x).f32(y).f32(z)
+    payload = body.bytes()
+    return b"\x02\x58" + le(0xF0DB, 2) + BitWriter().uleb(len(payload) * 8).bytes() + payload

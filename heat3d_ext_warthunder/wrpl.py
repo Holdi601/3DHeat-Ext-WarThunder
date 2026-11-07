@@ -79,6 +79,7 @@ Coordinates are the game's own: metres, x east, y up, z north.
 from __future__ import annotations
 
 import math
+import re
 import struct
 import zlib
 from dataclasses import dataclass
@@ -478,7 +479,7 @@ def read_chat(payload: bytes) -> dict[str, Any]:
     """
     Type 3: the sender and the text, each after a length byte; replays from
     2026 put a flag byte first, those of 2025 do not. The reading that uses up
-    the packet (up to a few trailing bytes) is taken.
+    the packet (up to 16 trailing bytes: 2026 lines end in ten) is taken.
     """
     for at in (1, 0):
         try:
@@ -489,7 +490,7 @@ def read_chat(payload: bytes) -> dict[str, Any]:
             text = payload[at + 2 + n : end].decode("utf-8")
         except (IndexError, UnicodeDecodeError):
             continue
-        if end <= len(payload) <= end + 8 and sender:
+        if end <= len(payload) <= end + 16 and sender:
             return {"sender": sender, "text": text}
     raise FormatError("not a chat line")
 
@@ -766,19 +767,48 @@ def _rle(src: bytes) -> bytes:
     return bytes(out)
 
 
-def _ground_position(body: bytes, directions: bool) -> tuple[float, float, float] | None:
+def _angle16(v: int) -> float:
+    """A 16-bit angle, signed, in degrees."""
+    return (v - 65536 if v > 32767 else v) * 360.0 / 65536
+
+
+def _ground_position(body: bytes, directions: bool) -> tuple[float, ...] | None:
+    """
+    (x, y, z, heading, pitch, roll, packed) from a ground state; the angles in degrees,
+    the heading clockwise from north. The 16-bit attitude is yaw, pitch, roll;
+    yaw counts from east like the flight model's, so the compass heading is
+    yaw + 90 degrees: checked against the direction of travel of moving ships
+    and tanks (median 1.4-2 degrees), and the pitch against the slope they
+    drive on (correlation 0.94). Some ships send a quaternion (x, y, z, w)
+    instead; its turn about the up axis, 2 atan2(y, w), + 90 degrees is the
+    heading (median 2.5 degrees from the direction of travel); pitch and roll
+    are then left empty.
+
+    `packed`: the position came in 64 bits (x, z within 36 km in 2^21 steps,
+    y in 2^20 steps of 7.6 mm from -100 m). On a level whose ground lies high
+    the packed height is not from -100 m: on air_afghan it reads 1505 m low
+    against the same units' float positions (spread 8 m over 20 pairs) - the
+    level's water level, so the packed height likely counts from it. The
+    converter measures the offset on the replay itself (see convert.py).
+    """
     r = Bits(body)
     r.byte()
     if not r.flag():
         return None
+    heading = pitch = roll = None
     if directions:
-        r.skip(4 * 32)
+        qx, qy, qz, qw = r.f32(), r.f32(), r.f32(), r.f32()
+        if abs(math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw) - 1) < 0.02:
+            heading = (math.degrees(2 * math.atan2(qy, qw)) + 90.0) % 360.0
         if r.flag():
             r.skip(21 * 32)
     else:
-        r.skip(3 * 16)
+        yaw, p, q = r.u16(), r.u16(), r.u16()
+        heading = (yaw * 360.0 / 65536 + 90.0) % 360.0
+        pitch, roll = _angle16(p), _angle16(q)
     r.bits(1)
-    if r.flag():
+    packed = not r.flag()
+    if not packed:
         x, y, z = r.f32(), r.f32(), r.f32()
     else:
         a, b = r.u32(), r.u32()
@@ -787,7 +817,7 @@ def _ground_position(body: bytes, directions: bool) -> tuple[float, float, float
         z = max(-1.0, min(1.0, (b & 0x3FFFFF) * 4.7683727e-7 - 1)) * 36000
     if not all(math.isfinite(v) and abs(v) < 1e6 for v in (x, y, z)):
         return None
-    return x, y, z
+    return x, y, z, heading, pitch, roll, packed
 
 
 class GroundReader:
@@ -803,7 +833,8 @@ class GroundReader:
     def __init__(self) -> None:
         self.history: dict[int, list[tuple[int, bytes] | None]] = {}
 
-    def read(self, payload: bytes) -> list[tuple[int, float, float, float]]:
+    def read(self, payload: bytes) -> list[tuple[Any, ...]]:
+        """(uid, x, y, z, heading, pitch, roll, packed) per unit in the batch; see `_ground_position`."""
         r = Bits(payload[4:])
         length = r.uleb()
         r.align()
@@ -866,3 +897,248 @@ class GroundReader:
                 g.skip(_count(g.u32(), 1 << 20))
             g.align()
         return out
+
+
+# ---------------------------------------------------------------- more of the stream
+
+#: Game messages read besides kills, hits, slots and ground positions (names as the community lists them).
+COCKPIT = 0xD04A  # ReplayCockpitParams: the recording player's instruments
+SHELLS = (0xF0DB, 0xF11A)  # ShellsData (client / server replay): rockets, missiles, bombs, torpedoes in flight
+EXPLOSION = 0xD08E  # PlayExplosionVisual
+FLAK = 0xD01F  # PlayFlakExplosionVisual
+STREAK = 0xF078  # TextStreak: awards
+PART_KILL = 0xF118  # UnitDamagePartKill: a module destroyed
+DETECTED = 0xF037  # UnitDetected
+WEATHER = 0xF0DF  # CustomWeatherParams
+OBJECTS = 0xD039  # DeferredReplicatedObjectCreate: the mission's zones, airfields, spawns
+UNIT_STATE = 0xF093  # not in the community lists: a unit, its position, attitude and velocity
+
+#: The mission blk starts this many bytes after the header.
+SETTINGS_SKIP = 8
+
+
+def read_settings(buf: bytes) -> dict[str, Any]:
+    """The mission settings blk after the header: mode, weather, time of day, date and place of the stars, wind, limits."""
+    return read_blk(buf[HEADER_SIZE + SETTINGS_SKIP :])
+
+
+def fields(payload: bytes) -> dict[int, bytes]:
+    """A game message's id fields (see `id_fields`) as raw bytes in the stream's order, by field number."""
+    r = Bits(payload[4:])
+    start = r.pos
+    offset = r.u16()
+    mask = r.uleb()
+    body = r.pos
+    r.pos = start + offset * 8
+    widths = []
+    for _ in range(bin(mask).count("1")):
+        code = r.bits(3)
+        widths.append((0, 1, 8, 16, 32, 64, 96, 128)[code] if code else r.uleb())
+    r.pos = body
+    places = {}
+    number = 0
+    for width in widths:
+        while not mask >> number & 1:
+            number += 1
+        places[number] = (r.pos, width)
+        r.skip(width)
+        number += 1
+    out: dict[int, bytes] = {}
+    for n, (at, width) in places.items():
+        r.pos = at
+        out[n] = r.bits(width).to_bytes((width + 7) // 8, "big") if width else b""
+    return out
+
+
+def _f3(b: bytes) -> list[float] | None:
+    if len(b) < 12:
+        return None
+    v = struct.unpack_from("<3f", b)
+    return [round(x, 3) for x in v] if all(math.isfinite(x) and abs(x) < 1e7 for x in v) else None
+
+
+def _u16(b: bytes) -> int | None:
+    return int.from_bytes(b[:2], "little") if len(b) >= 2 else None
+
+
+def read_explosion(payload: bytes) -> dict[str, Any] | None:
+    """0xD08E: an explosion's position (field 2) and direction (field 4); fields 1 and 3 (its kind) are kept raw."""
+    f = fields(payload)
+    pos = _f3(f.get(2, b""))
+    if pos is None:
+        return None
+    return {"pos": pos, "dir": _f3(f.get(4, b"")), "kind": f.get(1, b"").hex(), "param": f.get(3, b"").hex()}
+
+
+def read_flak(payload: bytes) -> dict[str, Any] | None:
+    """0xD01F: a flak burst's position (field 1); fields 2 and 3 kept raw."""
+    f = fields(payload)
+    pos = _f3(f.get(1, b""))
+    return None if pos is None else {"pos": pos, "kind": f.get(2, b"").hex(), "param": f.get(3, b"").hex()}
+
+
+def read_streak(payload: bytes) -> dict[str, Any]:
+    """0xF078: an award (field 2, the game's key); fields 1 and 3-5 are numbers (3 counts the award)."""
+    f = fields(payload)
+    name = f.get(2, b"")
+
+    def num(n: int) -> int | None:
+        return int.from_bytes(f[n][:4], "little") if n in f else None
+
+    return {"award": name[1 : 1 + name[0]].decode("utf-8", errors="replace") if name else "", "field1": num(1),
+            "count": num(3), "field4": num(4), "field5": num(5)}
+
+
+def read_part_kill(payload: bytes) -> dict[str, Any]:
+    """0xF118: a module destroyed: the unit (field 1) and the part's number in its damage model (field 2)."""
+    f = fields(payload)
+    uid = _u16(f.get(1, b""))
+    return {"uid": None if uid is None else uid & NO_UID, "part": _u16(f.get(2, b""))}
+
+
+def read_detected(payload: bytes) -> dict[str, Any]:
+    """0xF037: fields 1 and 2 are units (the low 11 bits a uid); which saw which is not known."""
+    f = fields(payload)
+    a, b = _u16(f.get(1, b"")), _u16(f.get(2, b""))
+    return {"a": None if a is None else a & NO_UID, "b": None if b is None else b & NO_UID}
+
+
+def read_unit_state(payload: bytes) -> dict[str, Any] | None:
+    """0xF093: a unit (field 1), its position (3), attitude quaternion (4) and velocity (5); what it marks is not known."""
+    f = fields(payload)
+    uid, pos = _u16(f.get(1, b"")), _f3(f.get(3, b""))
+    if uid is None or pos is None:
+        return None
+    q = f.get(4, b"")
+    quat = [round(x, 5) for x in struct.unpack_from("<4f", q)] if len(q) >= 16 else None
+    return {"uid": uid & NO_UID, "pos": pos, "quat": quat, "vel": _f3(f.get(5, b"")),
+            "field6": f[6][0] if f.get(6) else None}
+
+
+def read_weather(payload: bytes) -> dict[str, Any] | None:
+    """0xF0DF: a blk of the sky - sun and moon direction, wind, colours, cloud offsets, the server's time."""
+    for at in range(4, min(len(payload), 24)):
+        if payload[at] == 0x01:
+            try:
+                return read_blk(payload[at:])
+            except (FormatError, IndexError, ValueError, struct.error):
+                continue
+    return None
+
+
+_OBJECT = re.compile(rb"([-@])([a-zA-Z_][a-zA-Z0-9_./-]{2,63})([-@])([a-zA-Z_][a-zA-Z0-9_./-]{2,63})")
+_NAMED = re.compile(rb"([-@])([a-zA-Z_][a-zA-Z0-9_./-]{2,63})([-@])")
+
+
+def read_objects(payload: bytes) -> list[dict[str, Any]]:
+    """
+    0xD039: the mission's named objects - capture zones, airfields, spawn areas.
+    The message's own layout is not known; two shapes are taken where they
+    hold: a name and a model followed by a 4x3 matrix (three axes, each of
+    length 0.01 to 100000, then the position), and a name followed by a count
+    and that many points (three floats each, within 200 km; an airfield's
+    outline). The position of the second is the points' mean.
+    """
+    out = []
+    taken = set()
+    for m in _OBJECT.finditer(payload):
+        if m.group(1)[0] != len(m.group(2)) or m.group(3)[0] != len(m.group(4)):
+            continue
+        at = m.end()
+        if at + 48 > len(payload):
+            continue
+        v = struct.unpack_from("<12f", payload, at)
+        if not all(math.isfinite(x) and abs(x) < 1e7 for x in v):
+            continue
+        axes = [v[0:3], v[3:6], v[6:9]]
+        size = [math.sqrt(sum(c * c for c in a)) for a in axes]
+        if not all(0.01 <= s <= 100_000 for s in size):
+            continue
+        taken.add(m.start())
+        out.append({"name": m.group(2).decode(), "model": m.group(4).decode(), "pos": [round(x, 2) for x in v[9:12]],
+                    "size": [round(s, 2) for s in size], "axes": [[round(c, 4) for c in a] for a in axes]})
+    for m in _NAMED.finditer(payload):
+        if m.start() in taken or m.group(1)[0] != len(m.group(2)):
+            continue
+        n, at = m.group(3)[0], m.end()
+        if at + 12 * n > len(payload):
+            continue
+        pts = [struct.unpack_from("<3f", payload, at + 12 * i) for i in range(n)]
+        if not all(math.isfinite(c) and abs(c) < 200_000 for p in pts for c in p):
+            continue
+        if not any(abs(p[0]) > 10 or abs(p[2]) > 10 for p in pts):
+            continue
+        ys = [p[1] for p in pts]
+        if max(ys) - min(ys) > 2000:
+            continue
+        mean = [round(sum(p[i] for p in pts) / n, 2) for i in range(3)]
+        out.append({"name": m.group(2).decode(), "pos": mean, "points": [[round(c, 2) for c in p] for p in pts]})
+    return out
+
+
+def read_cockpit(payload: bytes) -> dict[int, float]:
+    """
+    0xD04A: the recording player's instruments: after the message id a flag
+    byte, a 16-bit field (its low byte the count) and that many pairs of a
+    16-bit instrument number and a float.
+    """
+    if len(payload) < 8:
+        return {}
+    out = {}
+    for i in range(payload[6]):
+        at = 8 + 6 * i
+        if at + 6 > len(payload):
+            break
+        k, v = struct.unpack_from("<Hf", payload, at)
+        if math.isfinite(v):
+            out[k] = v
+    return out
+
+
+def _clamp1(v: float) -> float:
+    return -1.0 if v < -1 else 1.0 if v > 1 else v
+
+
+def read_shells(payload: bytes) -> list[tuple[int, int, float, float, float, bool]]:
+    """
+    0xF0DB / 0xF11A, weapons in flight: a LEB128 bit length, then from the next
+    byte three groups (0 rockets and missiles, 1 bombs, 2 torpedoes), each a
+    byte count of records. A record: guided (1 bit), no tail (1 bit), the
+    entity (u32: its eid index << 10, so the entity stream's creation names
+    it), raw (1 bit) and the position, three floats or packed in 64 bits
+    (+-15 km), then unless "no tail" a tail whose sizes are read and skipped.
+    Returns (group, eid index, x, y, z, guided) per record.
+    """
+    r = Bits(payload[4:])
+    n = r.uleb()
+    r.align()
+    body = Bits(r.raw((n + 7) // 8))
+    out = []
+    for group in range(3):
+        for _ in range(body.byte()):
+            guided, notail = body.flag(), body.flag()
+            ent = body.u32()
+            if body.flag():
+                x, y, z = body.f32(), body.f32(), body.f32()
+            else:
+                a, b = body.u32(), body.u32()
+                x = _clamp1((a >> 10) / 2097152 - 1) * 15000
+                y = _clamp1((((a & 0x3FF) << 10) | (b >> 22)) / 524288 - 1) * 15000
+                z = _clamp1((b & 0x3FFFFF) / 2097152 - 1) * 15000
+            if not notail:
+                body.uleb()
+                body.skip(3 * 32 + 6 * 16)
+                if body.flag():
+                    body.skip(16)
+                flags = body.byte()
+                for f in (1, 2, 4, 8):
+                    if flags & f:
+                        body.uleb()
+                if not guided:
+                    body.skip(32 + 1)
+                    body.skip(body.u16())
+                elif body.flag():
+                    raise FormatError("a command-guided weapon's tail")
+            if all(math.isfinite(v) and abs(v) < 1e7 for v in (x, y, z)):
+                out.append((group, ent >> 10, x, y, z, guided))
+    return out
