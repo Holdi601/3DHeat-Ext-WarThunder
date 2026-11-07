@@ -12,6 +12,7 @@ import pytest
 
 import synth
 from heat3d_ext_warthunder import convert, ecs, wrpl
+from heat3d_ext_warthunder import names as vehicle_names
 from heat3d_ext_warthunder.wrpl import Bits
 
 TANK = [(0, "transform", "TMatrix"), (1, "unit_storage__tank", "0xunknown"), (2, "team", "int"),
@@ -273,8 +274,9 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
     """Every track of every replay in the folder: no step between consecutive rows faster than its kind can go."""
     files = sorted(Path(OWN).glob("*.wrpl"))
     assert files
+    names = vehicle_names.Names.from_game()
     for f in files:
-        _, doc = convert.convert([f], tmp_path)
+        _, doc = convert.convert([f], tmp_path, names=names)
         d = json.loads(doc.read_text(encoding="utf-8"))
         steps = d["selfCheck"]["stepSpeed"]
         assert all(v["faster than possible"] == 0 for v in steps.values()), (f.name, steps)
@@ -284,3 +286,22 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
         assert not [b for b in d["trackBreaks"] if b.get("uid") in mine and "limit" in b], f.name
         assert steps.get("aircraft", {"max": 0})["max"] <= convert.TOP_SPEED["air"], f.name
         assert d["selfCheck"]["recordVehicleMatchesEntity"] > 0 and not d["selfCheck"].get("recordVehicleDiffersFromEntity")
+        # Every row of a player the results name is a player's, not AI; every ground unit and ship row of a
+        # non-player is AI (a naval battle's player ships are players).
+        ident = d["selfCheck"]["identity"]
+        assert ident["rowsOfPlayersAi"] == 0 and ident["rowsOfPlayersNotAi"] > 0, (f.name, ident)
+        assert ident["rowsNotAiNotAPlayerName"] == 0, (f.name, ident)
+        # The flight model's roll is turned to right wing down positive: the recording player's own turns agree.
+        att = d["selfCheck"]["aircraftAttitude"]
+        if att["turnsRollRightWingDownAgrees"] + att["turnsRollDisagrees"] >= 20:
+            assert att["turnsRollRightWingDownAgrees"] > 9 * att["turnsRollDisagrees"], (f.name, att)
+            assert att["headingVsTravelMedianDeg"] < 5, (f.name, att)
+        # Dead reckoning: the own aircraft is (almost) never extrapolated; the smoother leaves fewer impossible steps.
+        dr = d["selfCheck"]["deadReckoning"]
+        if "own" in dr:
+            assert dr["own"]["extrapolatedShare"] < 0.05 and dr["own"]["movedMetres"]["samples"] == 0, (f.name, dr)
+        if "remote" in dr:
+            acc = dr["remote"]["accelerationG"]
+            assert acc["table"]["over15g"] < acc["replay"]["over15g"], (f.name, dr)
+        if names:
+            assert d["selfCheck"]["vehicleNames"]["named"] >= 0.9 * d["selfCheck"]["vehicleNames"]["vehicles"], f.name

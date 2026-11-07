@@ -13,8 +13,16 @@ and the whole results block.
 pip install -e .                        # installs the `heat3d-wt-replay` command
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 heat3d-wt-replay a.wrpl b.wrpl -o out   # files, folders, or both
+heat3d-wt-replay ... --game "D:/Games/War Thunder"   # where the install is, if it is not found
+heat3d-wt-replay ... --no-smoothing     # other units' tracks exactly as the replay has them
 python -m heat3d_ext_warthunder ...     # the same, without installing
 ```
+
+Vehicles get their English names from the game's own localisation
+(`lang/units.csv` in `lang.vromfs.bin`), read from your install at conversion
+time: the install is found through Steam or the launcher's default folders, or
+`--game` / `HEAT3D_WT_GAME`. Nothing of the game's text is in this repository;
+without an install the names are the vehicle ids.
 
 Each battle becomes `out/<map>/<map>_<start, UTC>_<session id>.parquet` and
 `.match.json`. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
@@ -57,22 +65,27 @@ reading instructions, so the viewer needs no form filled in.
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after) |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
-| `player` | the player's name; an AI unit `<vehicle> #<uid>`; `uid <n>` when nothing names it; for a weapon, who released it |
+| `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
 | `userId`, `team` | the player's Gaijin id and the team (`1`, `2`) |
+| `ai`, `isPlayer` | `ai` true for every unit no player account drives (mission units, AI aircraft, ground targets, AA guns, ships without a player, placeholders), `isPlayer` the opposite: a player is a unit whose entity names a player slot with a Gaijin id. A weapon has its launcher's; empty when not known |
+| `match` | the match id (the match document's `match`), on every row; the hints map it as the session, so two loaded replays never join tracks |
 | `life` | `uid#n`: one unit's track, cut where the uid passes to another unit, the unit moves faster than it can (a respawn, a rearm, the game moving it, the client correcting a distant unit; see below) or is long unseen; `w<hex>` a weapon's flight (`w<hex>#n` after a cut) |
 | `uid` | the unit's id in the replay |
 | `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`; weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned` |
 | `type` | the game's own type where the results name it (`fighter`, `assault`, `destroyer`, `gun_boat`), else as `kind` |
 | `Vehicle` | the game's vehicle id (`f_15a`, `germ_flakpz_I_Gepard`), which the viewer's figures match |
+| `VehicleName`, `VehicleShortName`, `VehicleNameKey` | the vehicle's English name from your install's localisation (`Pz.Kpfw. III Ausf. J1`, short `Pz.III J1`) and its key (`germ_pzkpfw_III_ausf_J_0`); the game font's country marks are left out. Where the game names nothing, or no install is found, the name is the id and the key empty |
 | `mission` | the unit's name in the mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | where the unit points (the look vector): aircraft from the flight model's attitude, ground units and ships from their own, weapons along their flight |
-| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north |
+| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below). The hints say so under `conventions` |
+| `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see below) |
+| `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `speed` | m/s over about two seconds of the track (worked out here; the replay sends no speed for other units) |
 | `alive` | 0 for a unit's samples after its death (its wreck), for at most 60 s or until the game removes it |
-| `other`, `weapon` | kills: the other side and the weapon; hits: who hit, their vehicle; launches: the weapon; destroyed modules: the part's number |
+| `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
 
 The match document (`format: heat3d-wt-replay-match`, version 2) has the map,
 mission, battle class, session id, start time and author, and:
@@ -124,6 +137,8 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Player slots, chat | all files (2026 chat lines end in ten bytes not read) |
 | Explosions (0xD08E), flak bursts (0xD01F), awards (0xF078), detections (0xF037), weather (0xF0DF), mission objects (0xD039) | read; positions only checked by eye in the viewer |
 | The recording player's instruments (0xD04A) | read by number. Checked against the author's own track on the arcade battle: instrument 40 is the altitude in metres (ratio 1.0007, correlation 0.999), 64 the compass heading (correlation 0.95). The numbers differ between cockpits (the sim jets send another set); the rest are not named |
+| Vehicle names | from the install's `lang/units.csv` (`<id>_0` full, `<id>_1` short; ships also `ships/<id>_0`): 62 of 62, 50 of 50, 43 of 45 and 31 of 33 vehicles of the four replays (the rest: two airfield radars the game does not name) |
+| Players and AI | from the entity stream's player slot and the slot's Gaijin id: on the four replays no row of a player in the results is AI, every row not AI is a results player's, and every ground unit of the air battles is AI (`selfCheck.identity`) |
 | Wrecks | a unit's samples after its death keep coming (a ship sinks 90 m over minutes): marked `alive` 0 for 60 s or until the game removes the unit; a ground unit's later samples are dropped (counted in `counts.droppedSamples`); aircraft keep theirs, as a few AI aircraft fly on after a kill names them |
 | Aircraft positions, version 101286 and server replays (2025) | not read: their flight packets have a different layout |
 
@@ -150,11 +165,69 @@ What stays unread, and why:
   instruments include them, but unnamed.
 - **Projectile names**: the weapon's id (e.g. `us_aim_120d`) is only in kill
   records; a released weapon's entity holds its state, not its name.
-- **Shells and bullets**: not sent as entities or flights.
+- **Shells and bullets**: not sent as entities or flights (see Gunfire).
 
-Client replays show distant aircraft flying straight on between updates and
-then corrected; a correction the aircraft could not have flown cuts its track
-(see Teleports), smaller ones stay as the replay has them.
+### Dead reckoning, and the smoother
+
+A client replay records every aircraft at the client's 0.25 s ticks as the
+client drew it. Between the updates it receives for a distant aircraft, the
+client moves it on along its last velocity and turns it on at its last rates,
+and at the next update snaps it there. Read as it is, a track runs straight,
+then jumps; a rolling aircraft keeps rolling until the next update (an La-7
+spinning through 180 degrees at 128 deg/s while its update says it rolled half
+as far). Nothing in the flight entry marks which samples were received: every
+field and bit of the entries was tested against it. A dead-reckoned sample is
+found by what it is: it continues the straight line of the two samples before
+it, at their pace, to within 3 cm (float32 positions are exact to a few mm).
+
+| Replay | other aircraft's samples dead-reckoned | steps over 15 g, replay -> table | 99th percentile, replay -> table |
+|---|---|---|---|
+| spain (air arcade) | 55 % | 12.4 % -> 1.7 % | 67 g -> 18 g |
+| avn_aleutian_islands (naval) | 14 % | 8.3 % -> 1.6 % | 47 g -> 18 g |
+| air_afghan (sim) | 2.3 % | 3.6 % -> 0.6 % | 20 g -> 12 g |
+| air_denmark (sim) | 0.7 % | 3.0 % -> 0.4 % | 18 g -> 11 g |
+
+(acceleration between consecutive 0.25 s samples; `selfCheck.deadReckoning`).
+The recording player's own aircraft, which the client does not extrapolate,
+has no step over 15 g in the arcade battle (99th percentile 10 g) and 0.2 to 4 %
+of its samples on a straight line by chance (steady flight).
+
+By default (`--no-smoothing` turns it off) the tracks of all units but the
+recording player's own are put where the received states say they were:
+a dead-reckoned sample goes on a cubic through the received samples before
+and after it, each with its own velocity (that of the dead reckoning that
+follows it); over more than 3 s the straight line is only bent over to the
+next received sample by the snap the client made there, so no sample moves
+further than that snap. Its attitude is turned evenly from one received
+attitude to the next instead of the client's spin. Received samples come with
+a few metres of scatter (90th percentile 2.8 m along the track, 4.5 m across,
+in the arcade battle) and are moved to a quadratic in time over two samples
+each side, by at most 2 m or 0.04 s of their speed; a quadratic keeps a
+steady turn as it is. The replay's own values stay in the `Raw` columns.
+
+### Attitude, checked
+
+On the recording player's own aircraft: the heading lies within 0.2 to 0.8
+degrees (median) of the direction of travel, the pitch within 0.3 to 2.3 degrees of
+the climb angle, and in clear turns the packed roll is positive in left turns
+(235 of 237 samples in the arcade battle, 262 of 263 and 190 of 194 in the
+sim battles): the flight model's roll is left wing down positive, and the
+table turns it to right wing down positive (`selfCheck.aircraftAttitude`).
+The 10-bit angles step 0.18 degrees. Ground units' roll sense is not checked.
+
+### Gunfire
+
+The replay holds no gunfire to draw tracers from. Shells and bullets are not
+entities, and the weapons-in-flight messages hold only rockets, missiles,
+bombs and torpedoes. The recording player's instruments (0xD04A, 41 of them in
+the arcade battle) hold no ammunition count. Checked at his hits: no
+instrument and no bit of his flight entry changes with firing. The
+unit-addressed 0xF0A0 ("gun fire") and 0xF0B1 ("single shots") messages
+have a body that never changes (no direction, no count). Their object address
+is not a uid or an eid: it equals the eid of the 88 mm flak guns created at
+the start, and of nothing after. Their timing matches the recording player's
+hits no better than chance. What there is: hits, kills and destroyed modules
+with who dealt them, and explosions and flak bursts with their position.
 
 ## Levels (`heat3d-wt-level`)
 
@@ -287,8 +360,11 @@ it knows of the format comes from:
 ```bash
 python -m pytest -q
 HEAT3D_WT_SAMPLES=<folder with the sample replays> python -m pytest -q   # also checks the real 2025 air battle
-HEAT3D_WT_REPLAYS=<folder of your own replays> python -m pytest -q        # no step faster than possible or than the unit's own pace, entity identities
+HEAT3D_WT_REPLAYS=<folder of your own replays> python -m pytest -q        # steps, identities, AI flags, roll sign, the smoother, names
 ```
+
+The unit tests never read an install (`HEAT3D_WT_NO_NAMES` is set); the test
+with your own replays reads the names from your install.
 
 The tests build replays in code (`tests/synth.py`: header, packets, results,
 the entity stream, weapons in flight) to the layout the readers document; no

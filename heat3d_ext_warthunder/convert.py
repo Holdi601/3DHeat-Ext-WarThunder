@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import ecs, wrpl
+from . import ecs, names as vehicle_names, wrpl
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
 AIR_TYPES = {"fighter", "assault", "bomber", "helicopter", "attack_helicopter", "utility_helicopter", "aircraft"}
@@ -62,13 +62,20 @@ HINTS = {
         "timeUnit": "seconds",
         "personId": "track",
         "teamId": "team",
+        # One match per file: keeps two loaded replays' tracks apart and lets the viewer pick a match.
+        "sessionId": "match",
         "lookMode": "vector",
         "dirX": "dirX",
         "dirY": "dirY",
         "dirZ": "dirZ",
-        "extra": ["event", "player", "life", "Vehicle", "kind", "type", "uid", "other", "weapon", "heading", "pitch",
-                  "roll", "speed", "alive", "mission"],
+        "extra": ["event", "player", "userId", "life", "Vehicle", "VehicleName", "VehicleShortName", "VehicleNameKey",
+                  "kind", "type", "uid", "ai", "isPlayer", "other", "weapon", "heading", "pitch", "roll", "speed", "alive",
+                  "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
+                  "rollRaw"],
     },
+    # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
+    "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
+                    "roll": "degrees, right wing down positive (aircraft; checked against turns)"},
 }
 
 COLUMNS = [
@@ -83,6 +90,12 @@ COLUMNS = [
     ("kind", "str"),
     ("type", "str"),
     ("Vehicle", "str"),
+    ("VehicleName", "str"),
+    ("VehicleShortName", "str"),
+    ("VehicleNameKey", "str"),
+    ("ai", "bool"),
+    ("isPlayer", "bool"),
+    ("match", "str"),
     ("x", "f32"),
     ("y", "f32"),
     ("z", "f32"),
@@ -97,6 +110,14 @@ COLUMNS = [
     ("other", "str"),
     ("weapon", "str"),
     ("mission", "str"),
+    ("extrapolated", "bool"),
+    ("moved", "f32"),
+    ("xRaw", "f32"),
+    ("yRaw", "f32"),
+    ("zRaw", "f32"),
+    ("headingRaw", "f32"),
+    ("pitchRaw", "f32"),
+    ("rollRaw", "f32"),
 ]
 
 
@@ -117,6 +138,15 @@ class Sample:
     retimed: bool = False
     #: Its unit's own speed limit (m/s; see `_own_limit`).
     limit: float = 0.0
+    #: The client's dead reckoning, not a state it received (see `_dead_reckoned`).
+    extrapolated: bool = False
+    #: Before `_smooth` moved it: the position, and the attitude as (heading, pitch, roll) degrees.
+    raw: tuple[float, float, float] | None = None
+    raw_angles: tuple[float, float, float] | None = None
+    #: The attitude `_smooth` gave it, (heading, pitch, roll) degrees in the table's conventions.
+    smooth_angles: tuple[float, float, float] | None = None
+    #: How far `_smooth` moved it (m).
+    moved: float = 0.0
 
 
 @dataclass
@@ -157,10 +187,25 @@ class Life:
     type: str = ""
     #: The fastest step this life can take (m/s; see `_own_limit`).
     limit: float = 0.0
+    #: The vehicle's names in the game's own localisation (see names.py): full, short, the key.
+    vehicle_name: str = ""
+    vehicle_short: str = ""
+    vehicle_key: str = ""
 
     @property
     def id(self) -> str:
         return f"{self.uid}#{self.n}"
+
+    @property
+    def is_player(self) -> bool:
+        """Driven by a player: a slot with a Gaijin account id. Everything else (mission units, AI aircraft,
+        ground targets, ships, AA guns, placeholders) is AI."""
+        return bool(self.user_id)
+
+    @property
+    def display(self) -> str:
+        """The vehicle as a person reads it: the game's English name, else its id."""
+        return self.vehicle_name or (self.vehicle if self.vehicle != "dummy_plane" else "")
 
     @property
     def start(self) -> float:
@@ -763,6 +808,294 @@ def _no_twins(samples: list[Sample], r: Replay) -> list[Sample]:
     return out
 
 
+# ---------------------------------------------------------------- dead reckoning and the smoother
+
+#: A flight sample is the client's dead reckoning when it continues the straight line of the two samples before it,
+#: at their pace, to within this (m): float32 positions of a map's size are exact to a few millimetres. The recording
+#: player's own aircraft, which the client does not extrapolate, comes this close in 0.2 to 4 % of its samples (steady
+#: straight flight, where moving them would change nothing); other aircraft in up to 55 %.
+DR_TOLERANCE = 0.03
+#: Between two received samples at most this far apart (s), the samples in between are put on a cubic through both
+#: (positions and velocities); further apart, the extrapolated line is only bent over towards the next received one.
+DR_CUBIC = 3.0
+#: The smoother: a quadratic in time fitted over this many samples each side of a received sample ...
+SMOOTH_HALF = 2
+#: ... moves it to the fit, but by no more than max(SMOOTH_MIN m, SMOOTH_SECONDS * its speed) - about the scatter of
+#: the received samples (along the track 2.8 m, across 4.5 m at the 90th percentile in the air arcade battle).
+SMOOTH_MIN, SMOOTH_SECONDS = 2.0, 0.04
+
+
+def _dead_reckoned(samples: list[Sample]) -> list[bool]:
+    """
+    Which samples of one track are the client's dead reckoning rather than a
+    state it received. A client replay records every aircraft at the client's
+    0.25 s ticks; between the updates it gets for a distant aircraft, the
+    client moves it on along its last velocity and turns it on at its last
+    rates (an aircraft rolling at 128 deg/s keeps rolling for as long as no
+    update comes) and, when the next update comes, snaps it there. Such a
+    sample lies on the straight line of the two before it, at their pace,
+    exactly: c = b + (b - a) * dt_bc / dt_ab within `DR_TOLERANCE`. Both b
+    and c of such a triple are dead reckoning; a, where the run starts, is the
+    received state. Nothing in the flight entry marks it (every field and bit
+    of the entries was tested against this), so it is found this way.
+    """
+    out = [False] * len(samples)
+    for i in range(2, len(samples)):
+        a, b, c = samples[i - 2], samples[i - 1], samples[i]
+        d1, d2 = b.t - a.t, c.t - b.t
+        if d1 <= 0 or not 0 < d2 <= 1.5:
+            continue
+        if math.dist((b.x, b.y, b.z), (c.x, c.y, c.z)) < 0.5:
+            continue  # standing still is no evidence
+        f = d2 / d1
+        timed = math.dist((b.x + (b.x - a.x) * f, b.y + (b.y - a.y) * f, b.z + (b.z - a.z) * f), (c.x, c.y, c.z))
+        even = math.dist((2 * b.x - a.x, 2 * b.y - a.y, 2 * b.z - a.z), (c.x, c.y, c.z))
+        if min(timed, even) < DR_TOLERANCE:
+            out[i] = out[i - 1] = True
+    return out
+
+
+def _quat(h: float, p: float, r: float) -> tuple[float, float, float, float]:
+    """(heading, pitch, roll) degrees in the table's conventions as a quaternion (w, x, y, z) in east-north-up axes."""
+
+    def axis(ax: int, ang: float) -> tuple[float, float, float, float]:
+        s, c = math.sin(ang / 2), math.cos(ang / 2)
+        return c, s if ax == 0 else 0.0, s if ax == 1 else 0.0, s if ax == 2 else 0.0
+
+    return _qmul(_qmul(axis(2, -math.radians(h)), axis(0, math.radians(p))), axis(1, math.radians(r)))
+
+
+def _qmul(a: tuple, b: tuple) -> tuple[float, float, float, float]:
+    aw, ax, ay, az = a
+    bw, bx, by, bz = b
+    return (aw * bw - ax * bx - ay * by - az * bz, aw * bx + ax * bw + ay * bz - az * by,
+            aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw)
+
+
+def _from_quat(q: tuple) -> tuple[float, float, float]:
+    """A quaternion of `_quat` back to (heading, pitch, roll) degrees."""
+    w, x, y, z = q
+    # The turned body axes: forward (+y before turning), and the up components of right (+x) and up (+z).
+    fx, fy, fz = 2 * (x * y - w * z), 1 - 2 * (x * x + z * z), 2 * (y * z + w * x)
+    rz = 2 * (x * z - w * y)
+    uz = 1 - 2 * (x * x + y * y)
+    return (math.degrees(math.atan2(fx, fy)) % 360, math.degrees(math.asin(max(-1.0, min(1.0, fz)))),
+            math.degrees(math.atan2(-rz, uz)))
+
+
+def _slerp(a: tuple, b: tuple, f: float) -> tuple:
+    dot = sum(x * y for x, y in zip(a, b))
+    if dot < 0:
+        b, dot = tuple(-x for x in b), -dot
+    if dot > 0.9995:
+        q = tuple(x + (y - x) * f for x, y in zip(a, b))
+    else:
+        th = math.acos(dot)
+        sa, sb = math.sin((1 - f) * th) / math.sin(th), math.sin(f * th) / math.sin(th)
+        q = tuple(x * sa + y * sb for x, y in zip(a, b))
+    n = math.sqrt(sum(x * x for x in q))
+    return tuple(x / n for x in q)
+
+
+def _hermite(p0: tuple, v0: tuple, p1: tuple, v1: tuple, t0: float, t1: float, t: float) -> tuple:
+    h = t1 - t0
+    s = (t - t0) / h
+    a, b, c, d = 2 * s ** 3 - 3 * s ** 2 + 1, s ** 3 - 2 * s ** 2 + s, -2 * s ** 3 + 3 * s ** 2, s ** 3 - s ** 2
+    return tuple(a * p0[k] + b * h * v0[k] + c * p1[k] + d * h * v1[k] for k in range(3))
+
+
+def _smooth(life: Life, move: bool) -> None:
+    """
+    Marks the dead-reckoned samples of an aircraft's track (`_dead_reckoned`)
+    and, with `move`, puts the track where the received states say it was:
+
+    * a dead-reckoned sample between two received ones goes on a cubic through
+      both, with each one's own velocity (a received state's velocity is the
+      pace of the dead reckoning that follows it; else that of the received
+      samples around it). Over more than `DR_CUBIC` seconds the extrapolated
+      line is bent over to the next received sample instead, by the snap the
+      client made there, so no sample moves further than that snap. Its
+      attitude is turned evenly (slerp) from the one received attitude to the
+      next, instead of the client's constant-rate spin; after the last
+      received sample of the track the attitude is held.
+    * a received sample is moved to a quadratic in time fitted over
+      `SMOOTH_HALF` samples each side, by at most `SMOOTH_MIN` m or
+      `SMOOTH_SECONDS` of its speed: received states come with a few metres of
+      scatter (along the track: the time the client got them, not when they
+      were true). A quadratic keeps a steady turn or pull-up as it is.
+
+    The samples keep what the replay said in `raw` / `raw_angles`; `moved` is
+    how far each went.
+    """
+    ss = life.samples
+    n = len(ss)
+    ext = _dead_reckoned(ss)
+    for s, e in zip(ss, ext):
+        s.extrapolated = e
+    if not move:
+        return
+    pos = [(s.x, s.y, s.z) for s in ss]
+    ang = [_angles(s) for s in ss]
+    rec = [i for i in range(n) if not ext[i]]
+
+    def velocity(j: int) -> tuple | None:
+        i = rec[j]
+        if i + 1 < n and ext[i + 1] and ss[i + 1].t > ss[i].t:
+            dt = ss[i + 1].t - ss[i].t
+            return tuple((pos[i + 1][k] - pos[i][k]) / dt for k in range(3))
+        a = rec[j - 1] if j > 0 else i
+        b = rec[j + 1] if j + 1 < len(rec) else i
+        dt = ss[b].t - ss[a].t
+        return tuple((pos[b][k] - pos[a][k]) / dt for k in range(3)) if 0 < dt <= DR_CUBIC else None
+
+    new = list(pos)
+    att: list[tuple | None] = [None] * n
+    for j, a in enumerate(rec):
+        b = rec[j + 1] if j + 1 < len(rec) else n
+        if b - a < 2:
+            continue
+        inside = range(a + 1, b)
+        if b == n:
+            # Dead reckoning to the track's end: nothing received to go to; only the spin is stopped.
+            for i in inside:
+                att[i] = ang[a]
+            continue
+        t0, t1 = ss[a].t, ss[b].t
+        va, vb = velocity(j), velocity(j + 1)
+        if va is not None and vb is not None and t1 - t0 <= DR_CUBIC:
+            for i in inside:
+                new[i] = _hermite(pos[a], va, pos[b], vb, t0, t1, ss[i].t)
+        elif va is not None:
+            snap = tuple(pos[b][k] - (pos[a][k] + va[k] * (t1 - t0)) for k in range(3))
+            for i in inside:
+                f = (ss[i].t - t0) / (t1 - t0)
+                f = f * f * (3 - 2 * f)
+                new[i] = tuple(pos[a][k] + va[k] * (ss[i].t - t0) + snap[k] * f for k in range(3))
+        if ang[a] is not None and ang[b] is not None:
+            qa, qb = _quat(*ang[a]), _quat(*ang[b])
+            for i in inside:
+                att[i] = _from_quat(_slerp(qa, qb, (ss[i].t - t0) / (t1 - t0)))
+    for i, s in enumerate(ss):
+        if new[i] != pos[i] or att[i] is not None:
+            s.raw, s.raw_angles = pos[i], ang[i]
+            s.x, s.y, s.z = new[i]
+            s.moved = math.dist(pos[i], new[i])
+            s.smooth_angles = att[i]
+    _fit_received(ss, ext)
+
+
+def _fit_received(ss: list[Sample], ext: list[bool]) -> None:
+    """The second step of `_smooth`: each received sample to a local quadratic, within its scatter."""
+    n = len(ss)
+    pos = [(s.x, s.y, s.z) for s in ss]
+    reach = 0.3 * SMOOTH_HALF + 0.05
+    for i in range(n):
+        if ext[i]:
+            continue
+        t = ss[i].t
+        idx = [j for j in range(max(0, i - SMOOTH_HALF), min(n, i + SMOOTH_HALF + 1)) if abs(ss[j].t - t) <= reach]
+        if len(idx) < 4:
+            continue
+        # Least squares of p = c0 + c1 dt + c2 dt^2 by the normal equations; c0 is the fit at the sample, c1 its velocity.
+        m = [[0.0] * 3 for _ in range(3)]
+        rhs = [[0.0] * 3 for _ in range(3)]
+        for j in idx:
+            d = ss[j].t - t
+            pw = (1.0, d, d * d)
+            for r_ in range(3):
+                for c_ in range(3):
+                    m[r_][c_] += pw[r_] * pw[c_]
+                for k in range(3):
+                    rhs[r_][k] += pw[r_] * pos[j][k]
+        sol = _solve3(m, rhs)
+        if sol is None:
+            continue
+        fit, vel = sol[0], sol[1]
+        limit = max(SMOOTH_MIN, SMOOTH_SECONDS * math.sqrt(sum(v * v for v in vel)))
+        d = [fit[k] - pos[i][k] for k in range(3)]
+        dn = math.sqrt(sum(x * x for x in d))
+        if dn < 1e-6:
+            continue
+        if dn > limit:
+            d = [x * limit / dn for x in d]
+        s = ss[i]
+        if s.raw is None:
+            s.raw, s.raw_angles = pos[i], _angles(s)
+        s.x, s.y, s.z = pos[i][0] + d[0], pos[i][1] + d[1], pos[i][2] + d[2]
+        s.moved = math.dist(s.raw, (s.x, s.y, s.z))
+
+
+def _solve3(m: list[list[float]], rhs: list[list[float]]) -> list[list[float]] | None:
+    """m X = rhs for a 3x3 m and three right-hand sides (Gauss-Jordan); X's rows are c0, c1, c2."""
+    a = [m[r][:] + rhs[r][:] for r in range(3)]
+    for c in range(3):
+        piv = max(range(c, 3), key=lambda r: abs(a[r][c]))
+        if abs(a[piv][c]) < 1e-12:
+            return None
+        a[c], a[piv] = a[piv], a[c]
+        for r in range(3):
+            if r != c:
+                f = a[r][c] / a[c][c]
+                a[r] = [x - f * y for x, y in zip(a[r], a[c])]
+    return [[a[r][3 + k] / a[r][r] for k in range(3)] for r in range(3)]
+
+
+def smooth(all_lives: list[Life], author: str, on: bool = True) -> dict[str, Any]:
+    """
+    `_smooth` on every aircraft track: marks dead reckoning everywhere, and
+    with `on` moves the tracks of all units but the recording player's own
+    (whose aircraft the client does not extrapolate). Returns the check: per
+    group the share of dead-reckoned samples, the acceleration between
+    consecutive 0.25 s samples (g) as the replay has them and as the table
+    has them, and how far samples moved.
+    """
+    out: dict[str, Any] = {"on": on}
+    groups: dict[str, dict[str, list]] = {"own": defaultdict(list), "remote": defaultdict(list)}
+    for life in all_lives:
+        if life.kind != "air":
+            continue
+        own = bool(author) and life.user_id == author
+        g = groups["own" if own else "remote"]
+        g["before"] += _accelerations(life.samples)
+        _smooth(life, on and not own)
+        g["after"] += _accelerations(life.samples)
+        g["samples"].append(len(life.samples))
+        g["extrapolated"].append(sum(s.extrapolated for s in life.samples))
+        g["moved"] += [s.moved for s in life.samples if s.moved > 0]
+
+    def q(v: list[float]) -> dict[str, Any]:
+        v = sorted(v)
+        if not v:
+            return {}
+        return {"p50": round(v[len(v) // 2], 2), "p90": round(v[int(len(v) * 0.9)], 2),
+                "p99": round(v[int(len(v) * 0.99)], 2), "over15g": round(sum(x > 15 for x in v) / len(v), 4)}
+
+    for name, g in groups.items():
+        total = sum(g["samples"])
+        if not total:
+            continue
+        mv = sorted(g["moved"])
+        out[name] = {"samples": total, "extrapolated": sum(g["extrapolated"]),
+                     "extrapolatedShare": round(sum(g["extrapolated"]) / total, 4),
+                     "accelerationG": {"replay": q(g["before"]), "table": q(g["after"])},
+                     "movedMetres": {"samples": len(mv), "p50": round(mv[len(mv) // 2], 2) if mv else 0,
+                                     "p90": round(mv[int(len(mv) * 0.9)], 2) if mv else 0,
+                                     "max": round(mv[-1], 2) if mv else 0}}
+    return out
+
+
+def _accelerations(ss: list[Sample]) -> list[float]:
+    """|second difference| / 9.81 over consecutive samples 0.15-0.35 s apart (g)."""
+    out = []
+    for a, b, c in zip(ss, ss[1:], ss[2:]):
+        d1, d2 = b.t - a.t, c.t - b.t
+        if 0.15 < d1 < 0.35 and 0.15 < d2 < 0.35:
+            acc = [((cc - bb) / d2 - (bb - aa) / d1) / ((d1 + d2) / 2)
+                   for aa, bb, cc in ((a.x, b.x, c.x), (a.y, b.y, c.y), (a.z, b.z, c.z))]
+            out.append(math.sqrt(sum(x * x for x in acc)) / 9.81)
+    return out
+
+
 def identify(r: Replay, all_lives: list[Life], table: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """
     Gives each life its pid, vehicle, player and team: from its unit entity
@@ -877,11 +1210,15 @@ def _life_at(candidates: list[Life], t: float) -> Life | None:
 
 
 def _label(life: Life) -> str:
-    """A player's name; an AI unit by its vehicle and uid (the viewer shows "#<n>" as an id, not in the name)."""
+    """
+    A player's name; an AI unit by its vehicle's name and uid ("La-7 #212"; the
+    viewer shows "#<n>" as an id, not in the name), the vehicle id where the
+    game's localisation is not at hand.
+    """
     if life.player:
         return life.player
-    if life.vehicle and life.vehicle != "dummy_plane":
-        return f"{life.vehicle} #{life.uid}"
+    if life.display:
+        return f"{life.display} #{life.uid}"
     return f"uid {life.uid}"
 
 
@@ -915,30 +1252,43 @@ def _where(life: Life | None, t: float) -> Sample | None:
         b = life.samples[i + 1]
         f = (t - a.t) / (b.t - a.t) if b.t > a.t else 0.0
         f = max(0.0, min(1.0, f))
-        return Sample(t, a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f, a.z + (b.z - a.z) * f, a.attitude, a.angles)
+        return Sample(t, a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f, a.z + (b.z - a.z) * f, a.attitude, a.angles,
+                      smooth_angles=a.smooth_angles)
     return a
 
 
 # ---------------------------------------------------------------- the table
 
 
-def _attitude(s: Sample) -> tuple[float, ...] | None:
+def _angles(s: Sample) -> tuple[float, float, float] | None:
     """
-    Compass heading, pitch and roll (degrees) and the look vector in the game's
-    axes. The flight model's packed heading is counted from east: compass =
-    heading + 90 deg (checked against the direction of travel on real replays);
-    a ground state's angles are already compass, pitch, roll.
+    The attitude as the replay sends it, in the table's conventions: compass
+    heading, pitch (nose up positive) and roll (right wing down positive), in
+    degrees. The flight model's packed heading is counted from east: compass =
+    heading + 90 deg (checked against the direction of travel); its roll is
+    positive with the LEFT wing down - on the recording player's own aircraft,
+    which the client does not extrapolate, the packed roll is positive in left
+    turns in 235 of 237 samples of a clear turn (air arcade battle) - so its
+    sign is turned. A ground state's angles are already compass, pitch, roll
+    (its roll's sense is not checked).
     """
     if s.attitude is not None:
         h, p, roll = wrpl._euler(s.attitude)
-        compass = h + math.pi / 2
-    elif s.angles is not None and s.angles[0] is not None:
-        compass, p, roll = math.radians(s.angles[0]), math.radians(s.angles[1] or 0.0), math.radians(s.angles[2] or 0.0)
-    else:
+        return (math.degrees(h) + 90.0) % 360, math.degrees(p), -math.degrees(roll)
+    if s.angles is not None and s.angles[0] is not None:
+        return s.angles[0] % 360, s.angles[1] or 0.0, s.angles[2] or 0.0
+    return None
+
+
+def _attitude(s: Sample) -> tuple[float, ...] | None:
+    """The look vector in the game's axes, then compass heading, pitch and roll (degrees; see `_angles`): the
+    smoothed attitude where `_smooth` gave one."""
+    a = s.smooth_angles or _angles(s)
+    if a is None:
         return None
+    compass, p = math.radians(a[0]), math.radians(a[1])
     cp = math.cos(p)
-    return (math.sin(compass) * cp, math.sin(p), math.cos(compass) * cp,
-            math.degrees(compass) % 360, math.degrees(p), math.degrees(roll))
+    return math.sin(compass) * cp, math.sin(p), math.cos(compass) * cp, a[0], a[1], a[2]
 
 
 def _speeds(samples: list[Sample]) -> list[float | None]:
@@ -961,13 +1311,15 @@ def _track(life: Life) -> str:
     One thing the viewer draws: a life. Named for its player or unit; the
     "#<hex>" suffix keeps lives apart and is not shown as part of the name.
     """
-    base = life.player or (life.vehicle if life.vehicle and life.vehicle != "dummy_plane" else f"uid {life.uid}")
+    base = life.player or life.display or f"uid {life.uid}"
     return f"{base} #{life.uid * 4096 + min(life.n, 4095):x}"
 
 
 def _row(life: Life, s: Sample, event: str) -> dict[str, Any]:
     return {"time": s.t, "event": event, "track": _track(life), "player": _label(life), "userId": life.user_id, "team": life.team,
             "life": life.id, "uid": life.uid, "kind": life.figure, "type": life.type, "Vehicle": life.vehicle,
+            "VehicleName": life.display, "VehicleShortName": life.vehicle_short or life.display,
+            "VehicleNameKey": life.vehicle_key, "ai": not life.is_player, "isPlayer": life.is_player,
             "x": s.x, "y": s.y, "z": s.z, "mission": life.unit.mission if life.unit else ""}
 
 
@@ -1046,6 +1398,11 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
             a = _attitude(s)
             if a:
                 row.update(dirX=a[0], dirY=a[1], dirZ=a[2], heading=a[3], pitch=a[4], roll=a[5])
+            raw = s.raw or (s.x, s.y, s.z)
+            row.update(xRaw=raw[0], yRaw=raw[1], zRaw=raw[2], extrapolated=s.extrapolated, moved=s.moved)
+            ra = s.raw_angles or (a[3:6] if a else None)
+            if ra:
+                row.update(headingRaw=ra[0], pitchRaw=ra[1], rollRaw=ra[2])
             out.append(row)
 
     def at(uid: int | None, t: float) -> tuple[Life | None, Sample | None]:
@@ -1054,27 +1411,37 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
         life = _life_at(by_uid.get(uid, []), t)
         return life, _at_time(life, t)
 
+    def who(uid: Any, pid: Any, t: float) -> str:
+        return _who(r, by_uid, uid, pid, t)
+
     for k in r.kills:
         killer, ks = at(k.get("killerUid"), k["t"])
         victim, vs = at(k.get("victimUid"), k["t"])
-        names = (_label(killer) if killer else _uid_label(k.get("killerUid")),
-                 _label(victim) if victim else _uid_label(k.get("victimUid")))
+        names = (who(k.get("killerUid"), k.get("killerPid"), k["t"]), who(k.get("victimUid"), None, k["t"]))
         for event, life, s, other in (("kill", killer, ks, names[1]), ("death", victim, vs, names[0])):
             if s is None or life is None:
                 continue
             out.append({**_row(life, s, event), "time": k["t"], "other": other, "weapon": k.get("weapon", "")})
+    # Who last damaged a unit: a destroyed module names only the unit and the part.
+    damage: dict[int, list[tuple[float, str, str]]] = defaultdict(list)
     for h in r.hits:
         victim, vs = at(h.get("victimUid"), h["t"])
+        attacker = who(h.get("uid"), h.get("pid"), h["t"])
+        if h.get("victimUid") not in (None, wrpl.NO_UID) and attacker:
+            damage[h["victimUid"]].append((h["t"], attacker, h.get("vehicle", "")))
         if vs is None or victim is None:
             continue
-        attacker, _ = at(h.get("uid"), h["t"])
-        out.append({**_row(victim, vs, f"hit_{h['severity']}"), "time": h["t"],
-                    "other": _label(attacker) if attacker else _uid_label(h.get("uid")), "weapon": h.get("vehicle", "")})
+        out.append({**_row(victim, vs, f"hit_{h['severity']}"), "time": h["t"], "other": attacker,
+                    "weapon": h.get("vehicle", "")})
+    for marks in damage.values():
+        marks.sort()
     for m in r.part_kills:
         victim, vs = at(m.get("uid"), m["t"])
         if vs is None or victim is None:
             continue
-        out.append({**_row(victim, vs, "module_destroyed"), "time": m["t"], "other": f"part {m.get('part')}"})
+        last = [d for d in damage.get(m.get("uid"), []) if m["t"] - PART_BY_HIT <= d[0] <= m["t"] + 0.5]
+        out.append({**_row(victim, vs, "module_destroyed"), "time": m["t"], "other": last[-1][1] if last else "",
+                    "weapon": f"part {m.get('part')}"})
     for w in all_weapons or []:
         name = w.kind
         s = _at_time(w.launcher, w.entity.t) if w.launcher is not None else None
@@ -1109,7 +1476,9 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
                 row = {"time": p.t, "event": event, "track": label, "player": owner, "userId": "",
                        "team": w.launcher.team if w.launcher else "", "life": f"w{eid:x}" + (f"#{k + 1}" if k else ""),
                        "uid": None, "kind": name, "type": w.entity.template, "Vehicle": "", "x": p.x, "y": p.y,
-                       "z": p.z, "speed": v, "alive": 1.0, "other": owner}
+                       "z": p.z, "xRaw": p.x, "yRaw": p.y, "zRaw": p.z, "speed": v, "alive": 1.0, "other": owner,
+                       "ai": (not w.launcher.is_player) if w.launcher else None,
+                       "isPlayer": w.launcher.is_player if w.launcher else None}
                 nxt = pts[i + 1] if i + 1 < len(pts) else pts[i - 1]
                 d = (nxt.x - p.x, nxt.y - p.y, nxt.z - p.z) if i + 1 < len(pts) else (p.x - nxt.x, p.y - nxt.y, p.z - nxt.z)
                 n = math.sqrt(sum(c * c for c in d))
@@ -1118,7 +1487,48 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
                                heading=math.degrees(math.atan2(d[0], d[2])) % 360,
                                pitch=math.degrees(math.asin(max(-1.0, min(1.0, d[1] / n)))))
                 out.append(row)
+    out += _effects(r)
+    match = match_name(r.header)
+    for row in out:
+        row["match"] = match
     out.sort(key=lambda row: row["time"])
+    return out
+
+
+#: A destroyed module is put down to the last hit on its unit no more than this long (s) before it.
+PART_BY_HIT = 5.0
+
+
+def _who(r: Replay, by_uid: dict[int, list[Life]], uid: Any, pid: Any, t: float) -> str:
+    """Who a record names: the life of its uid at that moment, else the player of its slot, else 'uid <n>'."""
+    life = _life_at(by_uid.get(uid, []), t) if uid not in (None, wrpl.NO_UID) else None
+    if life:
+        return _label(life)
+    pid = _pid(pid)
+    # 0 is also what units no player drives get; only another pid names someone.
+    if pid and r.slots.get(pid, {}).get("name"):
+        return r.slots[pid]["name"]
+    return _uid_label(uid)
+
+
+def _effects(r: Replay) -> list[dict[str, Any]]:
+    """
+    Explosions (0xD08E) and flak bursts (0xD01F) as rows of their own, event
+    `explosion` / `flak`, at their position, kind `effect`, no track (each is a
+    moment, not a thing that moves); an explosion's direction where it has one.
+    `type` is the message's kind field (hex), which is not named.
+    """
+    out = []
+    for event, items in (("explosion", r.explosions), ("flak", r.flak)):
+        for e in items:
+            x, y, z = e["pos"]
+            row = {"time": e["t"], "event": event, "track": "", "player": "", "kind": "effect", "type": e.get("kind", ""),
+                   "x": x, "y": y, "z": z, "xRaw": x, "yRaw": y, "zRaw": z, "alive": 1.0}
+            d = e.get("dir")
+            n = math.sqrt(sum(c * c for c in d)) if d else 0.0
+            if n > 0.5:
+                row.update(dirX=d[0] / n, dirY=d[1] / n, dirZ=d[2] / n)
+            out.append(row)
     return out
 
 
@@ -1136,6 +1546,9 @@ def table(data: list[dict[str, Any]]):
         if kind == "str":
             arr = pa.array(["" if v is None else str(v) for v in values], type=pa.string()).dictionary_encode()
             fields.append(pa.field(name, pa.dictionary(pa.int32(), pa.string())))
+        elif kind == "bool":
+            arr = pa.array([None if v is None else bool(v) for v in values], type=pa.bool_())
+            fields.append(pa.field(name, pa.bool_()))
         elif kind == "i16":
             mask = np.array([v is None for v in values], dtype=bool)
             arr = pa.array(np.array([0 if v is None else v for v in values], dtype=np.int16), mask=mask)
@@ -1214,7 +1627,8 @@ def _step_speeds(table_rows: list[dict[str, Any]], limits: dict[str, float] | No
     """
     tracks: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in table_rows:
-        tracks[row["track"]].append(row)
+        if row["track"]:  # explosions and flak bursts are moments, not tracks
+            tracks[row["track"]].append(row)
     by: dict[str, list[float]] = defaultdict(list)
     over: Counter = Counter()
     over_own: Counter = Counter()
@@ -1259,7 +1673,8 @@ def _break_reasons(r: Replay, author_uids: set[int]) -> list[dict[str, Any]]:
 
 
 def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], check: dict[str, Any],
-            all_units: list[Unit] | None = None, all_weapons: list[Weapon] | None = None) -> dict:
+            all_units: list[Unit] | None = None, all_weapons: list[Weapon] | None = None,
+            more: dict[str, Any] | None = None, names: vehicle_names.Names | None = None) -> dict:
     h = r.header
     roster = players(r)
     all_units = all_units or []
@@ -1282,14 +1697,7 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
         lives_by_uid[life.uid].append(life)
 
     def who(uid: Any, pid: Any, t: float) -> str:
-        life = _life_at(lives_by_uid.get(uid, []), t) if uid not in (None, wrpl.NO_UID) else None
-        if life:
-            return _label(life)
-        pid = _pid(pid)
-        # 0 is also what units no player drives get; only another pid names someone.
-        if pid and r.slots.get(pid, {}).get("name"):
-            return r.slots[pid]["name"]
-        return _uid_label(uid)
+        return _who(r, lives_by_uid, uid, pid, t)
 
     kills = []
     for k in r.kills:
@@ -1307,8 +1715,10 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
     for u in all_units:
         e = u.entity
         tm = e.comps.get("transform")
-        unit_list.append({"eid": e.eid, "uid": u.uid, "template": e.template, "vehicle": u.vehicle, "kind": u.kind,
-                          "type": u.type, "team": u.team, "pid": u.pid,
+        player = u.pid is not None and bool(r.slots.get(u.pid, {}).get("userId"))
+        unit_list.append({"eid": e.eid, "uid": u.uid, "template": e.template, "vehicle": u.vehicle,
+                          "vehicleName": names.lookup(u.vehicle, _folder(u))[0] if names else "",
+                          "kind": u.kind, "type": u.type, "team": u.team, "pid": u.pid, "ai": not player,
                           "player": r.slots.get(u.pid, {}).get("name", "") if u.pid is not None else "",
                           "mission": u.mission, "created": round(e.t, 3),
                           "removed": round(e.destroyed, 3) if e.destroyed is not None else None,
@@ -1402,8 +1812,13 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "messageIds": dict(sorted(r.seen_ids.items())),
             "messageIdsNotRead": {k: r.seen_ids[k] for k in sorted(other)},
         },
+        "vehicleNames": {"source": names.source if names else "",
+                         "language": vehicle_names.LANGUAGE.strip("<>") if names else "",
+                         "note": "read from the game's own localisation in your install when converting; "
+                                 "not part of the converter"},
         "selfCheck": {
             **check,
+            **(more or {}),
             "weaponLauncherDistanceMedian": dists[len(dists) // 2] if dists else None,
             "weaponsWithLauncher": len(dists),
             "groundHeadingVsTravel": _travel_check(all_lives),
@@ -1422,13 +1837,29 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "alive": "0 for samples after a unit's death (its wreck), for at most 60 s or until its entity is removed; "
                      "a ground unit's samples after that are dropped (counts.droppedSamples)",
             "player": "a player's name from the entity stream's player slot, else the kill and hit records; "
-                      "AI units '<vehicle> #<uid>', 'uid <n>' when nothing names it",
+                      "AI units '<VehicleName> #<uid>', 'uid <n>' when nothing names it",
+            "VehicleName": "the vehicle's full English name from the game's localisation in your install "
+                           "(VehicleShortName the short one, VehicleNameKey its key); the vehicle id where the "
+                           "game has no name for it or no install was found",
+            "ai": "true for every unit no player account drives (mission units, AI aircraft, ground targets, ships, "
+                  "AA guns); isPlayer the opposite; for a weapon, its launcher's; empty when unknown",
+            "match": "the match id (as 'match' here), on every row",
+            "roll": "degrees, right wing down positive (the flight model's own sign is the opposite; checked against "
+                    "the recording player's turns, selfCheck.aircraftAttitude)",
+            "extrapolated": "an aircraft sample that is the client's dead reckoning (straight on at the last received "
+                            "velocity, turning at the last received rates), not a state it received",
+            "moved": "how far the smoother moved the sample (m); xRaw/yRaw/zRaw and headingRaw/pitchRaw/rollRaw "
+                     "are the replay's own values (roll in the table's sign); selfCheck.deadReckoning",
+            "explosion": "rows of explosions (0xD08E) and flak bursts (event flak) at their position, kind 'effect', "
+                         "no track",
             "kind": "aircraft, helicopter, tank, apc, spaa, truck, ship, boat, structure; weapons missile, rocket, bomb, "
                     "torpedo, payload, jettisoned",
             "type": "the game's own type where the results name it (fighter, destroyer, gun_boat), else the kind",
             "speed": "m/s over about two seconds of the track (derived, not in the replay)",
             "heading": "compass degrees, clockwise from north",
             "hits": "rows at the position of the unit hit; 'other' is who hit it, 'weapon' their vehicle",
+            "module_destroyed": "rows at the unit; 'weapon' the part's number, 'other' who last hit the unit "
+                                "within 5 s before (empty when no hit record is that close)",
             "launch": "rows at the launcher, the nearest unit within 300 m and 1.5 s of the release point",
             "impact": "a weapon's last sample when its entity was removed within 3 s after it",
         },
@@ -1441,22 +1872,109 @@ _READ_IDS = {"2", "3", "0", "1", "6/0x24", "6/0x25", "6/0x26"} | {
                             wrpl.COCKPIT, wrpl.OBJECTS, *wrpl.SHELLS, *_MORE)}
 
 
-def convert(paths: list[Path], out: Path) -> tuple[Path, Path]:
-    """One battle's replay file(s) into `<out>/<map>/<match>.parquet` and `.match.json`."""
+def _folder(u: Unit | None) -> str:
+    """A unit's folder in the game ("ships", "tankModels"), which some localisation keys carry."""
+    return u.entity.class_name.rpartition("/")[0] if u else ""
+
+
+def name_vehicles(all_lives: list[Life], names: vehicle_names.Names) -> dict[str, Any]:
+    """Gives each life its vehicle's names (see names.py). Returns which vehicles the game names and which not."""
+    named, unnamed = set(), set()
+    for life in all_lives:
+        if not life.vehicle or life.vehicle == "dummy_plane":
+            continue
+        full, short, key = names.lookup(life.vehicle, _folder(life.unit))
+        life.vehicle_name, life.vehicle_short, life.vehicle_key = full, short, key
+        (named if full else unnamed).add(life.vehicle)
+    return {"vehicles": len(named) + len(unnamed), "named": len(named), "notNamed": sorted(unnamed)}
+
+
+def _identity_check(table_rows: list[dict[str, Any]], roster: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Rows of the results' players against the ai flag (must all be ai false), and the AI ground units and ships."""
+    names = {p.get("name") for p in roster.values() if p.get("name")}
+    rows_ = [row for row in table_rows if row.get("track") and row.get("uid") is not None]
+    of_players = [row for row in rows_ if row["player"] in names]
+    ground = [row for row in rows_ if row["kind"] in ("tank", "apc", "spaa", "truck", "ship", "boat", "structure")]
+    return {"playerNames": len(names),
+            "playerNamesWithRows": len({row["player"] for row in of_players}),
+            "rowsOfPlayersAi": sum(1 for row in of_players if row["ai"]),
+            "rowsOfPlayersNotAi": sum(1 for row in of_players if not row["ai"]),
+            "rowsAiNotAPlayerName": sum(1 for row in rows_ if row["ai"] and row["player"] not in names),
+            "rowsNotAiNotAPlayerName": sum(1 for row in rows_ if not row["ai"] and row["player"] not in names),
+            "groundAndShipRows": len(ground), "groundAndShipRowsAi": sum(1 for row in ground if row["ai"])}
+
+
+def _attitude_check(all_lives: list[Life], author: str) -> dict[str, Any]:
+    """
+    The aircraft attitude against the flight path, on the recording player's
+    own aircraft (which the client does not extrapolate): heading against the
+    direction of travel, pitch against the climb angle, and in clear turns
+    (turning at 6 deg/s or more, banked 20 to 80 deg) whether the roll's sign
+    is the turn's (right wing down in a right turn).
+    """
+    head, pitch, agree, disagree = [], [], 0, 0
+    for life in all_lives:
+        if life.kind != "air" or not author or life.user_id != author:
+            continue
+        ss = [s for s in life.samples if life.died is None or s.t <= life.died]
+        for a, b, c in zip(ss, ss[1:], ss[2:]):
+            if not (0.15 < b.t - a.t < 0.6 and 0.15 < c.t - b.t < 0.6):
+                continue
+            dx, dy, dz = c.x - a.x, c.y - a.y, c.z - a.z
+            hv = math.hypot(dx, dz)
+            if hv / (c.t - a.t) < 40:
+                continue
+            at = _attitude(b)
+            if at is None:
+                continue
+            travel = math.degrees(math.atan2(dx, dz))
+            if abs(at[4]) < 60:
+                head.append(abs((at[3] - travel + 180) % 360 - 180))
+                pitch.append(abs(at[4] - math.degrees(math.atan2(dy, hv))))
+            t1 = math.degrees(math.atan2(b.x - a.x, b.z - a.z))
+            t2 = math.degrees(math.atan2(c.x - b.x, c.z - b.z))
+            rate = ((t2 - t1 + 180) % 360 - 180) / ((c.t - a.t) / 2)
+            if abs(rate) >= 6 and 20 <= abs(at[5]) <= 80:
+                if (rate > 0) == (at[5] > 0):
+                    agree += 1
+                else:
+                    disagree += 1
+    head.sort()
+    pitch.sort()
+    return {"samples": len(head), "headingVsTravelMedianDeg": round(head[len(head) // 2], 2) if head else None,
+            "pitchVsClimbMedianDeg": round(pitch[len(pitch) // 2], 2) if pitch else None,
+            "turnsRollRightWingDownAgrees": agree, "turnsRollDisagrees": disagree}
+
+
+def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bool = True,
+            names: vehicle_names.Names | None = None) -> tuple[Path, Path]:
+    """
+    One battle's replay file(s) into `<out>/<map>/<match>.parquet` and
+    `.match.json`. `game`: the War Thunder folder whose localisation names the
+    vehicles (found by itself when not given); `smoothing`: re-place other
+    units' dead-reckoned samples and smooth their received ones (see `_smooth`).
+    """
     import pyarrow.parquet as pq
 
     r = read(paths)
     all_units = units(r)
     all_lives = lives(r, all_units)
-    check = identify(r, all_lives, players(r))
+    roster = players(r)
+    check = identify(r, all_lives, roster)
+    names = names if names is not None else vehicle_names.load(game)
+    more: dict[str, Any] = {"vehicleNames": name_vehicles(all_lives, names)}
+    author = str(r.results.get("authorUserId") or "")
+    more["deadReckoning"] = smooth(all_lives, author, smoothing)
+    more["aircraftAttitude"] = _attitude_check(all_lives, author)
     all_weapons = weapons(r, all_lives)
     data = rows(r, all_lives, all_weapons)
+    more["identity"] = _identity_check(data, roster)
     name = match_name(r.header)
     folder = Path(out) / (r.header["map"] or "unknown")
     folder.mkdir(parents=True, exist_ok=True)
     tpath = folder / f"{name}.parquet"
     jpath = folder / f"{name}.match.json"
     pq.write_table(table(data), tpath, compression="snappy", row_group_size=256_000)
-    doc = summary(r, all_lives, data, check, all_units, all_weapons)
+    doc = summary(r, all_lives, data, check, all_units, all_weapons, more, names)
     jpath.write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
     return tpath, jpath

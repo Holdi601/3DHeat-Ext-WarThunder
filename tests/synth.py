@@ -62,7 +62,7 @@ def uleb(v: int) -> bytes:
 
 
 def attitude(compass_deg: float, pitch_deg: float = 0.0, roll_deg: float = 0.0) -> int:
-    """The packed attitude for a compass heading (the packed heading counts from east)."""
+    """The packed attitude for a compass heading (the packed heading counts from east); roll as packed (left wing down)."""
     h = math.radians(compass_deg) - math.pi / 2
     h = (h + math.pi) % (2 * math.pi) - math.pi
     p, r = math.radians(pitch_deg), math.radians(roll_deg)

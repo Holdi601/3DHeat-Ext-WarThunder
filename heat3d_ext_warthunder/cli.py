@@ -6,6 +6,12 @@ Files of one battle (a server replay's parts) are read together; files of
 different battles are converted one battle at a time. Prints one line per
 battle, `ok <table> <summary>` or `failed <file>: <why>`; exits 1 when any
 failed, 2 when nothing was given.
+
+Vehicles are named from the game's own localisation in your install (found
+through Steam or the launcher's folders; `--game` or `HEAT3D_WT_GAME` say
+where it is otherwise); without an install the names are the vehicle ids.
+`--no-smoothing` leaves other units' tracks as the replay has them (the
+client's dead reckoning is still marked; see convert.py).
 """
 
 from __future__ import annotations
@@ -15,7 +21,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from . import __version__
+from . import __version__, names
 from .convert import convert
 from .wrpl import FormatError, read_header
 
@@ -50,6 +56,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="heat3d-wt-replay", description="War Thunder replays (.wrpl) into 3DHeat tables")
     ap.add_argument("replays", nargs="+", type=Path, help=".wrpl files or folders of them")
     ap.add_argument("-o", "--out", type=Path, required=True, help="where to write <map>/<match>.parquet and .match.json")
+    ap.add_argument("--game", help="the War Thunder folder whose localisation names the vehicles (found if not given)")
+    ap.add_argument("--no-smoothing", action="store_true",
+                    help="keep other units' dead-reckoned and received samples where the replay has them")
     ap.add_argument("--version", action="version", version=f"heat3d-wt-replay {__version__}")
     args = ap.parse_args(argv)
     groups, bad = battles(args.replays)
@@ -58,9 +67,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     for f, why in bad:
         print(f"failed {f}: {why}")
+    vehicle_names = names.load(args.game) if groups else names.Names()
+    if groups and not vehicle_names:
+        print("note: no War Thunder install found to name the vehicles; the table names them by their ids")
     for files in groups.values():
         try:
-            table, doc = convert(files, args.out)
+            table, doc = convert(files, args.out, smoothing=not args.no_smoothing, names=vehicle_names)
         except (OSError, FormatError, EOFError, ValueError, IndexError) as e:
             print(f"failed {files[0]}: {type(e).__name__}: {e}")
             bad.append((files[0], str(e)))

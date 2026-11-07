@@ -565,7 +565,12 @@ def _slot(body: bytes) -> dict[str, Any]:
 
 
 def _euler(packed: int) -> tuple[float, float, float]:
-    """The flight model's packed attitude: heading 10 bits, pitch 9, roll 10, three sign bits on top; radians."""
+    """
+    The flight model's packed attitude: heading 10 bits, pitch 9, roll 10,
+    three sign bits on top; radians. The heading counts from east, the roll
+    is positive with the left wing down (see convert._angles, which turns
+    both to the table's conventions).
+    """
     heading = ((packed >> 19) & 0x3FF) * math.pi / 0x3FF
     pitch = ((packed >> 10) & 0x1FF) * (math.pi / 2) / 0x1FF
     roll = (packed & 0x3FF) * math.pi / 0x3FF
