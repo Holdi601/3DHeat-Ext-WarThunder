@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import struct
 from pathlib import Path
 
 import pyarrow.parquet as pq
@@ -260,3 +261,51 @@ def test_hit_rows_name_the_attacker_from_the_slot(tmp_path):
     table, _ = convert.convert([f], tmp_path / "out", names=NAMES)
     hit = next(r for r in pq.read_table(table).to_pylist() if r["event"].startswith("hit"))
     assert hit["other"] == "Pilot Two" and hit["weapon"] == "mig_29smt_9_19"
+
+
+def test_weapon_and_ammunition_names():
+    w = names.Weapons({"weapons/cannonshvaks": "20 mm ShVAK cannon", "weapons/cannonshvaks/short": "ShVAK",
+                       "frag_i_t/name": "Fragmentation shell", "frag_i_t/name/short": "FI-T",
+                       "weapons/us_aim9l_sidewinder": "AIM-9L"}, "test")
+    assert w.lookup("gameData/Weapons/cannonShVAKS.blk") == ("20 mm ShVAK cannon", "ShVAK")
+    assert w.lookup("frag_i_t") == ("Fragmentation shell", "FI-T")
+    assert w.lookup("us_aim9l_sidewinder_default") == ("AIM-9L", "AIM-9L")
+    assert w.lookup("nothing") == ("", "") and names.Weapons().lookup("frag_i_t") == ("", "")
+
+
+def test_flight_entries_and_the_recording_players_instruments(tmp_path):
+    word = synth.velocity_word(0.0, 0.0, 200.0)
+    extras = {344: {"word": word, "seven": bytes([0x0B, 0x58, 0, 0, 0, 0x0F, 0]), "ammo": [250, 140],
+                    "engines": [(7, None, None)]},
+              345: {"word": word, "ammo": [100], "engines": [(8, None, 0)]}}
+    packets = [synth.packet(1, 0, b""),
+               synth.packet(4, 100, synth.slots({0: (111, "Pilot One", 1), 1: (222, "Pilot Two", 2)}))]
+    for i in range(41):
+        ms, t = 1000 + i * 250, i * 0.25
+        packets.append(synth.packet(4, ms - 100, b"\x03\x58\x4a\xd0\x80\x02\x02\x00"
+                                    + struct.pack("<Hf", 0, 150.0 + i) + struct.pack("<Hf", 240, 1.1)))
+        packets.append(synth.packet(2, ms, synth.flight([
+            (344, 0.0, 3000.0, 1000.0 + 200 * t, synth.attitude(0)),
+            (345, 50.0, 3000.0, 1300.0 + 200 * t, synth.attitude(0))], extras=extras)))
+    # The kill record's killer slot names 344 Pilot One, the recording player (no entity stream here).
+    packets.append(synth.packet(4, None, synth.kill(344, 0, "f_15a", 345, 1, "us_aim9l_sidewinder")))
+    packets.append(synth.packet(0, 12000, b""))
+    f = tmp_path / "flight.wrpl"
+    f.write_bytes(synth.replay(packets, RESULTS))
+    table, doc = convert.convert([f], tmp_path / "out", names=NAMES, weapon_names=names.Weapons())
+    rows = [r for r in pq.read_table(table).to_pylist() if r["event"] == "position" and r["kind"] == "aircraft"]
+    one = [r for r in rows if r["player"] == "Pilot One"]
+    two = [r for r in rows if r["player"] == "uid 345"]
+    assert one and two
+    assert all(r["vz"] == pytest.approx(200.0, abs=0.3) and abs(r["vx"]) < 0.5 for r in one + two)
+    assert {r["engine"] for r in one} == {"running"} and {r["engine"] for r in two} == {"dead"}
+    # The recording player's own: controls and rounds from its entry, airspeed and throttle from its cockpit.
+    assert {r["ammo"] for r in one} == {"250 140"} and not any(r["ammo"] for r in two)
+    assert one[5]["elevator"] == pytest.approx(3 / 7) and one[5]["aileron"] == pytest.approx(-3 / 7)
+    assert one[5]["throttle"] == pytest.approx(1.1) and one[5]["ias"] == pytest.approx(155.0, abs=1.01)
+    assert two[5]["ias"] is None or math.isnan(two[5]["ias"])
+    d = json.loads(doc.read_text(encoding="utf-8"))
+    assert d["authorInstruments"]["known"]["0"]["name"] == "ias"
+    assert d["selfCheck"]["flightEntries"]["engineDead"]["lives"] == 1
+    side = pq.read_table(table.with_name(table.name.replace(".parquet", ".flight.parquet"))).to_pylist()
+    assert {r["ammo"] for r in side if r["uid"] == 345} == {"100"}

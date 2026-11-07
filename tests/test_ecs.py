@@ -294,9 +294,25 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
     files = sorted(Path(OWN).glob("*.wrpl"))
     assert files
     names = vehicle_names.Names.from_game()
+    arms = vehicle_names.Weapons.from_game()
     for f in files:
-        _, doc = convert.convert([f], tmp_path, names=names)
+        table, doc = convert.convert([f], tmp_path, names=names, weapon_names=arms)
         d = json.loads(doc.read_text(encoding="utf-8"))
+        # Every statistic of every player at the end equals the results'; the decoded velocity follows the track.
+        sb = d["selfCheck"]["scoreboardVsResults"]
+        assert sb and all(a == b for a, _, b in (v.partition(" of ") for v in sb.values())), (f.name, sb)
+        fe = d["selfCheck"]["flightEntries"]
+        for who in ("velocity_author", "velocity_others"):
+            if fe[who]["samples"] > 100:
+                assert fe[who]["angleMedian"] < 3 and abs(fe[who]["speedRatioMedian"] - 1) < 0.01, (f.name, fe)
+        assert d["entityMessages"]["classBits"] is not None, f.name
+        if arms:  # a ship's default belts (`*_universal`) are the ones the game names nowhere
+            wn = d["selfCheck"]["weaponNames"]
+            assert all(w.endswith("_universal") for w in wn["notNamed"]), (f.name, wn)
+        # An event row says where its unit points (a ship's latest row is mostly gunfire).
+        t = pq.read_table(table, columns=["event", "track", "heading"]).to_pylist()
+        fired = [r for r in t if r["track"] and r["event"] in ("fire_start", "fire_stop", "gun_shot", "kill")]
+        assert all(r["heading"] is not None and r["heading"] == r["heading"] for r in fired), f.name
         steps = d["selfCheck"]["stepSpeed"]
         assert all(v["faster than possible"] == 0 for v in steps.values()), (f.name, steps)
         assert all(v["faster than its own limit"] == 0 for v in steps.values()), (f.name, steps)
@@ -366,3 +382,18 @@ def test_replicated_components_are_read(tmp_path):
     f.write_bytes(battle_with_entities(more))
     r = convert.read([f])
     assert [(eid & 0x3FFFFF, comp, v) for _, eid, comp, _, v, _ in r.stream.replications] == [(1, "team", 2)]
+
+
+def test_entity_message_class_width_is_found_by_its_parity_bit():
+    def message(cls: int, width: int, body: bytes) -> bytes:
+        w = synth.BitWriter()
+        for i in range(0, width, 8):  # the number a byte's worth at a time, the first group lowest
+            k = min(8, width - i)
+            w.bits(cls >> i & ((1 << k) - 1), k)
+        if width & 7:
+            w.bits(bin(cls).count("1") & 1, 1)
+        return w.bytes() + body
+    msgs = [(0.0, 5, message(c, 6, b"\x07\x01")) for c in (33, 40, 9, 62, 1)]
+    width, classes = ecs.message_classes(msgs)
+    assert width == 6 and classes == [33, 40, 9, 62, 1]
+    assert ecs.message_classes([])[0] is None

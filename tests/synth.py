@@ -70,17 +70,50 @@ def attitude(compass_deg: float, pitch_deg: float = 0.0, roll_deg: float = 0.0) 
     return v | (1 << 31 if h < 0 else 0) | (1 << 30 if p < 0 else 0) | (1 << 29 if r < 0 else 0)
 
 
-def flight(aircraft: list[tuple[int, float, float, float, int]], layout: str = "2026") -> bytes:
-    """A flight-model payload: (uid, x, y, z, attitude) per aircraft."""
+def zigzag(v: int) -> bytes:
+    return uleb(((v << 1) ^ (v >> 31)) & 0xFFFFFFFF)
+
+
+def velocity_word(vx: float, vy: float, vz: float) -> int:
+    """The flight entry's velocity word (see wrpl.velocity): signs, speed in 500/2047 m/s, |x| and |y| in 511ths."""
+    speed = math.sqrt(vx * vx + vy * vy + vz * vz)
+    fx, fy = (round(abs(c) / speed * 511) if speed else 0 for c in (vx, vy))
+    return ((vx < 0) << 31 | (vy < 0) << 30 | (vz < 0) << 29 | min(2047, round(speed * 2047 / 500)) << 18
+            | fx << 9 | fy)
+
+
+def flight(aircraft: list[tuple[int, float, float, float, int]], layout: str = "2026",
+           extras: dict[int, dict] | None = None) -> bytes:
+    """
+    A flight-model payload: (uid, x, y, z, attitude) per aircraft; `extras`
+    per uid: `word` (the u32 after the attitude), `seven` (7 bytes), `ammo`
+    (rounds per weapon), `engines` ((state, afterburner or None, condition
+    or None) per engine).
+    """
     w = BitWriter()
     for uid, x, y, z, att in aircraft:
+        ex = (extras or {}).get(uid, {})
         w.flag(True).uleb(uid)
         w.flag(False).flag(False).flag(False)  # data; not skipped
         w.flag(False).u32(0).flag(False).flag(False)  # unknowns, no small block
-        w.uleb(0)  # no zigzag list
-        w.f32(x).f32(y).f32(z).u32(att).u32(0).align()
-        w.raw(bytes(7))
-        w.raw(b"\x01").flag(False).raw(b"\x00").flag(False).raw(bytes(2 if layout == "2026" else 1))  # one engine
+        ammo = ex.get("ammo", [])
+        w.raw(zigzag(len(ammo)))  # the weapons' rounds
+        for n in ammo:
+            w.raw(zigzag(n))
+            if layout == "2026":
+                w.raw(zigzag(0))
+        w.f32(x).f32(y).f32(z).u32(att).u32(ex.get("word", 0)).align()
+        w.raw(ex.get("seven", bytes(7)))
+        engines = ex.get("engines", [(0, None, None)])
+        w.raw(bytes([len(engines)]))
+        for state, burn, cond in engines:
+            w.flag(burn is not None).raw(bytes([state]))
+            if burn is not None:
+                w.u16(burn)
+            w.flag(cond is not None)
+            if cond is not None:
+                w.raw(bytes([cond]))
+            w.raw(bytes(2 if layout == "2026" else 1))
         if layout == "2026":
             w.raw(b"\x00")  # no sensors
         w.raw(b"\x00")  # no countermeasures
@@ -151,6 +184,25 @@ def slot_body(user_id: int, name: str, team: int) -> bytes:
     body[0:2] = le(offset, 2)
     body[2:4] = le(2 | 6 << 12, 2)
     return bytes(body) + index + widths
+
+
+def field_table(fields: dict[int, bytes]) -> bytes:
+    """A replicated object's body: {field number (< 64): its bytes} (see wrpl.reflection_fields)."""
+    data = bytearray(4)
+    for n in sorted(fields):
+        data += fields[n]
+    index = BitWriter()
+    for n in sorted(fields):
+        index.bits(n, 6)
+    index_bytes = index.bytes()
+    widths = BitWriter()
+    codes = {8: 2, 16: 3, 32: 4, 64: 5, 96: 6, 128: 7}
+    for n in sorted(fields):
+        size = len(fields[n]) * 8
+        widths.bits(codes[size], 3) if size in codes else widths.bits(0, 3).uleb(size)
+    data[0:2] = le(len(data) + len(index_bytes), 2)
+    data[2:4] = le(len(fields) | 6 << 12, 2)
+    return bytes(data) + index_bytes + widths.bytes()
 
 
 def slots(players: dict[int, tuple[int, str, int]]) -> bytes:

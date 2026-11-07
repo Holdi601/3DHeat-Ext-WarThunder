@@ -98,6 +98,7 @@ SEVERE = 0xF157
 GROUND_CLIENT = 0xF073
 GROUND_SERVER = 0xF074
 SLOTS = 0xF02D
+REDUNDANT_SLOTS = 0xF0AA
 
 #: A track is cut where its unit jumps further than a + b * seconds (m): a
 #: reused uid, a respawn. Smaller jumps happen in client replays: a distant
@@ -529,6 +530,96 @@ def read_slots(payload: bytes, decompress: Callable[[bytes], bytes] | None) -> d
     return out
 
 
+def reflection_objects(payload: bytes, decompress: Callable[[bytes], bytes] | None, flagged: bool = True
+                       ) -> list[tuple[int, int | None, bytes]]:
+    """
+    0xF02D ReflectionData: every replicated object's message as (object id,
+    ext UID or None, body); see `read_slots`. 0xF0AA RedundancyReflectionData
+    (`flagged` False) is the same list without the compression flag: a u16
+    count, then length, object id and body (on the air arcade battle all
+    3,181 read to their end).
+    """
+    r = Bits(payload[4:])
+    if flagged and r.byte():
+        r.uleb()
+        r.uleb()
+        if decompress is None:
+            return []
+        r = Bits(decompress(payload[4 + (r.pos >> 3) :]))
+    out = []
+    for _ in range(r.u16()):
+        length = r.u16()
+        before = r.pos
+        oid = r.u16()
+        ext = None
+        if oid & 0x7FF == 0x7FF and oid != 0xFFFF:
+            ext = r.uleb()
+        size = length - ((r.pos - before) >> 3)
+        if size < 0:
+            raise FormatError("a reflected object's message shorter than its id")
+        out.append((oid, ext, r.raw(size)))
+    return out
+
+
+def reflection_fields(body: bytes) -> dict[int, bytes]:
+    """
+    A replicated object's numbered fields (the table `_slot` reads) as bytes,
+    the bits of a field that is not whole bytes padded at the end; {} when
+    the body is not a field table.
+    """
+    r = Bits(body)
+    offset = r.u16()
+    count = r.u16()
+    n, width = count & 0xFFF, count >> 12
+    if not n or n >= 255 or offset * 8 > r.n:
+        return {}
+    r.pos = offset * 8
+    sizes = []
+    for _ in range(n):
+        code = r.bits(3)
+        sizes.append((0, 1, 8, 16, 32, 64, 96, 128)[code] if code else r.uleb())
+    r.pos = offset * 8 - ((width * n + 7) // 8) * 8
+    numbers = [r.le_bits(width) for _ in range(n)]
+    r.pos = 32
+    out: dict[int, bytes] = {}
+    for number, size in zip(numbers, sizes):
+        at = r.pos
+        if size % 8 == 0:
+            out[number] = r.raw(size // 8)
+        else:
+            out[number] = (r.bits(size) << (-size % 8)).to_bytes((size + 7) // 8, "big")
+        r.pos = at + size
+    return out
+
+
+#: A player slot's statistics (field 39, little-endian u16 or u32 at a byte offset): name -> (offset, bytes). Checked
+#: against the results' totals of every player at the end of the battle (the last value sent): kills, deaths and
+#: score 32 of 32 players in all three battles checked (air arcade, naval, air simulator), the others in every
+#: battle where some player has one (assists 10, 22, 1 players with any; ai kills 2 and 6; ai ground kills 6 and 3;
+#: naval kills 21; capture zones 5 and 4; zone damage 9 and 6; damage award 30; team kills 1; missile evades 27).
+SLOT_STATS = {
+    "kills": (0, 2), "teamKills": (2, 2), "deaths": (4, 2), "navalKills": (10, 2), "aiKills": (12, 2),
+    "aiGroundKills": (14, 2), "assists": (20, 2), "captureZone": (22, 2), "damageZone": (24, 4),
+    "awardDamage": (40, 4), "missileEvades": (50, 2),
+}
+
+
+def slot_stats(fields: dict[int, bytes]) -> dict[str, int]:
+    """A player slot's statistics (SLOT_STATS from field 39, the score from field 38's first u32, the squad from
+    field 42), as far as the fields were sent."""
+    out: dict[str, int] = {}
+    stats = fields.get(39)
+    if stats:
+        for name, (at, size) in SLOT_STATS.items():
+            if at + size <= len(stats):
+                out[name] = int.from_bytes(stats[at : at + size], "little")
+    if fields.get(38) and len(fields[38]) >= 4:
+        out["score"] = int.from_bytes(fields[38][:4], "little")
+    if fields.get(42) and len(fields[42]) >= 4:
+        out["squad"] = int.from_bytes(fields[42][:4], "little")
+    return out
+
+
 def _slot(body: bytes) -> dict[str, Any]:
     r = Bits(body)
     offset = r.u16()
@@ -608,8 +699,11 @@ def read_flight(payload: bytes, layout: str = "2026", raw: list | None = None
 
     Returns (uid, x, y, z, attitude) per aircraft with data, and why the list
     stopped early, if it did. With `raw`, each entry with data is also added
-    to it whole: (uid, its bit count, its bits as bytes, first bit first), so
-    the fields not read here stay at hand (see `flight_extras`).
+    to it whole: (uid, its bit count, its bits as bytes, first bit first, and
+    where in its first byte it started), so the fields not read here stay at
+    hand (see `flight_extras`). The start matters: the 7 bytes after the
+    attitude begin at the packet's next byte, so the padding before them
+    depends on where the entry began.
     """
     form = FLIGHT_LAYOUTS[layout]
     r = Bits(payload)
@@ -660,7 +754,7 @@ def read_flight(payload: bytes, layout: str = "2026", raw: list | None = None
                 r.pos = start
                 bits = r.bits(n)
                 r.pos = end
-                raw.append((uid, n, (bits << (-n % 8)).to_bytes((n + 7) // 8, "big")))
+                raw.append((uid, n, (bits << (-n % 8)).to_bytes((n + 7) // 8, "big"), start & 7))
     except (EOFError, FormatError) as e:
         return out, str(e)
 
@@ -1243,15 +1337,110 @@ def read_unit_explosion(body: bytes) -> dict[str, Any] | None:
 
 
 def read_part_damage(body: bytes) -> dict[str, Any] | None:
-    """0xF13E, to the unit hit: a flag (1), a number (2, in clusters per vehicle: likely the part), a float (3, likely the damage), and a point in the unit's frame in m (4: x forward, y up, z left as sent)."""
+    """
+    0xF13E, to the unit hit: the hit's visual effect: a flag (1), the
+    effect's number (2), its size (3, a float) and the point in the unit's
+    frame in m (4: x forward, y up, z left as sent). Checked on the air
+    arcade battle: 1,674 of 1,724 come with a UnitHitEffects (0xF0E9) on the
+    same unit within 0.02 s (all within 3 s), the point 0.34 m (median) from
+    that hit's point; field 2 is one of a few numbers that are the same on
+    every vehicle, in runs (4303-4306, 4324-4327, 4504-4549, 4867-4873), and
+    shared with 0xF031's effects: an effect, not a part of the unit; field 3
+    runs from 1.4 to 3.9. So it is what the hit looks like, not its damage.
+    """
     f = id_field_map(body)
     if 2 not in f or 3 not in f:
         return None
-    out = {"flag": f[1][1][0] if 1 in f else None, "part": int.from_bytes(f[2][1][:4], "little"),
-           "value": round(struct.unpack("<f", f[3][1][:4])[0], 4)}
+    out = {"flag": f[1][1][0] if 1 in f else None, "effect": int.from_bytes(f[2][1][:4], "little"),
+           "size": round(struct.unpack("<f", f[3][1][:4])[0], 4)}
     if 4 in f and len(f[4][1]) >= 12:
         out["local"] = [round(x, 3) for x in struct.unpack_from("<3f", f[4][1])]
     return out
+
+
+def read_effect(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF031, to a unit: an effect played on it: field 1 the effect's number
+    (u32, the same numbering as 0xF13E's field 2), field 2 a u32 that differs
+    every time (a random seed), fields 3 and 4 a byte each (0 in the four
+    replays). Checked: 282 of 323 come within 0.05 s of a hit on the unit
+    (0xF0E9 or 0xF133), 300 within 3 s.
+    """
+    f = id_field_map(body)
+    if 1 not in f:
+        return None
+    return {"effect": int.from_bytes(f[1][1][:4], "little"),
+            "seed": int.from_bytes(f[2][1][:4], "little") if 2 in f else None,
+            "f3": f[3][1].hex() if 3 in f else None, "f4": f[4][1].hex() if 4 in f else None}
+
+
+def read_gunner(body: bytes) -> dict[str, Any] | None:
+    """
+    0xD041, to an aircraft with defensive guns: field 1 a gun's index (u16),
+    field 2 a byte, field 3 three floats. Sent twice a second per gun for the
+    whole flight (median 0.50 s apart). Checked: on the air arcade battle the
+    indices of each vehicle run 0 to n-1 where n is the number of gunner
+    weapons in its flight model (the install's `gamedata/flightmodels/
+    <vehicle>.blk`, Weapon blocks with a `gunner` trigger) for 16 of 17
+    vehicles; the 17th (A-26B-10) has 4 indices and 12 such blocks over its
+    presets. The vector was all zero in the four replays (what it carries
+    is not known).
+    """
+    f = id_field_map(body)
+    if 1 not in f:
+        return None
+    vec = f.get(3, (0, b""))[1]
+    return {"gun": int.from_bytes(f[1][1][:2], "little"), "f2": f[2][1].hex() if 2 in f else None,
+            "vector": [round(v, 5) for v in struct.unpack_from("<3f", vec)] if len(vec) >= 12 else None}
+
+
+def read_part_list(body: bytes) -> dict[str, Any] | None:
+    """
+    0xD048, to an aircraft (mostly the recording player's and its target):
+    a count byte and that many records of 24 bytes - a number (u32, rising,
+    gaps between: likely a part of the unit), a float that is the same for all
+    records of a message (0 or a negative number), a double (-0.1 to -8)
+    and a u64 that is the same for all records of a message. The layout is
+    exact (the count times 24 plus one is the length of all 2,660 messages of
+    the arcade battle); what the numbers mean is not known.
+    """
+    if not body:
+        return None
+    n = body[0]
+    if 1 + 24 * n != len(body):
+        return None
+    recs = [struct.unpack_from("<IfdQ", body, 1 + 24 * i) for i in range(n)]
+    return {"records": [[a, round(b, 4), round(c, 6), d] for a, b, c, d in recs]}
+
+
+def read_after_hit(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF117, to a unit just hit (all 40 of the arcade battle within 3 s of a
+    hit on it, 26 within 0.05 s): field 1 six bytes (a byte, two u16, a
+    byte), field 2 a small number (1-8), field 3 a float (3 to 1,200);
+    the same field 1 often twice 0.35 s apart, the float growing. Meaning not
+    known.
+    """
+    f = id_field_map(body)
+    if 1 not in f or len(f[1][1]) < 6:
+        return None
+    a = f[1][1]
+    return {"a": a[0], "b": int.from_bytes(a[1:3], "little"), "c": int.from_bytes(a[3:5], "little"), "d": a[5],
+            "n": f[2][1][0] if 2 in f and f[2][1] else None,
+            "value": round(struct.unpack("<f", f[3][1][:4])[0], 4) if 3 in f and len(f[3][1]) >= 4 else None}
+
+
+def decode_unit_message(mid: int, body: bytes) -> dict[str, Any] | list | None:
+    """A message to a unit decoded as far as it is known (None when nothing is)."""
+    reader = {0xF0E9: read_hit_effect, 0xF133: read_unit_explosion, 0xF13E: read_part_damage, 0xD047: read_rpm,
+              0xF031: read_effect, 0xD041: read_gunner, 0xD048: read_part_list, 0xF117: read_after_hit,
+              0xD0FE: read_projectile_hit_replay}.get(mid)
+    if reader is None:
+        return None
+    try:
+        return reader(body)
+    except (FormatError, EOFError, IndexError, ValueError, struct.error):
+        return None
 
 
 def read_rpm(body: bytes) -> list[int]:
@@ -1262,18 +1451,77 @@ def read_rpm(body: bytes) -> list[int]:
     return [_le16(body, 1 + 2 * i) for i in range(n) if 3 + 2 * i <= len(body)]
 
 
-def flight_extras(n: int, raw: bytes, layout: str = "2026") -> dict[str, Any]:
+def entry_bits(n: int, raw: bytes, phase: int = 0) -> Bits:
+    """A flight entry as `read_flight` keeps it, set back at the bit of its first byte it started at, so that the
+    reads aligned to the packet's bytes fall where they did."""
+    v = int.from_bytes(raw, "big") >> (len(raw) * 8 - n)
+    total = phase + n
+    return Bits((v << (-total % 8)).to_bytes((total + 7) // 8, "big"), phase)
+
+
+#: The flight entry's velocity word: 11 bits of speed in steps of 500/2047 m/s (it stops at 500 m/s).
+VELOCITY_STEP = 500.0 / 2047
+
+#: An engine's state, the first byte of its record (checked on the recording player's own engines, below).
+ENGINE_STATES = {0: "off", 1: "starting", 2: "starting", 3: "starting", 4: "starting", 5: "starting", 6: "starting",
+                 7: "running", 8: "dead"}
+
+
+def velocity(word: int) -> tuple[float, float, float]:
     """
-    The fields of one flight-model entry (as `read_flight` keeps it) that the
-    table does not use, as far as their meaning is known: `velocityWord` the
-    u32 after the attitude (its top 12 bits follow the heading, correlation
-    0.77 on the recording player's aircraft, not decoded further), `controls`
-    the first two of the 7 bytes after it as three 4-bit values around 8 (the
-    middle one follows the roll rate, correlation -0.62: likely the ailerons;
-    the others not identified), `engines` per engine (flag, byte, u16, byte,
-    u16 as sent), the countermeasure list's length.
+    The u32 after the attitude: the aircraft's velocity (m/s, game axes x
+    east, y up, z north). Bits 31, 30, 29 the signs of x, y, z; then the
+    speed (11 bits, steps of 500/2047 m/s, so it stops at 500 m/s), |x| and
+    |y| as fractions of the speed (9 bits each, /511); z is what makes it a
+    unit vector. Checked against the replay's own track (the step between
+    the samples before and after): the direction within 0.10 degrees
+    (median) on the recording player's aircraft and 0.63 on everyone else's
+    in an air simulator battle; the speed 1.022 times the track's at every
+    speed band (the track's speed is over 0.5 s, the sent one at the
+    instant); speeds over 500 m/s all read 500.
     """
-    r = Bits(raw)
+    speed = ((word >> 18) & 0x7FF) * VELOCITY_STEP
+    fx, fy = ((word >> 9) & 0x1FF) / 511, (word & 0x1FF) / 511
+    fz = math.sqrt(max(0.0, 1.0 - fx * fx - fy * fy))
+    return (-fx if word >> 31 & 1 else fx) * speed, (-fy if word >> 30 & 1 else fy) * speed,         (-fz if word >> 29 & 1 else fz) * speed
+
+
+def flight_extras(n: int, raw: bytes, layout: str = "2026", phase: int = 0) -> dict[str, Any]:
+    """
+    The fields of one flight-model entry (as `read_flight` keeps it, with the
+    bit it started at) that the table's position and attitude do not use:
+
+    * `velocity`: the u32 after the attitude decoded (see `velocity`);
+      `velocityWord` the word as sent.
+    * `ammo`: the zigzag number list before the position: one item per
+      weapon, its first number the rounds left (the nested numbers of the
+      2026 layout are kept in `numbers`). Checked on the recording
+      player's I-185: [250, 140, 170] at the start, the counts of the
+      aircraft's three cannon in its weapon preset, and they fall with the
+      cockpit's ammunition counters to within one tick.
+    * `nibbles`: the 7 bytes after it as 14 four-bit values. For the
+      recording player's own aircraft, sent every tick: nibble 1 the
+      elevator, 2 the ailerons, 3 the rudder, each 8 at rest
+      (`elevator` etc. as (n - 8) / 7: elevator positive pulling, aileron
+      positive rolling right), nibble 11 the throttle in fifteenths
+      (`throttle`; 15 also for war emergency power and afterburner).
+      Checked against the cockpit's own stick, pedal and throttle values
+      (correlation 0.70 / 0.61 elevator, 0.38 / 0.69 ailerons, 0.57 / 0.40
+      rudder, 0.74 throttle; I-185 / Eurofighter) and against the aircraft's
+      motion (elevator with the angle of attack 0.46 / 0.28, ailerons with
+      the roll rate 0.56 / 0.42). For other aircraft these bytes change only
+      a few times a battle (a full update now and then) and are not
+      their controls at that moment; they are not used for them.
+    * `engines`: per engine (state byte, afterburner u16 or None, condition
+      byte or None, the tail as sent), and `engineStates` the states named
+      (ENGINE_STATES): on the recording player's Eurofighter 0 before the
+      start, 1-6 while the rpm runs up from 0 to 1,600 after a spawn on
+      the airfield, 7 running (rpm 12,700 median), 8 the last seconds
+      before its loss; the u16 is there only with the throttle at 1.1
+      (afterburner; 32767 full), the condition byte only after the engine
+      was hit (falling from 121 as the rpm at full throttle fell to 8,000).
+    """
+    r = entry_bits(n, raw, phase)
     form = FLIGHT_LAYOUTS[layout]
     if r.flag():
         r.uleb()
@@ -1299,8 +1547,13 @@ def flight_extras(n: int, raw: bytes, layout: str = "2026") -> dict[str, Any]:
         b2 = r.byte() if r.flag() else None
         tail = int.from_bytes(r.raw(form["engine"]), "little")
         engines.append([b1, w, b2, tail])
-    return {"head": list(head), "small": list(small) if small else None, "numbers": numbers, "velocityWord": word,
-            "controls": [seven[0] & 15, seven[1] >> 4, seven[1] & 15], "seven": seven.hex(), "engines": engines}
+    nib = [(seven[i // 2] >> (0 if i % 2 else 4)) & 15 for i in range(14)]
+    return {"head": list(head), "small": list(small) if small else None, "numbers": numbers,
+            "ammo": [x[0] for x in numbers], "velocityWord": word, "velocity": velocity(word),
+            "controls": [nib[1], nib[2], nib[3]], "nibbles": nib, "seven": seven.hex(),
+            "elevator": (nib[1] - 8) / 7, "aileron": (nib[2] - 8) / 7, "rudder": (nib[3] - 8) / 7,
+            "throttle": nib[11] / 15, "engines": engines,
+            "engineStates": [ENGINE_STATES.get(e[0], str(e[0])) for e in engines]}
 
 
 TRIGGER = 0xF028  # RunTriggerAction: a mission script's action

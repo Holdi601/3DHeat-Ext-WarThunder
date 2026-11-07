@@ -106,6 +106,81 @@ class Names:
         return "", "", ""
 
 
+class Weapons:
+    """
+    Weapons' and ammunition's display names from the install's
+    `lang/units_weaponry.csv` and, for ammunition belts, `units_modifications.csv`: a weapon or bomb or missile by `weapons/<id>`
+    ("20 mm ShVAK cannon", short `weapons/<id>/short` "ShVAK"), an
+    ammunition type by `<id>/name` ("Fragmentation incendiary tracer shell",
+    short `<id>/name/short` "FI-T"). Ids come as the replay names them: an
+    ammunition (`frag_i_t`), a weapon (`us_aim_120c_5`, with or without
+    `_default`), or a weapon's blk path (`gameData/Weapons/cannonShVAKS.blk`).
+    """
+
+    def __init__(self, table: dict[str, str] | None = None, source: str = "") -> None:
+        self.table = table or {}
+        self.source = source
+
+    #: The localisation files read: weapons and ammunition, then ammunition belts (`<belt>/name`, "30 mm HE").
+    FILES = ("units_weaponry.csv", "units_modifications.csv")
+
+    @classmethod
+    def from_game(cls, game: str | os.PathLike[str] | None = None, language: str = LANGUAGE) -> "Weapons":
+        root = install.find_game(game)
+        if root is None:
+            return cls()
+        table: dict[str, str] = {}
+        sources = []
+        try:
+            files = None
+            for name in cls.FILES:
+                loose = root / "lang" / name
+                if loose.is_file():
+                    raw = loose.read_bytes()
+                    sources.append(str(loose))
+                else:
+                    if files is None:
+                        from .vromfs import Vromfs
+
+                        archive = root / "lang.vromfs.bin"
+                        files = Vromfs(archive).files if archive.is_file() else {}
+                    raw = files.get(f"lang/{name}")
+                    if raw:
+                        sources.append(f"lang.vromfs.bin:lang/{name}")
+                if raw:
+                    for k, v in read_table(raw, language).items():
+                        table.setdefault(k, v)
+        except (OSError, ValueError, KeyError):
+            pass
+        return cls(table, "; ".join(sources))
+
+    def __bool__(self) -> bool:
+        return bool(self.table)
+
+    def lookup(self, ident: str) -> tuple[str, str]:
+        """(name, short name) of a weapon or ammunition id; ("", "") when the game does not name it."""
+        if not ident or not self.table:
+            return "", ""
+        low = ident.lower().rpartition("/")[2]
+        if low.endswith(".blk"):
+            low = low[:-4]
+        if low.endswith("_default"):
+            low = low[: -len("_default")]
+        for full, short in ((f"{low}/name", f"{low}/name/short"), (f"weapons/{low}", f"weapons/{low}/short"),
+                            (low, f"weapons/{low}/short")):
+            text = self.table.get(full)
+            if text:
+                return _clean(text), _clean(self.table.get(short) or text)
+        return "", ""
+
+
+def load_weapons(game: str | os.PathLike[str] | None = None) -> Weapons:
+    """The weapon names of the install found; `HEAT3D_WT_NO_NAMES=1` turns them off."""
+    if os.environ.get("HEAT3D_WT_NO_NAMES"):
+        return Weapons()
+    return Weapons.from_game(game)
+
+
 def load(game: str | os.PathLike[str] | None = None) -> Names:
     """The names of the install found (see `install.find_game`); `HEAT3D_WT_NO_NAMES=1` turns them off."""
     if os.environ.get("HEAT3D_WT_NO_NAMES"):
@@ -113,4 +188,4 @@ def load(game: str | os.PathLike[str] | None = None) -> Names:
     return Names.from_game(game)
 
 
-__all__ = ["Names", "load", "read_table", "LANGUAGE"]
+__all__ = ["Names", "Weapons", "load", "load_weapons", "read_table", "LANGUAGE"]

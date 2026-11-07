@@ -52,9 +52,14 @@ What War Thunder adds and the published source does not describe:
   ends where its size says when its values are of known types. A value of
   War Thunder's own types (`BufferedHudData`) ends the block's reading; the
   rest is kept as bytes.
-* Entity messages (0x20, 0x21): the target entity's server eid, then a
-  message class number whose width and meaning are set at run time; only the
-  entity is read.
+* Entity messages (0x20, 0x21; `CNetwork::sendto`, `MessageClass::initImpl`
+  in `net/message.cpp`): the target entity's server eid, then the message
+  class number in `log2(classes) + 1` bits, a parity bit when that is not a
+  whole byte, and the message from the next byte. The class number is the
+  class's place among all the game's network message classes sorted by
+  their hash; the list is compiled into the game and not sent, so the
+  number names no class here (`message_classes` finds the width by the
+  parity bit and reads the numbers).
 """
 
 from __future__ import annotations
@@ -560,3 +565,33 @@ def release(e: Entity) -> dict[str, Any] | None:
                 out["vel"] = [round(x, 2) for x in v]
         return out
     return None
+
+
+def message_classes(messages: list[tuple[float, int, bytes]]) -> tuple[int | None, list[int | None]]:
+    """
+    The class number width of these entity messages and each one's number
+    (None where it does not read): the smallest width (1-15 bits) for which
+    every message's parity bit is right and the bits to the next byte are
+    zero (`CNetwork::sendto` writes the number, a parity bit unless the
+    width is a whole byte, and aligns). On the air arcade battle 6 bits fit
+    all 2,974 messages, which also says the game registers 32 to 63 classes.
+    """
+    for width in range(1, 16):
+        out: list[int | None] = []
+        ok = bool(messages)
+        for _, _, rest in messages:
+            r = Bits(rest)
+            try:
+                v = r.le_bits(width)
+                if width & 7:
+                    if r.bits(1) != bin(v).count("1") & 1 or r.bits(-r.pos % 8):
+                        ok = False
+                        break
+            except EOFError:
+                ok = False
+                break
+            out.append(v)
+        if ok:
+            return width, out
+    return None, [None] * len(messages)
+

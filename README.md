@@ -6,7 +6,7 @@ player, the missiles, rockets, bombs and torpedoes in flight, and the kills,
 hits, destroyed modules and launches where they happened. A match document
 beside it holds everything else the replay says: the mission settings and
 sky, every unit and weapon the replay created, the mission's zones and
-airfields, explosions, awards, the recording player's instruments, the chat
+airfields, explosions, awards, the recording player's instruments, the scoreboard over time, the chat
 and the whole results block.
 
 ```bash
@@ -19,7 +19,8 @@ python -m heat3d_ext_warthunder ...     # the same, without installing
 ```
 
 Vehicles get their English names from the game's own localisation
-(`lang/units.csv` in `lang.vromfs.bin`), read from your install at conversion
+(`lang/units.csv` in `lang.vromfs.bin`), weapons and ammunition theirs from
+`lang/units_weaponry.csv`, read from your install at conversion
 time: the install is found through Steam or the launcher's default folders, or
 `--game` / `HEAT3D_WT_GAME`. Nothing of the game's text is in this repository;
 without an install the names are the vehicle ids.
@@ -85,6 +86,11 @@ reading instructions, so the viewer needs no form filled in.
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
 | `rpm` | an aircraft's engine rpm (the mean over its engines) as last sent, within 2 s |
+| `vx`, `vy`, `vz` | an aircraft's velocity as its flight entry sends it (m/s, the game's axes; speeds over 500 m/s read 500) |
+| `engine`, `afterburner`, `engineCondition` | an aircraft's engines from its flight entry: `off`, `starting`, `running`, `dead` (`/`-joined when its engines differ); the afterburner 0-1; a byte sent only after the engine was hit |
+| `weaponName` | kills and deaths: the weapon or ammunition in your install's English (`AIM-120C-5 AMRAAM air-to-air missiles`, `Fragmentation incendiary tracer shell`) |
+| `throttle`, `elevator`, `aileron`, `rudder`, `ammo` | the recording player's aircraft only: the throttle 0-1.1 from its cockpit (1.1 war emergency power or afterburner; else its flight entry's fifteenths), the controls -1..1 from its flight entry (elevator positive pulling, aileron positive rolling right), the rounds left per weapon (`250 140 170`) |
+| `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` | the recording player's aircraft only, from its cockpit: indicated airspeed and climb rate (m/s), fuel, manifold pressure (atm), gear (0-1, 1 down), oil and cylinder head temperature, where its cockpit has the gauge |
 | `speed` | m/s over about two seconds of the track (worked out here; the replay sends no speed for other units) |
 | `alive` | 0 for a unit's samples after its death (its wreck), for at most 60 s or until the game removes it |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
@@ -99,16 +105,18 @@ mission, battle class, session id, start time and author, and:
 | `players`, `slots` | the results' line per player (kills, ground kills, deaths, assists, score, captures, squad, clan, country, line-up, the uids they drove); the replay's player slots (name, user id, team) |
 | `units` | every unit entity the replay created: eid, uid, template, vehicle, kind, type, team, player, mission name, when it was created and removed, where it was created, which components could not be read |
 | `objects` | the mission's named objects: capture zones and airfields with their position and size, airfields' outlines as points, spawn areas |
-| `kills`, `hits`, `modulesDestroyed` | with names and vehicles of both sides |
+| `kills`, `hits`, `modulesDestroyed` | with names and vehicles of both sides; kills with the weapon's English name |
 | `weapons` | every rocket, missile, bomb, torpedo, drop tank and jettisoned load: when, where released (position, attitude, velocity), by which unit (the nearest within 300 m and 1.5 s), how many flight samples, where last seen, when removed |
 | `explosions`, `flak` | `PlayExplosionVisual` (position, direction, kind) and `PlayFlakExplosionVisual` (position) |
 | `awards` | the recording player's awards (`TextStreak`: first_blood, streaks, challenge counters) |
 | `detections`, `unitStates` | `UnitDetected` pairs of units; a message (0xF093) with a unit's position, attitude and velocity whose meaning is not known |
-| `authorInstruments` | the recording player's cockpit values (`ReplayCockpitParams`) by instrument number, at most one per second; `known` says which were checked |
+| `authorInstruments` | the recording player's cockpit values (`ReplayCockpitParams`) by instrument number, at most one per second; `known` names each number this replay sent (name, unit, how it was checked), `notNamed` the rest |
+| `scoreboard` | every player's statistics each time they changed (kills, deaths, assists, score, ai kills, naval kills, zones, damage, missile evades, squad), and each team's score and likely tickets over time (see Reflection data) |
+| `entityMessages` | the entity messages (0x20) by class number: count, target templates, sizes |
 | `chat` | every chat line |
 | `triggers`, `hints`, `missionProgress` | the mission script's actions (RunTriggerAction), its hints, its progress messages |
 | `camera` | the recording player's replay camera every 0.25 s |
-| `projectileHitReplays` | the recording player's own hits and being hit, with weapon and ammunition |
+| `projectileHitReplays` | the recording player's own hits and being hit, with weapon and ammunition and their English names |
 | `results` | the whole results blk as the game wrote it |
 | `counts` | rows, events, lives, kinds, samples, entities by template, weapons, packets read and not read, every message id seen and those not read, samples dropped |
 | `trackBreaks` | every cut of a track for a step faster than the unit can go: where, how far, how fast, and what it most likely is |
@@ -142,7 +150,11 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Weapons in flight (0xF0DB) | the sim replays: 638 and 1,244 flights of missiles, rockets and bombs, each tied to its entity by the record's entity number (its eid << 10); the arcade replay sends none |
 | Player slots, chat | all files (2026 chat lines end in ten bytes not read) |
 | Explosions (0xD08E), flak bursts (0xD01F), awards (0xF078), detections (0xF037), weather (0xF0DF), mission objects (0xD039) | read; positions only checked by eye in the viewer |
-| The recording player's instruments (0xD04A) | read by number. Checked against the author's own track on the arcade battle: instrument 40 is the altitude in metres (ratio 1.0007, correlation 0.999), 64 the compass heading (correlation 0.95). The numbers differ between cockpits (the sim jets send another set); the rest are not named |
+| The recording player's instruments (0xD04A) | named (see [Cockpit instruments](#cockpit-instruments)): the numbers are one list for all cockpits, each cockpit sending the gauges it has; the candidates are the gauge names in the aircraft's flight model (`cockpit/devices` in `gamedata/flightmodels/<aircraft>.blk`) and the game's telemetry page (`webUi.vromfs.bin`), and each was matched by checking it against the replay itself. 32 of the I-185's 41 numbers and all 36 of the Eurofighter's are named; the other 9 are listed under `notNamed` |
+| Flight entries' other fields | the velocity word, the rounds per weapon, the controls and throttle, the engines (see [Flight entries](#flight-entries)). The 7 bytes after the velocity start at the packet's next byte, so the converter now keeps where each entry starts (the sidecar's `phase`). Before this, every entry that did not start on a byte boundary was read 1 to 7 bits off there |
+| Event rows' attitude | every event row (gunfire, hits, kills, repairs) carries its unit's heading, pitch, roll and look vector at that moment. Before, they had none, and a ship's latest row (its guns fire all the time) read as heading 0. Ships' heading against their course over ground: median 1.3 degrees (naval battle, moving at 3 m/s or more) |
+| Player statistics and team scores (0xF02D, 0xF0AA) | read (see [Reflection data](#reflection-data)): at the end of the battle every statistic equals the results' for every player (32, 32, 32 and 48 players); all 8 teams' scores equal the sums of their players' |
+| Weapon names | from the install's `lang/units_weaponry.csv` (weapons, ammunition) and `units_modifications.csv` (ammunition belts): all 25, 16 and 29 kill weapons of the arcade and the two simulator battles are named, 28 of 32 of the naval battle (the other 4 are ships' default belts, `*_universal`, which the game names nowhere) |
 | Vehicle names | from the install's `lang/units.csv` (`<id>_0` full, `<id>_1` short; ships also `ships/<id>_0`): 62 of 62, 50 of 50, 43 of 45 and 31 of 33 vehicles of the four replays (the rest: two airfield radars the game does not name) |
 | Players and AI | from the entity stream's player slot and the slot's Gaijin id: on the four replays no row of a player in the results is AI, every row not AI is a results player's, and every ground unit of the air battles is AI (`selfCheck.identity`) |
 | Wrecks | a unit's samples after its death keep coming (a ship sinks 90 m over minutes): marked `alive` 0 for 60 s or until the game removes the unit; a ground unit's later samples are dropped (counted in `counts.droppedSamples`); aircraft keep theirs, as a few AI aircraft fly on after a kill names them |
@@ -169,8 +181,13 @@ an entity alive at that moment. Read from them:
 | 0xF0B1 UnitSingleShot, 0xF0A0 GmDoSingleShotUnreliable | `gun_shot` rows: single shots of heavy AA and artillery (90 mm, 88 mm, 152 mm), at the gun |
 | 0xF01B, 0xF01C GmDoStopFire | `fire_start`, `fire_stop` rows: bursts of the 40 mm AA guns (pairs, 171/169) |
 | 0xF050 UnitBailoutResponse, 0xF033 UnitRepair, 0xF054 UnitRearm, 0xF0BD UnitBulletRearm, 0xD046 UnitReloadGun | `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` rows |
-| 0xD0FE ProjectileHitReplay | the recording player's own hits and being hit (two a battle): names, vehicles, the weapon's blk and the ammunition (`gameData/Weapons/cannonShVAKS.blk`, `frag_i_t`); in `projectileHitReplays` |
-| the rest (0xD041 on bombers, 0xD048, 0xF13E part damage with a float and a point in the unit's frame, 0xF031, 0xF117, 0xF09A HP, 0xD020 gun angles, ...) | in the messages sidecar with their unit and fields; their meaning is not checked |
+| 0xD0FE ProjectileHitReplay | the recording player's own hits and being hit (two a battle): names, vehicles, the weapon's blk and the ammunition (`gameData/Weapons/cannonShVAKS.blk`, `frag_i_t`), named from the install (`20 mm ShVAK cannon`, `Fragmentation incendiary tracer shell`); in `projectileHitReplays`. Other players' weapons and ammunition are in no message of a client replay except the kill records |
+| 0xF13E | not part damage, as was thought, but a hit's visual effect: a flag, the effect's number, its size and the point in the unit's frame. In the arcade battle 1,674 of 1,724 come with a UnitHitEffects on the same unit within 0.02 s, and all within 3 s; the point is 0.34 m (median) from that hit's. The number comes from a few runs (4303-4306, 4324-4327, 4504-4549, 4867-4873) that are the same on every vehicle and shared with 0xF031 |
+| 0xF031 | an effect played on the unit: the effect's number (as in 0xF13E) and a random seed; 282 of 323 come within 0.05 s of a hit on the unit |
+| 0xD041 | one per defensive gun of an aircraft, twice a second (median 0.50 s apart) for the whole flight: the gun's index and three floats (zero in all four replays). Checked: each vehicle's indices run 0 to n-1, where n is the number of gunner weapons in its flight model, for 16 of 17 bombers (the A-26B-10 has 4 indices and 12 such weapons spread over its presets) |
+| 0xD048 | on aircraft (mostly the recording player's and its target): a count byte and that many 24-byte records (u32 rising, float, double, u64, the last the same in all records of a message). The length fits all 2,660 in the arcade battle; meaning not known |
+| 0xF117 | to a unit just hit (all 40 within 3 s): six bytes, a small number, a float that grows; meaning not known |
+| the rest (0xF09A HP, 0xD020 gun angles, 0xF015, 0xF04F, ...) | in the messages sidecar with their unit and fields; their meaning is not checked |
 
 Names are the community's (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
 
@@ -179,15 +196,18 @@ Names are the community's (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
 Next to each table, so that nothing of the replay is lost to it:
 
 - `<match>.messages.parquet`: every message to a unit (time, message id and
-  name, uid, eid, template, vehicle, its id fields as hex, the payload), every
-  replicated component value (packet 6, `name` the component, `fields` its
-  value), every entity message (with its entity) and every packet no reader
-  here takes, whole.
+  name, uid, eid, template, vehicle, its id fields as hex, `decoded` (what is
+  read of it, as JSON), the payload), every replicated component value
+  (packet 6, `name` the component, `fields` its value), every entity message
+  (with its entity and class number), every replicated object of 0xF02D and
+  0xF0AA (`ReflectionData <kind>/<index>`, its fields as hex) and every
+  packet no reader here takes, whole.
 - `<match>.flight.parquet`: every flight-model entry of every aircraft whole
-  (its bits), with what is known of the fields the table does not use: three
-  4-bit control values around 8 (the middle one follows the roll rate,
-  correlation -0.62: likely the ailerons), the u32 after the attitude (its top
-  bits follow the heading, correlation 0.77), each engine's fields.
+  (its bits, and `phase`: the bit of its first byte it started at), with its
+  velocity, the 14 nibbles after it (`control1-3`, `throttle`), its engines
+  with their state, afterburner and condition, and its rounds per weapon
+  (`ammo`; `numbers` is the whole list). Other aircraft's values are as last
+  refreshed.
 
 ### Also read
 
@@ -209,16 +229,148 @@ Next to each table, so that nothing of the replay is lost to it:
 
 What stays unread, and why:
 
-- **Entity messages** (0x20, 0x21): the message classes are numbered at run
-  time and their bodies are War Thunder's; kept whole with their entity.
-- **ReflectionData** (0xF02D) beyond the player slots, **RedundancyReflectionData**
-  (0xF0AA): numbered fields without names; kept whole.
-- **Fuel, ammunition, throttle, gear and flaps of other units**: in the flight
-  entries (sidecar), not identified: the recording player's instruments have
-  numbers, not names, to check them against.
+- **Entity messages' names and bodies** (0x20, 0x21): the class number is
+  read. It is 6 bits in all four replays, and its parity bit is right in
+  every message (2,974 in the arcade battle, 32,516 in the naval one). But a
+  class number is the class's place among all the game's network message
+  classes sorted by their hash (DagorEngine `net/message.cpp`). That list is
+  compiled into the game: it is not sent, and it is not in the game's data.
+  The install's scripts declare 73 server-to-client network events, more
+  than 6 bits can number, so which of them a build registers, and in what
+  order, cannot be worked out. Kept whole with their entity and class number.
+- **Other replicated objects** (0xF02D and 0xF0AA objects of kinds other than
+  player slots and teams, e.g. 0, 1, 8, 12, 16, 25): their fields are read
+  and kept (sidecar rows `ReflectionData <kind>/<index>`) but not named: the
+  results hold nothing to check them against. Of the player slots, fields
+  3-37 and 40-50 apart from the statistics (clan tag, title, masks) are kept,
+  not named; of the teams, field 3 (likely the tickets) and field 2 are not
+  checked.
+- **Other aircraft's controls, throttle and rounds**: they are in their
+  flight entries, but refreshed only now and then (a median of 4 and 1
+  changes per aircraft in an hour's battle; their rounds fall within 3 s of
+  only 41 of the 134 hits they score). They are kept in the flight sidecar
+  but not put in the table. Their gear, flaps and fuel are not in the
+  entries at all.
+- **0xD048, 0xF117, 0xF09A, 0xD020 and the other unit messages listed above**:
+  layouts read where stated, meaning not known.
 - **Released weapons' names**: a bomb's or rocket's entity holds its position,
   attitude and velocity, not its name; kill records name the weapon of a kill.
 - **Shots that missed**: a client replay holds the hits only (see Gunfire).
+
+### Cockpit instruments
+
+0xD04A sends the recording player's gauges as (number, float) pairs: four a
+second in arcade (every gauge), only the values that changed in simulator.
+The numbers form one list across all cockpits (rpm is 93 in the I-185 and in
+the Eurofighter), and a cockpit sends the gauges its model has. The game's
+own gauge names are in each aircraft's flight model (`cockpit/devices`:
+`speed`, `vario`, `altitude_hour`, `compass`, `pedals1`, `ammo_counter1`, ...)
+and on its telemetry page, but the number for each name is set in the game's
+code. So each number was named by what it does, and checked against the
+replay where something independent says the same (the converter reads
+nothing of this from the install; `convert.INSTRUMENTS` holds the result):
+
+| Number | Name | Check (I-185 in the arcade battle unless said) |
+|---|---|---|
+| 0 | indicated airspeed, m/s | the track's speed corrected by the ISA air density at its height: correlation 0.990, median 1.6 m/s apart |
+| 39 | climb rate, m/s | the track's: correlation 0.9995, median 0.44 m/s apart |
+| 40, 41 | altitude, m; altitude modulo 1000 | the track's height, median 3.8 m apart; 41 is 40 modulo 1000 exactly |
+| 52, 53 | artificial horizon roll and pitch | minus the table's roll and pitch, median 0.63 and 0.16 degrees apart |
+| 64 | compass | the table's heading, median 0.09 degrees apart |
+| 15-20 | rudder pedals (one per pedal gauge, all alike) | the side force on the aircraft: Spearman 0.84; the flight entry's rudder 0.57 (Eurofighter 0.40) |
+| 23, 31 | stick, elevator and ailerons (the sign is the cockpit model's) | the angle of attack: Spearman 0.93 (Eurofighter -0.31); the roll rate 0.65 and 0.66 |
+| 69, 71, 73 | clock: hours (12-hour dial), minutes, seconds | the recording computer's local time: the header's start (UTC+1) plus the replay time, to the minute |
+| 75 | manifold pressure, atm | 1.55 at war emergency power, 1.29 at 100 % (median) |
+| 81-86, 87-92, 93-98 | rpm per engine, rpm modulo 1000, rpm gauge | 81 = 93 exactly; 87 is 93 modulo 1000 exactly; 93 against FmwRpm: correlation 0.973 to 0.996 |
+| 195 | fuel | falls in 2,077 of 2,080 steps, full again at the respawn |
+| 228-230 | landing gear legs, 1 down | Eurofighter: down only at the airfields' height and under 125 m/s (median 38), over 9 spawns and 2 landings |
+| 240, 241 | throttle per engine, 1.1 war emergency power or afterburner | the flight entry's throttle: correlation 0.74 (Eurofighter); manifold pressure higher at 1.1 |
+| 330-332, 346-348 | ammunition counters (the second set equal to the first) | start at the weapon preset's rounds in the install's flight model (140, 250, 170) and fall with the flight entry's rounds |
+| 135, 159 | oil and cylinder head temperature | likely: they rise over a sortie; nothing to check them against |
+| 58, 61 | slip ball, turn needle | likely: with the side force -0.25 and the turn rate 0.44 only |
+| 223 | airbrake | likely: Eurofighter, only on approach (127-141 m/s), with flight-entry nibble 5 (0.82) |
+| 490-497, 500-505 | wheel brakes | likely: Eurofighter, set only standing on the airfield (0-14 m/s), with flight-entry nibble 4 (0.93) |
+
+Not named (I-185): 129 (1 while the engine runs, falls with it), 165
+(0.833, constant), 198 (10 or 11, switching with 240), 231 (0.05, then
+0.5), 239 (-0.2 to 0.2, with the angle of attack: Spearman 0.78; perhaps the
+trim), 273 (1, sent 59 times), 276 (0.05 to 1 at the start), 300 (0 to 1
+in 1 s, at the switches of war emergency power), 379 (0 to 1 in 2.5 s,
+mostly 1 at 60-90 m/s; perhaps the flaps). The Eurofighter's 225 and 226
+(0.05 to 1) are not named either.
+
+The table's `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`,
+`oilTemperature`, `headTemperature` and `throttle` come from these, on the
+recording player's own rows, taking the last message at most 0.2 s after
+the sample (each tick's message comes about 0.1 s before its flight packet).
+
+### Flight entries
+
+Each aircraft's flight entry (packet type 2) carries, besides its position
+and attitude:
+
+- **Velocity**: the u32 after the attitude. Bits 31, 30 and 29 are the signs
+  of x, y and z; then the speed in 11 bits of 500/2047 m/s (it stops at
+  500 m/s), then |x| and |y| as fractions of the speed in 9 bits each (/511),
+  and z is what makes the vector a unit vector. Checked against the step
+  between the received samples before and after: the direction is within
+  0.10 to 0.17 degrees (median) on the recording player's aircraft and 0.53
+  to 1.6 on everyone else's (simulator, arcade, naval); speed ratio 0.998 to
+  1.000 in all four battles; track speeds above about 500 m/s all read 500.
+  `selfCheck.flightEntries`.
+- **Rounds per weapon**: the zigzag list before the position, one item per
+  weapon, the rounds left first. The recording player's equals its cockpit's
+  counters one tick later in 2,050 of 2,135 samples (arcade).
+- **Controls and throttle**: the 7 bytes after the velocity as 14 nibbles.
+  For the recording player, sent every tick: 1 the elevator, 2 the ailerons,
+  3 the rudder (8 at rest; against the cockpit's stick and pedals 0.70, 0.38,
+  0.57 on the I-185 and -0.61, 0.69, 0.40 on the Eurofighter; elevator with
+  the angle of attack 0.46 and 0.28, ailerons with the roll rate 0.56 and
+  0.42), 11 the throttle in fifteenths (15 also for war emergency power and
+  afterburner), 4 the wheel brakes, 5 the airbrake, 8 likely the brake chute
+  (15 only in the landing roll, 22-122 m/s). Other aircraft's nibbles change
+  only a few times a battle and are not their controls at the time.
+- **Engines**: per engine a state byte (0 off; 1-6 starting, as the rpm runs
+  up from 0 to about 1,600 after a spawn on the airfield; 7 running; 8 dead),
+  a u16 present only with afterburner (32767 full; the cockpit's throttle is
+  1.10 at the median of the 3,841 samples with it, 0.95 without), and a byte present only after the engine was hit (on the
+  Eurofighter, falling from 121 to 71 as its full-throttle rpm fell to 8,000).
+  An engine "dead": of the aircraft lives with one, 29 of 110 are killed
+  (median 0.1 s after) and 81 end within 2 minutes in the arcade battle;
+  74 and 102 of 182 in air_afghan (6 fly on longer), 118 and 49 of 174 in
+  air_denmark (7 fly on). Other aircraft's engine fields change with the
+  engine (a median of 5 state changes per aircraft in an hour) and are used.
+
+### Reflection data
+
+0xF02D ReflectionData replicates the game's numbered objects: a compression
+flag, a count, and per object its id (the top 5 bits the kind, the low 11 an
+index) and a field table. 0xF0AA RedundancyReflectionData is the same list
+without the flag (all 3,181 to 14,708 per replay read to their end). Kind 14
+is the player slots (field 2 user id and name, 9 the team, as before), kind
+15 the teams (index 1 and 2):
+
+- A slot's field 39 holds its statistics as little-endian numbers at fixed
+  places: kills (offset 0), team kills (2), deaths (4), naval kills (10), AI
+  kills (12), AI ground kills (14), assists (20), capture zones (22), zone
+  damage (24, u32), damage award (40, u32), missile evades (50). Field 38
+  starts with the score (u32), field 42 is the squad. At the end of the
+  battle every one equals the results' for every player: 32 of 32 in the
+  arcade, naval and air_afghan battles, 48 of 48 in air_denmark
+  (`selfCheck.scoreboardVsResults`). Each was
+  found where some player had a nonzero value: assists in 10, 22 and 1
+  players; AI kills in 2 and 6; AI ground kills in 6 and 3; naval kills in
+  21; capture zones in 5 and 4; zone damage in 9 and 6; damage award in 30;
+  team kills in 1; missile evades in 27. Ground kills had no such player in
+  any of the four battles (their place is not known).
+- A team's field 7 (a float) is its score: at the end it equals the sum of
+  its players' results scores for all 8 teams of the four battles (13,520
+  and 20,941 in the arcade battle; 14,834 and 15,837 in the naval one;
+  47,911 and 43,446, 46,558 and 41,260 in the simulator battles). Field 3 (u16) is likely its tickets: lower
+  for the team that lost more, and 0 for the naval battle's losing side.
+- Each message sends only the fields that changed, so `scoreboard` in the
+  match document lists every player's statistics and every team's score at
+  each change.
 
 ### Dead reckoning, and the smoother
 
@@ -275,8 +427,9 @@ row at the shooter's position at the moment of the hit, `targetX/Y/Z` the hit
 point (the unit hit, moved by the hit point in its frame, turned by its
 attitude), the direction towards it, `other` the unit hit. Shells and bullets
 that missed are not sent: they are not entities, the weapons-in-flight
-messages hold only rockets, missiles, bombs and torpedoes, and the recording
-player's own instruments hold no ammunition count. Heavy AA and artillery
+messages hold only rockets, missiles, bombs and torpedoes. The recording
+player's rounds left (its `ammo` column) fall as it fires, so its bursts can
+be told, but not where those rounds went. Heavy AA and artillery
 send each single shot (`gun_shot`, no direction), 40 mm AA guns their bursts
 (`fire_start`, `fire_stop`).
 
@@ -390,7 +543,8 @@ it knows of the format comes from:
 - Gaijin's Dagor Engine source (github.com/GaijinEntertainment/DagorEngine,
   BSD 3-Clause): `prog/engine/daECS/net/network.cpp`, `connection.cpp`,
   `object.cpp`, `serialize.cpp`, `compression.h` and `prog/engine/daECS/core/baseIo.cpp`,
-  `componentTypes.cpp` for the entity stream (`ecs.py`). Component and type
+  `componentTypes.cpp` for the entity stream (`ecs.py`), and `net/message.cpp`
+  (`MessageClass::initImpl`) for how entity messages number their classes. Component and type
   names are matched by their FNV-1a hashes against words of the game's own
   archives; `ecs.py` lists the names found.
 - The same source's `prog/dagorInclude/daNet/mpi.h`, `prog/engine/daNet/ext/mpi.cpp`

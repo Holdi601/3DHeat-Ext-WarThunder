@@ -68,11 +68,13 @@ def main(argv: list[str] | None = None) -> int:
     for f, why in bad:
         print(f"failed {f}: {why}")
     vehicle_names = names.load(args.game) if groups else names.Names()
+    weapon_names = names.load_weapons(args.game) if groups else names.Weapons()
     if groups and not vehicle_names:
         print("note: no War Thunder install found to name the vehicles; the table names them by their ids")
     for files in groups.values():
         try:
-            table, doc = convert(files, args.out, smoothing=not args.no_smoothing, names=vehicle_names)
+            table, doc = convert(files, args.out, smoothing=not args.no_smoothing, names=vehicle_names,
+                                 weapon_names=weapon_names)
         except (OSError, FormatError, EOFError, ValueError, IndexError) as e:
             print(f"failed {files[0]}: {type(e).__name__}: {e}")
             bad.append((files[0], str(e)))

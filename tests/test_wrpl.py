@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import struct
 
 import pytest
 
@@ -120,3 +121,62 @@ def test_chat_with_and_without_flag_byte():
     assert wrpl.read_chat(synth.chat("pilot", "hello", flag=False)) == {"sender": "pilot", "text": "hello"}
     with pytest.raises(wrpl.FormatError):
         wrpl.read_chat(b"\x00\x40abc")
+
+
+def test_flight_entry_extras_wherever_the_entry_starts():
+    # The second entry starts mid-byte: its 7 bytes are aligned to the packet, so the entry's phase is needed.
+    word = synth.velocity_word(-120.0, 15.0, 240.0)
+    extras = {
+        344: {"word": word, "seven": bytes([0x0B, 0x5A, 0, 0, 0, 0x0C, 0]), "ammo": [250, 140, 170],
+              "engines": [(7, 32767, None), (8, None, 90)]},
+        345: {"word": word, "seven": bytes([0x04, 0x8C, 0, 0, 0, 0x03, 0]), "ammo": [1]},
+    }
+    payload = synth.flight([(344, 1.0, 2.0, 3.0, 0), (345, 4.0, 5.0, 6.0, 0)], extras=extras)
+    raw: list = []
+    got, err = wrpl.read_flight(payload, "2026", raw)
+    assert err is None and len(raw) == 2
+    assert {r[3] for r in raw} != {0}  # at least one entry starts mid-byte
+    a, b = (wrpl.flight_extras(n, bits, "2026", phase) for _, n, bits, phase in raw)
+    assert a["ammo"] == [250, 140, 170] and b["ammo"] == [1]
+    assert a["nibbles"][1:4] == [11, 5, 10] and a["throttle"] == 12 / 15
+    assert a["elevator"] == pytest.approx(3 / 7) and a["aileron"] == pytest.approx(-3 / 7)
+    assert b["nibbles"][1:4] == [4, 8, 12] and b["throttle"] == 3 / 15
+    assert a["engineStates"] == ["running", "dead"] and a["engines"][0][1] == 32767 and a["engines"][1][2] == 90
+    for v, want in zip(a["velocity"], (-120.0, 15.0, 240.0)):
+        assert v == pytest.approx(want, abs=0.6)
+
+
+def test_velocity_word_signs_speed_and_cap():
+    vx, vy, vz = wrpl.velocity(synth.velocity_word(10.0, -20.0, -30.0))
+    assert (vx > 0, vy < 0, vz < 0) == (True, True, True)
+    assert math.hypot(vx, vy, vz) == pytest.approx(math.hypot(10, 20, 30), abs=0.2)
+    assert math.hypot(*wrpl.velocity(synth.velocity_word(0.0, 0.0, 900.0))) == pytest.approx(500.0)
+
+
+def test_reflection_objects_both_forms_and_slot_statistics():
+    stats = bytearray(54)
+    for name, value in {"kills": 3, "deaths": 1, "assists": 2, "damageZone": 16659, "missileEvades": 27}.items():
+        at, size = wrpl.SLOT_STATS[name]
+        stats[at : at + size] = value.to_bytes(size, "little")
+    body = synth.field_table({38: (874).to_bytes(4, "little") + bytes(12), 39: bytes(stats)})
+    msg = synth.le(len(body) + 2, 2) + synth.le(0xE000 | 5, 2) + body
+    flagged = b"\x02\x58\x2d\xf0" + b"\x00" + synth.le(1, 2) + msg
+    plain = b"\x02\x58\xaa\xf0" + synth.le(1, 2) + msg
+    for payload, flag in ((flagged, True), (plain, False)):
+        (oid, ext, got), = wrpl.reflection_objects(payload, None, flag)
+        assert oid == 0xE005 and ext is None
+        s = wrpl.slot_stats(wrpl.reflection_fields(got))
+        assert (s["kills"], s["deaths"], s["assists"], s["damageZone"], s["missileEvades"], s["score"]) == \
+            (3, 1, 2, 16659, 27, 874)
+
+
+def test_unit_messages_decoded():
+    eff = synth.id_fields({1: (32, synth.le(4505, 4)), 2: (32, synth.le(0xDEADBEEF, 4)), 3: (8, 0), 4: (8, 0)})
+    assert wrpl.read_effect(eff) == {"effect": 4505, "seed": 0xDEADBEEF, "f3": "00", "f4": "00"}
+    gun = synth.id_fields({1: (16, synth.le(3, 2)), 2: (8, 0), 3: (96, bytes(12))})
+    assert wrpl.read_gunner(gun) == {"gun": 3, "f2": "00", "vector": [0.0, 0.0, 0.0]}
+    recs = b"".join(struct.pack("<IfdQ", 8 + i, 0.0, -1.5, 77) for i in range(2))
+    assert wrpl.read_part_list(bytes([2]) + recs)["records"] == [[8, 0.0, -1.5, 77], [9, 0.0, -1.5, 77]]
+    assert wrpl.read_part_list(bytes([3]) + recs) is None
+    assert wrpl.decode_unit_message(0xF031, eff)["effect"] == 4505
+    assert wrpl.decode_unit_message(0x1234, eff) is None
