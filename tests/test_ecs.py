@@ -360,6 +360,10 @@ def test_messages_to_units_name_their_entity(tmp_path):
     # 345 flies north at z = 1300 + 200 t; the hit point is 2 m behind it.
     assert (shot["targetX"], shot["targetZ"]) == pytest.approx((50.0, 1300.0 + 200 * 9.9 - 2.0), abs=0.6)
     assert shot["dirZ"] > 0.9  # 344 is behind and below it
+    # The same hit in 345's own frame: 2 m behind its origin, the shot travelling forward along it.
+    assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx((-2.0, 0.0, 0.0), abs=1e-3)
+    assert shot["hitDirX"] > 0.9 and shot["otherVehicle"] and shot["otherLife"].startswith("345#")
+    assert shot["hitPart"] is not None
     dead = next(r for r in rows if r["event"] == "dead")
     assert dead["player"] == "Pilot Two" and dead["time"] == pytest.approx(11.0)
     one = [r for r in rows if r["player"] == "Pilot One" and r["event"] == "position" and r["time"] > 11]

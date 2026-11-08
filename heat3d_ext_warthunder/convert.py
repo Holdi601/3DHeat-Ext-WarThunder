@@ -71,7 +71,8 @@ HINTS = {
         "extra": ["event", "player", "userId", "life", "Vehicle", "VehicleName", "VehicleShortName", "VehicleNameKey",
                   "kind", "type", "uid", "ai", "isPlayer", "other", "weapon", "weaponName", "heading", "pitch", "roll", "speed", "alive",
                   "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
-                  "rollRaw", "targetX", "targetY", "targetZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
+                  "rollRaw", "targetX", "targetY", "targetZ", "otherVehicle", "otherLife", "hitLocalX", "hitLocalY",
+                  "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature"],
     },
@@ -124,6 +125,15 @@ COLUMNS = [
     ("targetX", "f32"),
     ("targetY", "f32"),
     ("targetZ", "f32"),
+    ("otherVehicle", "str"),
+    ("otherLife", "str"),
+    ("hitLocalX", "f32"),
+    ("hitLocalY", "f32"),
+    ("hitLocalZ", "f32"),
+    ("hitDirX", "f32"),
+    ("hitDirY", "f32"),
+    ("hitDirZ", "f32"),
+    ("hitPart", "f32"),
     ("rpm", "f32"),
     ("vx", "f32"),
     ("vy", "f32"),
@@ -1803,8 +1813,8 @@ UNIT_EVENTS = {
 }
 
 
-def _rotate(s: Sample, local: tuple[float, float, float]) -> tuple[float, float, float] | None:
-    """A point in a unit's own frame (x forward, y up, z right; m) in the game's axes, by the sample's attitude."""
+def _basis(s: Sample) -> tuple[tuple[float, ...], tuple[float, ...], tuple[float, ...]] | None:
+    """A unit's forward, up and right axes in the game's axes, by the sample's attitude (None without one)."""
     a = s.smooth_angles or _angles(s)
     if a is None:
         return None
@@ -1815,8 +1825,25 @@ def _rotate(s: Sample, local: tuple[float, float, float]) -> tuple[float, float,
     c, sn = math.cos(rl), math.sin(rl)
     right = tuple(right0[k] * c - up0[k] * sn for k in range(3))
     up = tuple(up0[k] * c + right0[k] * sn for k in range(3))
+    return fwd, up, right
+
+
+def _rotate(s: Sample, local: tuple[float, float, float]) -> tuple[float, float, float] | None:
+    """A point in a unit's own frame (x forward, y up, z right; m) in the game's axes, by the sample's attitude."""
+    b = _basis(s)
+    if b is None:
+        return None
+    fwd, up, right = b
     return tuple(s_ + fwd[k] * local[0] + up[k] * local[1] + right[k] * local[2]
                  for k, s_ in enumerate((s.x, s.y, s.z)))
+
+
+def _unrotate(s: Sample, v: tuple[float, float, float]) -> tuple[float, float, float] | None:
+    """A direction in the game's axes in a unit's own frame (x forward, y up, z right), by the sample's attitude."""
+    b = _basis(s)
+    if b is None:
+        return None
+    return tuple(sum(axis[k] * v[k] for k in range(3)) for axis in b)
 
 
 def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -1889,6 +1916,9 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                 row = {**_row(shooter, ss, "shot"), "time": m.t}
                 pos = (ss.x, ss.y, ss.z)
             row["other"] = _label(victim) if victim else _uid_label(m.uid)
+            if victim is not None:
+                row.update(otherVehicle=victim.vehicle, otherLife=victim.id)
+            row["hitPart"] = hit["part"]
             if target is not None:
                 d = [target[k] - pos[k] for k in range(3)]
                 n = math.sqrt(sum(c * c for c in d))
@@ -1896,6 +1926,15 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                 if n > 0:
                     row.update(dirX=d[0] / n, dirY=d[1] / n, dirZ=d[2] / n)
                 check["shotsWithTarget"] += 1
+                # The hit on the victim itself: the point in its own frame as sent, and the way the shot came,
+                # turned into that frame by the victim's attitude then (only for a point sent in that frame).
+                if vs is not None and hit["aligned"]:
+                    loc = hit["local"]
+                    row.update(hitLocalX=loc[0], hitLocalY=loc[1], hitLocalZ=loc[2])
+                    check["shotsWithLocalPoint"] += 1
+                    ld = _unrotate(vs, (d[0] / n, d[1] / n, d[2] / n)) if n > 0 else None
+                    if ld is not None:
+                        row.update(hitDirX=ld[0], hitDirY=ld[1], hitDirZ=ld[2])
             out.append(row)
         elif m.mid in UNIT_EVENTS:
             event = UNIT_EVENTS[m.mid]
@@ -2520,6 +2559,14 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "hits": "rows at the position of the unit hit; 'other' is who hit it, 'weapon' their vehicle",
             "module_destroyed": "rows at the unit; 'weapon' the part's number, 'other' who last hit the unit "
                                 "within 5 s before (empty when no hit record is that close)",
+            "hitLocalX": "shot rows: the hit point on the unit hit, in its own frame as the replay sends it (m; "
+                         "hitLocalX forward, hitLocalY up, hitLocalZ right), only where the message's point is in "
+                         "that frame; hitDirX/Y/Z the way the shot travelled (shooter to hit point, a unit vector) "
+                         "in the same frame, by the unit's attitude at the hit; otherVehicle and otherLife the unit "
+                         "hit's vehicle id and life; hitPart the u16 the hit message sends before the point "
+                         "(hits with the same number lie together on a vehicle: 1.1 m from their mean point on average "
+                         "in the four test replays, against 3.5 m for all of a vehicle's hits; which part it names "
+                         "is not known)",
             "launch": "rows at the launcher, the nearest unit within 300 m and 1.5 s of the release point",
             "impact": "a weapon's last sample when its entity was removed within 3 s after it",
             "vx": "vx, vy, vz: an aircraft's velocity as its flight entry sends it (m/s, the game's axes; speeds over "
