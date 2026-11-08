@@ -13,6 +13,7 @@ and the whole results block.
 pip install -e .                        # installs the `heat3d-wt-replay` command
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 heat3d-wt-replay a.wrpl b.wrpl -o out   # files, folders, or both
+heat3d-wt-replay battle.zip -o out      # a server replay's zip as downloaded (its .wrpl parts, unpacked to a temporary folder)
 heat3d-wt-replay ... --game "D:/Games/War Thunder"   # where the install is, if it is not found
 heat3d-wt-replay ... --no-smoothing     # other units' tracks exactly as the replay has them
 python -m heat3d_ext_warthunder ...     # the same, without installing
@@ -170,6 +171,8 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Vehicle switches | a player's unit still alive when the same player's next unit (another entity, created no earlier, first seen later) appears is ended there: a vehicle left standing, which the game may go on sending where it stands to the end (3 in the 100 ground battles, each never moving and without the spawn's UnitRepair). A killstreak bomber (`*_killstreak`, an AI aircraft the player calls in, in arcade and realistic battles) flies beside the player's tank and ends nothing. `selfCheck.vehicleSwitch.twoLiveVehicles` (one player's two different units alive at the same moment for over a second) is 0 in all 104 replays; before the wrecks were read as above, 6 of the ground battles sampled had 25 such pairs |
 | Tank wrecks | `selfCheck.wrecks`: 5,614 wrecks in the 104 replays, staying a median of 268 s (per battle); a tank's wreck moves at most 58 m (99th percentile per battle, median 7 m) from where it was first seen dead |
 | Battle mode | difficulty from the header, game and mission mode from the mission (see [Battle mode](#battle-mode)) |
+| Aircraft in a 2026 server replay (version 101404) | the flight packets are in the 2026 layout and parse to their end (the bytes after the list are zero padding): the test battle (a ground battle) has the two aircraft that flew, a helicopter and a jet, 4 samples a second; on every aircraft (a server replay has no recording player) the heading is 2.2 deg (median) from the direction of travel and the roll's sign is the turn's in 105 of 105 clear turns (`selfCheck.aircraftAttitude`); the sent velocity is within 0.13 deg (median) and 0.1 % of the step between samples (`selfCheck.flightEntries`). The flight list also names every player's placeholder aircraft (`dummy_plane`, one per player, never flown) and the tanks' recon drones, all with "no data" in every packet: the drones' positions are not in the flight packets, the ground packets or the unit states, and stay unread |
+| Players of a server replay | the results list every player with an empty user id: each is found by name in the slots (32 of 32 in the test battle), its vehicles are its line-up from the results' matchingInfo; every statistic of the scoreboard equals the results' for 32 of 32 (`selfCheck.players`, `selfCheck.scoreboardVsResults`) |
 | Aircraft positions, version 101286 and server replays (2025) | not read: their flight packets have a different layout |
 
 ### Messages to units

@@ -324,3 +324,69 @@ def test_flight_entries_and_the_recording_players_instruments(tmp_path):
     assert d["selfCheck"]["flightEntries"]["engineDead"]["lives"] == 1
     side = pq.read_table(table.with_name(table.name.replace(".parquet", ".flight.parquet"))).to_pylist()
     assert {r["ammo"] for r in side if r["uid"] == 345} == {"100"}
+
+
+def server_battle(part: int = 0) -> bytes:
+    """
+    A server replay: its results name the players but leave their user ids empty (the slots
+    hold them; the line-ups are in matchingInfo), and an aircraft turns right, banked 30 deg.
+    """
+    results = {
+        "status": "success",
+        "timePlayed": 30.0,
+        "player": [
+            {"name": "Pilot One", "userId": "", "team": 1, "kills": 1, "deaths": 0, "score": 500},
+            {"name": "Driver Two", "userId": "", "team": 2, "kills": 0, "deaths": 1, "score": 100},
+        ],
+        "matchingInfo": {
+            "111": {"crafts_info": {"__array": True, "array0": {"name": "us_m1_abrams"}, "array1": {"name": "f_15a"}}},
+            "222": {"crafts_info": {"__array": True, "array0": {"name": "ussr_t_72"}}},
+        },
+    }
+    packets = [synth.packet(1, 0, b""),
+               synth.packet(4, 100, synth.slots({0: (111, "Pilot One", 1), 1: (222, "Driver Two", 2)}))]
+    x = z = 0.0
+    for i in range(81):
+        compass = 10.0 * i * 0.25  # 10 deg/s to the right
+        packets.append(synth.packet(2, 1000 + i * 250, synth.flight([(344, x, 2000.0, z, synth.attitude(compass, 0, -30))])))
+        x += 200 * 0.25 * math.sin(math.radians(compass))
+        z += 200 * 0.25 * math.cos(math.radians(compass))
+    packets.append(synth.packet(0, 21000, b""))
+    return synth.replay(packets, results, compress="zlib", server=True, part=part)
+
+
+def test_server_replay_players_and_every_aircraft_checked(tmp_path):
+    f = tmp_path / "0000.wrpl"
+    f.write_bytes(server_battle())
+    _, path = convert.convert([f], tmp_path / "out", names=NAMES)
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    by_name = {p["name"]: p for p in doc["players"]}
+    assert set(by_name) == {"Pilot One", "Driver Two"}
+    assert by_name["Pilot One"]["userId"] == "111" and by_name["Pilot One"]["vehicles"] == ["us_m1_abrams", "f_15a"]
+    assert by_name["Driver Two"]["userId"] == "222" and by_name["Driver Two"]["score"] == 100
+    check = doc["selfCheck"]
+    assert check["players"] == {"inResults": 2, "inSlots": 2, "roster": 2, "notInResults": 0, "resultsWithoutUserId": 2}
+    att = check["aircraftAttitude"]
+    assert att["checked"].startswith("every aircraft") and att["samples"] > 50
+    assert att["headingVsTravelMedianDeg"] < 5 and att["turnsRollRightWingDownAgrees"] > 50
+    assert att["turnsRollDisagrees"] == 0
+
+
+def test_cli_reads_a_server_replay_zip(tmp_path, capsys):
+    import zipfile
+
+    z = tmp_path / "battle.zip"
+    with zipfile.ZipFile(z, "w") as w:
+        w.writestr("battle/0000.wrpl", server_battle(0))
+        w.writestr("battle/0001.wrpl", server_battle(1))
+        w.writestr("battle/readme.txt", "not a replay")
+        w.writestr("../escape.wrpl", server_battle(2))  # read by its name only, never written outside
+    empty = tmp_path / "empty.zip"
+    with zipfile.ZipFile(empty, "w") as w:
+        w.writestr("a.txt", "x")
+    code = cli.main([str(z), str(empty), "-o", str(tmp_path / "out")])
+    out = capsys.readouterr().out
+    assert code == 1 and out.count("ok ") == 1 and "no .wrpl file in the zip" in out
+    doc = json.loads(next((tmp_path / "out" / "avg_test_land").glob("*.match.json")).read_text(encoding="utf-8"))
+    assert doc["files"] == ["0000.wrpl", "0001.wrpl", "escape.wrpl"]
+    assert not (tmp_path / "escape.wrpl").exists()

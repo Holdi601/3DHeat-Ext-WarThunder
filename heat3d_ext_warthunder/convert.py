@@ -1405,18 +1405,34 @@ def end_abandoned(all_lives: list[Life]) -> dict[str, Any]:
 
 
 def players(r: Replay) -> dict[str, dict[str, Any]]:
-    """The results' player table by user id, with each player's vehicles and their kinds."""
+    """
+    The results' player table by user id, with each player's vehicles and their kinds.
+    A server replay's results name every player but leave their user ids empty: they
+    are found by name in the slots, and the vehicles (no kinds) are the line-ups of
+    the results' matchingInfo.
+    """
     ui = (r.results.get("uiScriptsData") or {}).get("playersInfo") or {}
     info = {str(v.get("id")): v for v in ui.values() if isinstance(v, dict)} if isinstance(ui, dict) else {}
+    matching = r.results.get("matchingInfo")
+    matching = matching if isinstance(matching, dict) else {}
+    by_name = {s.get("name"): str(s.get("userId", "")) for s in r.slots.values() if s.get("name") and s.get("userId")}
     rows = r.results.get("player") or []
     rows = rows if isinstance(rows, list) else [rows]
     out: dict[str, dict[str, Any]] = {}
     for p in rows:
         if not isinstance(p, dict):
             continue
-        uid = str(p.get("userId", ""))
+        uid = str(p.get("userId") or by_name.get(p.get("name")) or "")
+        if not uid:
+            uid = f"name:{p.get('name', '')}" if p.get("name") else ""
+        p = {**p, "userId": uid} if uid and not uid.startswith("name:") else p
         i = info.get(uid, {})
         crafts = i.get("crafts") if isinstance(i.get("crafts"), dict) else {}
+        if not crafts:
+            m = matching.get(uid) if isinstance(matching.get(uid), dict) else {}
+            arr = m.get("crafts_info") if isinstance(m.get("crafts_info"), dict) else {}
+            line = [v.get("name") for k, v in arr.items() if k.startswith("array") and isinstance(v, dict)]
+            crafts = {f"{n:02d}": v for n, v in enumerate(line) if v}
         kinds = {}
         ci = i.get("crafts_info") if isinstance(i.get("crafts_info"), dict) else {}
         for v in ci.values():
@@ -1428,6 +1444,11 @@ def players(r: Replay) -> dict[str, dict[str, Any]]:
         if uid not in out:
             out[uid] = {"userId": uid, "name": i.get("name", ""), "team": i.get("team"), "vehicles": [],
                         "vehicleKinds": {}}
+    for s in r.slots.values():  # in the battle (a slot) but not in the results
+        uid = str(s.get("userId", ""))
+        if uid and uid not in out:
+            out[uid] = {"userId": uid, "name": s.get("name", ""), "team": s.get("team"), "vehicles": [],
+                        "vehicleKinds": {}, "notInResults": True}
     return out
 
 
@@ -3130,19 +3151,21 @@ def _flight_check(r: Replay, all_lives: list[Life], author: str) -> dict[str, An
     return out
 
 
-def _attitude_check(all_lives: list[Life], author: str) -> dict[str, Any]:
+def _attitude_check(all_lives: list[Life], author: str, everyone: bool = False) -> dict[str, Any]:
     """
     The aircraft attitude against the flight path, on the recording player's
-    own aircraft (which the client does not extrapolate): heading against the
+    own aircraft (which the client does not extrapolate; `everyone`: on every
+    aircraft, for a server replay, whose aircraft are all the server's own and
+    which has no recording player): heading against the
     direction of travel, pitch against the climb angle, and in clear turns
     (turning at 6 deg/s or more, banked 20 to 80 deg) whether the roll's sign
     is the turn's (right wing down in a right turn).
     """
     head, pitch, agree, disagree = [], [], 0, 0
     for life in all_lives:
-        if life.kind != "air" or not author or life.user_id != author:
+        if life.kind != "air" or not (everyone or (author and life.user_id == author)):
             continue
-        ss = [s for s in life.samples if life.died is None or s.t <= life.died]
+        ss = [s for s in life.samples if (life.died is None or s.t <= life.died) and not s.extrapolated]
         for a, b, c in zip(ss, ss[1:], ss[2:]):
             if not (0.15 < b.t - a.t < 0.6 and 0.15 < c.t - b.t < 0.6):
                 continue
@@ -3220,7 +3243,15 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     more: dict[str, Any] = {"vehicleNames": name_vehicles(all_lives, names), "vehicleSwitch": end_abandoned(all_lives)}
     author = str(r.results.get("authorUserId") or "")
     more["deadReckoning"] = smooth(all_lives, author, smoothing)
-    more["aircraftAttitude"] = _attitude_check(all_lives, author)
+    server = bool(r.header.get("server"))
+    more["aircraftAttitude"] = _attitude_check(all_lives, author, everyone=server)
+    if server:
+        more["aircraftAttitude"]["checked"] = "every aircraft (a server replay)"
+    results = r.results.get("player") or []
+    results = results if isinstance(results, list) else [results]
+    more["players"] = {"inResults": sum(1 for p in results if isinstance(p, dict)), "inSlots": len(r.slots),
+                       "roster": len(roster), "notInResults": sum(1 for p in roster.values() if p.get("notInResults")),
+                       "resultsWithoutUserId": sum(1 for p in results if isinstance(p, dict) and not p.get("userId"))}
     more["flightEntries"] = _flight_check(r, all_lives, author)
     all_weapons = weapons(r, all_lives)
     msgs = unit_messages(r)
