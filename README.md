@@ -70,7 +70,7 @@ reading instructions, so the viewer needs no form filled in.
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop`, `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](#end-of-a-track)) |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop` (a gun's burst, not a vehicle on fire), `fire_on`, `fire_off` (a vehicle on fire, see [Vehicle fires](#vehicle-fires)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](#end-of-a-track)) |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
 | `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
@@ -194,7 +194,7 @@ an entity alive at that moment. Read from them:
 | 0xF04B OnUnitDead | `dead` rows: every kill record's victim has one within 2 s (97 of 97, 63 of 63, 112 of 112, 219 of 219); the others are deaths without a kill record (crashes, ground targets) |
 | 0xD047 FmwRpm | the engines' rpm: the `rpm` column. The recording player's against its own cockpit instrument 93: correlation 0.973 to 0.996, median 4.6 to 8 rpm apart |
 | 0xF0B1 UnitSingleShot, 0xF0A0 GmDoSingleShotUnreliable | `gun_shot` rows: single shots of heavy AA and artillery (90 mm, 88 mm, 152 mm), at the gun |
-| 0xF01B, 0xF01C GmDoStopFire | `fire_start`, `fire_stop` rows: bursts of the 40 mm AA guns (pairs, 171/169) |
+| 0xF01B, 0xF01C GmDoStopFire | `fire_start`, `fire_stop` rows: bursts of the 40 mm AA guns (pairs, 171/169); a gun firing, not a fire on the vehicle (that is `fire_on`, below) |
 | 0xF050 UnitBailoutResponse, 0xF033 UnitRepair, 0xF054 UnitRearm, 0xF0BD UnitBulletRearm, 0xD046 UnitReloadGun | `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` rows |
 | 0xD0FE ProjectileHitReplay | the recording player's own hits and being hit (two a battle): names, vehicles, the weapon's blk and the ammunition (`gameData/Weapons/cannonShVAKS.blk`, `frag_i_t`), named from the install (`20 mm ShVAK cannon`, `Fragmentation incendiary tracer shell`); in `projectileHitReplays`. Other players' weapons and ammunition are in no message of a client replay except the kill records |
 | 0xF13E | not part damage, as was thought, but a hit's visual effect: a flag, the effect's number, its size and the point in the unit's frame. In the arcade battle 1,674 of 1,724 come with a UnitHitEffects on the same unit within 0.02 s, and all within 3 s; the point is 0.34 m (median) from that hit's. The number comes from a few runs (4303-4306, 4324-4327, 4504-4549, 4867-4873) that are the same on every vehicle and shared with 0xF031 |
@@ -245,7 +245,11 @@ Next to each table, so that nothing of the replay is lost to it:
 What stays unread, and why:
 
 - **Entity messages' names and bodies** (0x20, 0x21): the class number is
-  read. It is 6 bits in all four replays, and its parity bit is right in
+  read, and the two that carry a vehicle's fires (see
+  [Vehicle fires](#vehicle-fires)); of the hashed events (a LEB128 bit
+  count, then a 32-bit hash) the fires list is read, the extinguisher's
+  (`ca468bcc`: three floats and the extinguishers left) and the others are
+  kept. It is 6 bits in all four replays, and its parity bit is right in
   every message (2,974 in the arcade battle, 32,516 in the naval one). But a
   class number is the class's place among all the game's network message
   classes sorted by their hash (DagorEngine `net/message.cpp`). That list is
@@ -267,7 +271,13 @@ What stays unread, and why:
   but not put in the table. Their gear, flaps and fuel are not in the
   entries at all.
 - **0xD048, 0xF117, 0xF09A, 0xD020 and the other unit messages listed above**:
-  layouts read where stated, meaning not known.
+  layouts read where stated, meaning not known. Not fires either: 0xF0CB
+  (DvmDamageDataForReferee, a vehicle's whole damage state, a bit string that
+  grows with damage) and 0xF09A change with every hit, but the fires come
+  from the entity event above; 0xD0AD (UnitDelayedStatusChange) is two fixed
+  bodies sent at spawn.
+- **Aircraft fires**: not found in any message read; an aircraft on fire
+  has no `fire_on` row.
 - **Released weapons' names**: a bomb's or rocket's entity holds its position,
   attitude and velocity, not its name; kill records name the weapon of a kill.
 - **Shots that missed**: a client replay holds the hits only (see Gunfire).
@@ -509,6 +519,36 @@ player's rounds left (its `ammo` column) fall as it fires, so its bursts can
 be told, but not where those rounds went. Heavy AA and artillery
 send each single shot (`gun_shot`, no direction), 40 mm AA guns their bursts
 (`fire_start`, `fire_stop`).
+
+### Vehicle fires
+
+A vehicle on fire is shown to every client, and the server sends it to them
+as an entity message (0x20) to the vehicle: the hashed event `0a519c58`
+lists the fires burning on it as they are, each time the list changes. After
+the hash: one bit, the number of 32-bit words that follow (8 bits), then per
+fire three words: two u16 that name it (the second a damage-model node; the
+pair is the vehicle's own), a u32 its kind, a u32 that is -1 until the fire
+takes. A fire lit by a hit also gets a 33-byte entity message with its two
+ids, a u16, the kind, -1, the hit (as in 0xF0E9) and the point where it burns
+in the vehicle's frame (three floats; x forward, y up, z left).
+
+Rows: `fire_on` when a fire appears in the list, `fire_off` when it is gone,
+at the vehicle, with `fireId` (`first:node`), `fireKind` and, for the fires a
+hit lit, `fireLocalX/Y/Z` (forward, up, right). Once a vehicle is dead its
+list is often not sent again: its fires end with its wreck (the track's last
+sample), else with its entity, else with the replay (`selfCheck.fires`:
+`endedWithWreck`, `endedWithEntity`, `burningAtEnd`, `burnedAfterDeath`).
+
+Checked on the tank server replay (102 lists, all read; 34 fires, 21 with a
+point) and the naval battle (198 lists; 54 fires, 50 with a point):
+extinguishers agree: each of the three times a tank's `extinguisher_ecs`
+count fell (2 to 1, 2 to 1, 1 to 0), a fire left its list within 0.05 s of
+the extinguisher's own event (`ca468bcc`, the extinguishers left one fewer).
+Of the 15 points whose lighting hit has a point on the hull, 12 lie on the
+same side of the vehicle as that hit when z is read as left, like the hit's. The kinds are
+numbers (on tanks 26, 27 and 1 the most; on ships 4 and 12); what they name
+is not known, nor which part a node is. Aircraft send no such list: an
+aircraft on fire is not read.
 
 ## Levels (`heat3d-wt-level`)
 

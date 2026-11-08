@@ -77,7 +77,8 @@ HINTS = {
                   "kind", "type", "uid", "ai", "isPlayer", "other", "weapon", "weaponName", "heading", "pitch", "roll", "speed", "alive",
                   "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
                   "rollRaw", "targetX", "targetY", "targetZ", "otherVehicle", "otherLife", "hitLocalX", "hitLocalY",
-                  "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "rpm", "vx", "vy", "vz", "engine", "afterburner",
+                  "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "fireId", "fireKind",
+                  "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
                   "turrets", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty", "gameMode"],
@@ -145,6 +146,11 @@ COLUMNS = [
     ("hitDirZ", "f32"),
     ("hitPart", "f32"),
     ("hitFlag", "f32"),
+    ("fireId", "str"),
+    ("fireKind", "f32"),
+    ("fireLocalX", "f32"),
+    ("fireLocalY", "f32"),
+    ("fireLocalZ", "f32"),
     ("rpm", "f32"),
     ("vx", "f32"),
     ("vy", "f32"),
@@ -1956,8 +1962,8 @@ UNIT_EVENTS = {
     0xF054: "rearm",         # UnitRearm
     0xF0BD: "bullet_rearm",  # UnitBulletRearm
     0xD046: "reload",        # UnitReloadGun
-    0xF01B: "fire_start",    # an AA gun opens fire (each is followed by 0xF01C)
-    0xF01C: "fire_stop",     # GmDoStopFire
+    0xF01B: "fire_start",    # a gun opens fire, a burst (each is followed by 0xF01C); not a vehicle on fire
+    0xF01C: "fire_stop",     # GmDoStopFire: the burst ends (vehicle fires: fire_on, fire_off, see fire_rows)
     0xF0B1: "gun_shot",      # UnitSingleShot: a gun's single shot (heavy AA and artillery)
     0xF0A0: "gun_shot",      # GmDoSingleShotUnreliable
 }
@@ -2119,6 +2125,142 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                         "player": f"{m.entity.class_name.rpartition('/')[2]} #{m.uid}" if m.uid is not None else "",
                         "Vehicle": m.entity.class_name.rpartition("/")[2], "ai": True, "isPlayer": False,
                         "x": pos[0], "y": pos[1], "z": pos[2]})
+    return out, dict(check)
+
+
+#: The hash naming the entity event (0x20, the class that carries a hashed event: LEB128 bit count, the hash, its
+#: bits) that lists a vehicle's fires as they are: one bit, the number of 32-bit words that follow (8 bits), then
+#: three words per fire: two u16 that name it (the second a damage-model node), a u32 its kind, a u32 (-1 until the
+#: fire burns). The server sends the list whenever it changes, to every client: a fire starts when it appears and
+#: ends when it is gone; the list empties on its own, after the crew or an extinguisher put it out, or burns on
+#: after the vehicle died. Read on tanks and ships (the server replay and the naval battle); aircraft have none.
+FIRES_EVENT = bytes.fromhex("0a519c58")
+
+
+def _fire_lists(r: Replay) -> tuple[list[tuple[float, int, list[tuple[int, int, int]]]], int, int]:
+    """Every fires list (time, entity, fires as (first id, node, kind)), how many lists, how many did not read."""
+    width, _ = ecs.message_classes(r.stream.messages)
+    head = ((width or 6) + (1 if (width or 6) & 7 else 0) + 7) // 8
+    out, seen, bad = [], 0, 0
+    for t, eid, rest in r.stream.messages:
+        if rest[head + 1 : head + 8].find(FIRES_EVENT) < 0:
+            continue
+        seen += 1
+        try:
+            n, at = wrpl._uleb(rest, head)
+            if rest[at : at + 4] != FIRES_EVENT or n < 41 or len(rest) < at + (n + 7) // 8:
+                raise wrpl.FormatError("not a fires list")
+            b = wrpl.Bits(rest[at + 4 :])
+            b.flag()
+            words = b.bits(8)
+            if words % 3 or 9 + words * 32 > n - 32:
+                raise wrpl.FormatError("a fires list of odd length")
+            fires = []
+            for _ in range(words // 3):
+                first, node, kind = b.u16(), b.u16(), b.u32()
+                b.u32()
+                fires.append((first, node, kind))
+            out.append((t, eid, fires))
+        except (wrpl.FormatError, EOFError, IndexError):
+            bad += 1
+    return out, seen, bad
+
+
+def _fire_place(r: Replay, eid: int, t: float, first: int, node: int, kind: int) -> tuple[float, float, float] | None:
+    """
+    Where a fire burns on its vehicle (x forward, y up, z right; m): the
+    entity message that starts it (33 bytes: the two ids, a u16, the kind,
+    -1, the hit that lit it, the point as three floats with z to the left),
+    sent within a second of the list that holds it. Only fires lit by a hit
+    have one.
+    """
+    key = struct.pack("<HH", first, node)
+    for tm, e, rest in r.stream.messages:
+        if e != eid or not (t - 1.0 <= tm <= t + 1.5) or len(rest) != 33 or rest[1:5] != key:
+            continue
+        if struct.unpack_from("<I", rest, 7)[0] != kind:
+            continue
+        x, y, z = struct.unpack_from("<fff", rest, 21)
+        if all(math.isfinite(v) and abs(v) < 40 for v in (x, y, z)):
+            return x, y, -z
+    return None
+
+
+def fire_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """
+    `fire_on` and `fire_off` rows: a fire on a vehicle (see FIRES_EVENT),
+    at the vehicle, with `fireId` (its two ids), `fireKind` and, when the
+    message that lit it says, `fireLocalX/Y/Z` (in the vehicle's frame). A
+    fire still burning when its entity is gone or the replay ends gets its
+    `fire_off` then.
+    """
+    lists, seen, bad = _fire_lists(r)
+    check: Counter = Counter(lists=seen, listsNotRead=bad)
+    by_uid: dict[int, list[Life]] = defaultdict(list)
+    for life in all_lives:
+        by_uid[life.uid].append(life)
+    ents = {e.eid: e for e in r.stream.entities}
+    end = r.end_ms / 1000.0
+    out: list[dict[str, Any]] = []
+    burning: dict[int, dict[tuple[int, int], dict[str, Any]]] = defaultdict(dict)
+
+    def life_of(eid: int, t: float) -> Life | None:
+        e = ents.get(eid)
+        lives_ = by_uid.get(e.uid, []) if e is not None and e.uid is not None else []
+        # A wreck burns on after its track's last sample: that life.
+        return _life_at(lives_, t) or max((x for x in lives_ if x.samples and x.start <= t), key=lambda x: x.start,
+                                          default=None)
+
+    def row(eid: int, t: float, event: str, fire: dict[str, Any]) -> None:
+        life = life_of(eid, t)
+        s = _where(life, t) if life is not None else None
+        if s is None and life is not None and life.samples and t >= life.samples[-1].t:
+            s = life.samples[-1]
+        if event == "fire_on" and life is not None and life.died is not None and t > life.died + 0.5:
+            check["litAfterDeath"] += 1
+        if event == "fire_off" and life is not None and life.died is not None and t > life.died + 0.5:
+            check["burnedAfterDeath"] += 1
+        if s is None:
+            check[f"{event}WithoutPlace"] += 1
+            return
+        out.append({**_row(life, s, event), "time": t, **fire})
+
+    def close(eid: int, t: float, key: tuple[int, int]) -> None:
+        fire = burning[eid].pop(key)
+        row(eid, t, "fire_off", {k: v for k, v in fire.items() if k in ("fireId", "fireKind")})
+        check["fireSeconds"] += t - fire["_t"]
+
+    for t, eid, fires in lists:
+        now = {(a, b): kind for a, b, kind in fires}
+        for key in [k for k in burning[eid] if k not in now]:
+            close(eid, t, key)
+        for key, kind in now.items():
+            if key in burning[eid]:
+                continue
+            fire: dict[str, Any] = {"fireId": f"{key[0]}:{key[1]}", "fireKind": kind, "_t": t}
+            place = _fire_place(r, eid, t, key[0], key[1], kind)
+            if place is not None:
+                fire.update(fireLocalX=place[0], fireLocalY=place[1], fireLocalZ=place[2])
+                check["firesWithPlace"] += 1
+            burning[eid][key] = fire
+            check["fires"] += 1
+            check[f"kind{kind}"] += 1
+            row(eid, t, "fire_on", {k: v for k, v in fire.items() if k != "_t"})
+    # The list of a vehicle that died is not sent again: its fires end with its wreck (the track's last sample),
+    # else with its entity, else with the replay.
+    for eid in list(burning):
+        e = ents.get(eid)
+        for key in list(burning[eid]):
+            life = life_of(eid, burning[eid][key]["_t"])
+            if life is not None and life.died is not None and life.samples:
+                t, why = max(life.samples[-1].t, burning[eid][key]["_t"]), "endedWithWreck"
+            elif e is not None and e.destroyed is not None:
+                t, why = e.destroyed, "endedWithEntity"
+            else:
+                t, why = end, "burningAtEnd"
+            check[why] += 1
+            close(eid, t, key)
+    check["fireSeconds"] = round(check["fireSeconds"], 1)
     return out, dict(check)
 
 
@@ -2936,6 +3078,11 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
                          "(hits with the same number lie together on a vehicle: 1.1 m from their mean point on average "
                          "in the four test replays, against 3.5 m for all of a vehicle's hits; which part it names "
                          "is not known); hitFlag its high byte (on ships it runs with the hull section hit)",
+            "fire_on": "a vehicle catches fire (fire_off: that fire is out), at the vehicle; fireId its two ids "
+                       "('first:node'), fireKind the kind the game sends (a number; names not known), "
+                       "fireLocalX/Y/Z where it burns in the vehicle's frame (m; forward, up, right) when the "
+                       "message that lit it says; a wreck burns on after its death; selfCheck.fires. fire_start "
+                       "and fire_stop are gun bursts, not fires",
             "launch": "rows at the launcher, the nearest unit within 300 m and 1.5 s of the release point",
             "impact": "a weapon's last sample when its entity was removed within 3 s after it",
             "vx": "vx, vy, vz: an aircraft's velocity as its flight entry sends it (m/s, the game's axes; speeds over "
@@ -3260,8 +3407,9 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
                                 rpm=_rpm_check(r, rpm, all_lives),
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
+    fires, more["fires"] = fire_rows(r, all_lives)
     cam, more["camera"] = camera_rows(r, all_lives)
-    data = rows(r, all_lives, all_weapons, rpm, extra + cam)
+    data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
     more["turretsVsShots"] = _turret_check(data, all_lives)
     more["wrecks"] = _wreck_check(all_lives)
     arms = weapon_names if weapon_names is not None else vehicle_names.load_weapons(game)
