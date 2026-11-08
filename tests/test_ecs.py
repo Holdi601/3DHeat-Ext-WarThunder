@@ -132,7 +132,9 @@ def test_ground_attitude_from_the_16_bit_angles():
     assert packed is False
     # yaw 90 deg from east is south: compass 180
     assert (x, y, z) == (1.0, 2.0, 3.0) and heading == pytest.approx(180.0)
-    assert pitch == pytest.approx(-1.0, abs=0.01) and roll == pytest.approx(2.0, abs=0.01)
+    # The pitch counts 180/65536 degrees a step (it reads half the 360-degree scale), the roll's sign is turned:
+    # positive is the right side down, as the table's roll.
+    assert pitch == pytest.approx(-0.5, abs=0.01) and roll == pytest.approx(-2.0, abs=0.01)
 
 
 def test_ground_attitude_from_a_quaternion():
@@ -340,6 +342,16 @@ def test_own_replays_have_no_step_faster_than_the_unit_can_go(tmp_path):
             assert acc["table"]["over15g"] < acc["replay"]["over15g"], (f.name, dr)
         if names:
             assert d["selfCheck"]["vehicleNames"]["named"] >= 0.9 * d["selfCheck"]["vehicleNames"]["vehicles"], f.name
+        # The difficulty is read and in the file's name; no player drives two live vehicles at once.
+        assert d["difficulty"] in ("AB", "RB", "SB") and f"_{d['difficulty']}_" in Path(table).name, f.name
+        assert d["selfCheck"]["vehicleSwitch"]["twoLiveVehicles"] == 0, (f.name, d["selfCheck"]["vehicleSwitch"])
+        # Tanks' guns point along their shots; the camera's offset in the vehicle's frame is its world offset turned.
+        tv = d["selfCheck"].get("turretsVsShots") or {}
+        if tv.get("shots", 0) >= 50:
+            assert tv["headingWithin3Deg"] > 0.9 and tv["elevationWithin3Deg"] > 0.9, (f.name, tv)
+        cam = d["selfCheck"]["camera"]
+        if cam.get("localOffsetChecked", 0) >= 100:
+            assert cam["localOffsetWithin0.5m"] > 0.6 * cam["localOffsetChecked"], (f.name, cam)
 
 
 def test_messages_to_units_name_their_entity(tmp_path):
@@ -363,7 +375,7 @@ def test_messages_to_units_name_their_entity(tmp_path):
     # The same hit in 345's own frame: 2 m behind its origin, the shot travelling forward along it.
     assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx((-2.0, 0.0, 0.0), abs=1e-3)
     assert shot["hitDirX"] > 0.9 and shot["otherVehicle"] and shot["otherLife"].startswith("345#")
-    assert shot["hitPart"] is not None
+    assert shot["hitPart"] == 0x46B0 and shot["hitFlag"] == 0x46
     dead = next(r for r in rows if r["event"] == "dead")
     assert dead["player"] == "Pilot Two" and dead["time"] == pytest.approx(11.0)
     one = [r for r in rows if r["player"] == "Pilot One" and r["event"] == "position" and r["time"] > 11]
@@ -373,6 +385,36 @@ def test_messages_to_units_name_their_entity(tmp_path):
     assert u["shooters"]["attackerAmongShooters"] == 1  # the kill at 11 s names 344, as the hit at 10.9 does
     side = pq.read_table(tpath.with_name(tpath.name.replace(".parquet", ".messages.parquet"))).to_pylist()
     assert {(r["message"], r["uid"]) for r in side if r["packet"] == 4} >= {("0xf0e9", 345), ("0xd047", 344)}
+
+
+@pytest.mark.parametrize("sent, local", [((1500, 500, -300), (1.5, 0.5, 0.3)), ((15000, 500, -300), None)])
+def test_a_ground_units_hit_point_is_in_millimetres_and_on_its_hull(tmp_path, sent, local):
+    """On the tank (177), the point's int16 are mm: 1.5 m ahead is kept; 15 m off the hull is no point on it."""
+    more = [synth.packet(4, 10900, synth.unit_message(3, 0xF0E9, synth.hit_effect(344, 7, sent)))]
+    f = tmp_path / "u.wrpl"
+    f.write_bytes(battle_with_entities(more))
+    tpath, _ = convert.convert([f], tmp_path / "out")
+    shot = next(r for r in pq.read_table(tpath).to_pylist() if r["event"] == "shot")
+    assert shot["otherVehicle"] == "germ_flakpz_gepard"
+    if local is None:
+        assert shot["hitLocalX"] is None
+    else:
+        assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx(local, abs=1e-3)
+
+
+def test_every_hit_point_is_in_the_unit_frame(tmp_path):
+    """A hit whose part's high byte was once read as "another frame" (0x07, as ships' hull sections) is placed too."""
+    body = synth.hit_effect(344, 7, (150, 50, -30))
+    assert body.count(b"\xb0\x46") == 1
+    more = [synth.packet(4, 10900, synth.unit_message(2, 0xF0E9, body.replace(b"\xb0\x46", b"\x10\x07")))]
+    f = tmp_path / "u.wrpl"
+    f.write_bytes(battle_with_entities(more))
+    tpath, _ = convert.convert([f], tmp_path / "out")
+    shot = next(r for r in pq.read_table(tpath).to_pylist() if r["event"] == "shot")
+    assert shot["hitFlag"] == 0x07
+    # Sent z left: 0.3 m to the right.
+    assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx((1.5, 0.5, 0.3), abs=1e-3)
+    assert shot["targetZ"] == pytest.approx(1300.0 + 200 * 9.9 + 1.5, abs=0.6)
 
 
 def test_replicated_components_are_read(tmp_path):
@@ -401,3 +443,110 @@ def test_entity_message_class_width_is_found_by_its_parity_bit():
     width, classes = ecs.message_classes(msgs)
     assert width == 6 and classes == [33, 40, 9, 62, 1]
     assert ecs.message_classes([])[0] is None
+
+
+def test_tank_turrets_and_the_recording_players_aim():
+    body = synth.tank_state(10.0, 20.0, 30.0, [(30.0, -5.0), (0.0, 0.0)], compass=120.0, pitch=4.0, roll=-3.0)
+    batch = synth.ground(None, 1, tanks={177: (body, 2)}, aim={177: (90.0 - 150.0, 2.0, 500.0, 500.0)})
+    (uid, x, y, z, heading, pitch, roll, packed, turrets, aim), = wrpl.GroundReader().read(batch)
+    assert (uid, x, y, z, packed) == (177, 10.0, 20.0, 30.0, False)
+    assert heading == pytest.approx(120.0, abs=0.01) and pitch == pytest.approx(4.0, abs=0.01)
+    assert roll == pytest.approx(-3.0, abs=0.01)
+    assert turrets == [pytest.approx((30.0, -5.0), abs=0.01), (0.0, 0.0)]
+    assert aim == pytest.approx((-60.0, 2.0, 500.0, 500.0))
+    # A state too short for its turret count (a static unit's) gives none.
+    assert wrpl._ground_turrets(body[:-6], 2) == []
+
+
+PLANE = [(20, "transform", "TMatrix"), (21, "team", "int"), (22, "unit__className", "ecs::string"),
+         (23, "uid", "int"), (24, "unit__playerId", "int")]
+
+
+def _plane(uid: int, team: int, vehicle: str, pid: int, first: bool) -> bytes:
+    head = synth.template(2, "aircraft+player_unit", PLANE) if first else synth.uleb(2)
+    return synth.construction(head, [(0, synth.tmatrix(0, 0, 0)), (0, struct.pack("<i", team)),
+                                     (0, vehicle.encode() + b"\0"), (0, struct.pack("<i", uid)),
+                                     (0, struct.pack("<i", pid))])
+
+
+def ground_battle() -> bytes:
+    """
+    Pilot One's tank 177 drives east and is killed at 10 s; its wreck is sent until 20 s, then not for 70 s,
+    then again until the game removes it at 96 s. The same player's second tank 178 drives from 101 s and is left
+    alive when the player's aircraft 344 appears at 121 s; the replay camera follows the aircraft.
+    """
+    packets = [synth.packet(1, 0, b""), synth.packet(4, 100, synth.slots({0: (111, "Pilot One", 1)})),
+               synth.packet(6, 200, synth.creation([(3, tank_block(177, 1, "tankModels/us_m4a1_sherman", "t1_01",
+                                                                  pid=0))]))]
+    for t in list(range(1, 21)) + list(range(90, 96)):
+        x = 100.0 + 5 * min(t, 10)
+        state = synth.tank_state(x, 20.0, -300.0, [(15.0, 3.0)], compass=90.0)
+        packets.append(synth.packet(4, t * 1000, synth.ground(None, t, tanks={177: (state, 1)})))
+    packets.append(synth.packet(4, 10000, synth.kill(wrpl.NO_UID, 0, "", 177, 0, "")))
+    packets.append(synth.packet(6, 96000, synth.destruction([3])))
+    packets.append(synth.packet(6, 100000, synth.creation([(4, tank_block(178, 1, "tankModels/us_m4a1_sherman",
+                                                                           "t1_02", first=False, pid=0))])))
+    for t in range(101, 141):
+        state = synth.tank_state(500.0 + 5 * (t - 101), 20.0, 0.0, [(-20.0, 1.0)], compass=90.0)
+        packets.append(synth.packet(4, t * 1000, synth.ground(None, t, tanks={178: (state, 1)})))
+    packets.append(synth.packet(6, 119000, synth.creation([(5, _plane(344, 1, "f_15a", 0, True))])))
+    for i in range(121):
+        t = 121 + i * 0.25
+        packets.append(synth.packet(2, int(t * 1000), synth.flight([(344, 0.0, 1000.0, 100.0 * t, synth.attitude(0))])))
+        if i % 2 == 0:
+            packets.append(synth.packet(4, int(t * 1000) + 10, synth.camera((0.0, 0.0, 0.0, 1.0), (0.0, 5.0, -20.0),
+                                                                          (-20.0, 5.0, 0.0), (0.0, 0.0, 1.0))))
+    packets.append(synth.packet(0, 160000, b""))
+    return synth.replay(packets, {"timePlayed": 160.0, "authorUserId": "111", "author": "Pilot One"})
+
+
+def test_wreck_despawn_vehicle_switch_turrets_camera_and_difficulty(tmp_path):
+    f = tmp_path / "g.wrpl"
+    f.write_bytes(ground_battle())
+    tpath, jpath = convert.convert([f], tmp_path / "out")
+    assert tpath.name.startswith("avg_test_land_RB_") and tpath.parent.name == "avg_test_land"
+    rows = pq.read_table(tpath).to_pylist()
+    doc = json.loads(jpath.read_text(encoding="utf-8"))
+    assert doc["difficulty"] == "RB" and doc["gameMode"] == "" and doc["battle"]["difficultyName"] == "realistic"
+    assert {r["difficulty"] for r in rows} == {"RB"}
+    # The wreck stays one life through its 70 s gap, dead from the kill on, and is gone at its removal.
+    first = [r for r in rows if r["uid"] == 177]
+    assert {r["life"] for r in first} == {"177#1"}
+    pos = [r for r in first if r["event"] == "position"]
+    assert {r["alive"] for r in pos if r["time"] > 10} == {0.0} and {r["alive"] for r in pos if r["time"] < 10} == {1.0}
+    assert first[-1]["event"] == "despawn" and first[-1]["time"] == pytest.approx(96.0)
+    # The tank left alive for the aircraft ends where the aircraft appears.
+    second = [r for r in rows if r["uid"] == 178]
+    assert max(r["time"] for r in second if r["event"] == "position") <= 121.0
+    assert second[-1]["event"] == "despawn" and {r["alive"] for r in second} == {1.0}
+    assert doc["selfCheck"]["vehicleSwitch"] == {"livesCut": 1, "samplesLeftOut": 19, "twoLiveVehicles": 0}
+    # Turrets: the main one's yaw and pitch, every one in `turrets`.
+    t = next(r for r in second if r["event"] == "position")
+    assert t["turretYaw"] == pytest.approx(-20.0, abs=0.01) and t["gunPitch"] == pytest.approx(1.0, abs=0.01)
+    assert t["turrets"] == "-20.00 1.00"
+    # The camera: its own track, 20 m behind and 5 m above the aircraft flying north, looking north.
+    cam = [r for r in rows if r["kind"] == "camera"]
+    assert cam and {r["track"] for r in cam} == {"Pilot One camera #ca"} and {r["life"] for r in cam} == {"camera"}
+    c = next(r for r in cam if r["time"] == pytest.approx(130.0, abs=0.01))
+    assert (c["x"], c["y"], c["z"]) == pytest.approx((0.0, 1005.0, 100.0 * c["time"] - 20.0), abs=0.1)
+    assert c["dirZ"] == pytest.approx(1.0) and c["heading"] == pytest.approx(0.0, abs=1e-6)
+    assert c["zoom"] == pytest.approx(1.19) and c["otherLife"] == "344#1"
+    assert doc["selfCheck"]["camera"]["localOffsetWithin0.5m"] == doc["selfCheck"]["camera"]["localOffsetChecked"] > 0
+
+
+def test_a_killstreak_bomber_does_not_end_the_players_tank():
+    from types import SimpleNamespace
+
+    def life(uid: int, vehicle: str, created: float, start: float, end: float) -> convert.Life:
+        unit = SimpleNamespace(entity=SimpleNamespace(t=created))
+        ss = [convert.Sample(t, 0.0, 0.0, 0.0) for t in range(int(start), int(end) + 1)]
+        return convert.Life(uid, "ground", 1, ss, user_id="111", unit=unit, vehicle=vehicle)
+
+    tank = life(10, "us_t20", 20.0, 21.0, 100.0)
+    bomber = life(11, "b-29_killstreak", 50.0, 51.0, 80.0)
+    assert convert.end_abandoned([tank, bomber]) == {"livesCut": 0, "samplesLeftOut": 0, "twoLiveVehicles": 0}
+    assert tank.end == 100.0
+    # A tank created with the first and seen later is the one the player drives: the first, standing, ends there.
+    left = life(12, "us_t20", 20.0, 21.0, 100.0)
+    taken = life(13, "us_m18", 20.0, 40.0, 60.0)
+    assert convert.end_abandoned([left, taken])["livesCut"] == 1 and left.end == 40.0

@@ -187,6 +187,21 @@ def test_names_from_a_localisation_table():
     assert names.Names(names.read_table(raw, "<German>")).lookup("yak-3_france")[0] == "Jak-3"
 
 
+def test_battle_mode_from_header_and_mission():
+    raw = ('"<ID|readonly|noverify>";"<English>"\r\n"missions/_Dom";"[Domination]"\r\n'
+           '"missions/_NDom2";"[┚ Domination #2]"\r\n').encode("utf-8")
+    m = names.Missions(names.read_table(raw))
+    assert m.lookup("missions/_Dom") == ("Domination", "") and m.lookup("missions/_NDom2")[0] == "Domination #2"
+    r = convert.Replay([], {"difficulty": 0xBA, "locName": "missions/_NDom2;aleutian_islands/name"}, {}, {}, {}, [],
+                       [], [], 0, "", settings={"allowedUnitTypes": {"isTanksAllowed": False, "isShipsAllowed": True}})
+    mode = convert.battle_mode(r, m)
+    assert (mode["difficulty"], mode["difficultyName"], mode["gameMode"]) == ("SB", "simulator", "naval")
+    assert (mode["missionMode"], mode["missionModeName"]) == ("NDom2", "Domination #2")
+    h = {"map": "avg_poland", "startTime": 1793000000, "sessionId": "01123a9d00049d35", "difficulty": 0x30}
+    assert convert.match_name(h) == "avg_poland_AB_2026-10-26_07-33-20_01123a9d00049d35"
+    assert convert.match_name({**h, "difficulty": 0x77}) == "avg_poland_2026-10-26_07-33-20_01123a9d00049d35"
+
+
 def _remote_battle() -> bytes:
     """
     The author flies north; uid 346 (another player) flies a steady left circle, but like a client replay the

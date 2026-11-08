@@ -214,9 +214,30 @@ def slots(players: dict[int, tuple[int, str, int]]) -> bytes:
     return bytes(out)
 
 
+def angle16(deg: float) -> int:
+    """Degrees as a 16-bit angle (360/65536 a step), two's complement."""
+    return round(deg * 65536 / 360) & 0xFFFF
+
+
+def tank_state(x: float, y: float, z: float, turrets: list[tuple[float, float]], compass: float = 90.0,
+               pitch: float = 0.0, roll: float = 0.0) -> bytes:
+    """A tank's whole ground state: the 16-bit attitude (pitch in 180/65536 steps, roll right side down negative),
+    a float position, 141 bits, per turret its yaw and gun pitch (16 bits each) and 30 bits, then 8 bits."""
+    w = BitWriter().raw(b"\x00").flag(True).u16(angle16(compass - 90.0)).u16(angle16(pitch * 2)).u16(angle16(-roll))
+    w.flag(False).flag(True).f32(x).f32(y).f32(z).bits(0, wrpl.TURRET_AT)
+    for yaw, gun in turrets:
+        w.u16(angle16(yaw)).u16(angle16(gun)).bits(0, wrpl.TURRET_BITS - 32)
+    return w.bits(0, wrpl.TURRET_TAIL[0]).bytes()
+
+
 def ground(units: dict[int, tuple[float, float, float]] | None, number: int, delta: set[int] = frozenset(),
-           message: int = wrpl.GROUND_CLIENT) -> bytes:
-    """A ground batch: whole states with float positions, or (uids in `delta`) an unchanged delta to the last one."""
+           message: int = wrpl.GROUND_CLIENT, tanks: dict[int, tuple[bytes, int]] | None = None,
+           aim: dict[int, tuple[float, float, float, float]] | None = None) -> bytes:
+    """A ground batch: whole states with float positions, or (uids in `delta`) an unchanged delta to the last one;
+    `tanks` gives a uid's whole state and turret count instead (see `tank_state`), `aim` its four aim floats."""
+    tanks = tanks or {}
+    aim = aim or {}
+    units = {**(units or {}), **{u: (0.0, 0.0, 0.0) for u in tanks}}
     uids = sorted(units)
     g = BitWriter().u16(uids[0]).u16(uids[-1] + 1).u32(0).u16(number)
     for uid in range(uids[0], uids[-1] + 1):
@@ -224,16 +245,21 @@ def ground(units: dict[int, tuple[float, float, float]] | None, number: int, del
             g.flag(False)
             continue
         g.flag(True).flag(False).flag(False).flag(False).flag(False).flag(False)
-        g.flag(False).raw(b"\x00").flag(True)  # no directions, no turrets, compressed
+        g.flag(False).raw(bytes([tanks[uid][1] if uid in tanks else 0])).flag(True)  # no directions, compressed
         if uid in delta:
             g.flag(False).bits(1, 5)  # a change to the previous packet's state
             body = bytes([0b00001100, 111])  # six zero codes: nothing changed
         else:
             g.flag(True).bits(0, 5)
             x, y, z = units[uid]
-            body = BitWriter().raw(b"\x00").flag(True).bits(0, 48).flag(False).flag(True).f32(x).f32(y).f32(z).bytes()
+            body = tanks[uid][0] if uid in tanks else (
+                BitWriter().raw(b"\x00").flag(True).bits(0, 48).flag(False).flag(True).f32(x).f32(y).f32(z).bytes())
         g.bits(number & 0xFF, 8).bits(number >> 8, 5).uleb(len(body)).align().raw(body)
-        g.flag(False).flag(False).flag(False).align()
+        if uid in aim:
+            g.flag(True).raw(struct.pack("<4f", *aim[uid]))
+        else:
+            g.flag(False)
+        g.flag(False).flag(False).align()
     payload = g.bytes()
     return b"\x02\x58" + le(message, 2) + BitWriter().uleb(len(payload) * 8).bytes() + payload
 
@@ -308,8 +334,18 @@ def packet(kind: int, ms: int | None, payload: bytes) -> bytes:
     return size + body
 
 
+def camera(quat: tuple[float, ...], offset: tuple[float, float, float], local: tuple[float, float, float],
+           aim: tuple[float, float, float], zoom: float = 1.19) -> bytes:
+    """0xD043 ReplayCameraParams: the quaternion, the offset in the game's axes, the zoom, the offset in the vehicle's
+    frame (x forward, y up, z left), the aim, and fields 6 and 7 as the replays send them."""
+    f = lambda *v: struct.pack(f"<{len(v)}f", *v)  # noqa: E731
+    return b"\x02\x58" + le(wrpl.CAMERA, 2) + id_fields({1: (128, f(*quat)), 2: (96, f(*offset)), 3: (32, f(zoom)),
+                                                        4: (96, f(*local)), 5: (96, f(*aim)), 6: (8, 0),
+                                                        7: (16, b"\x01\x00")})
+
+
 def header(level: str = "levels/avg_test_land.bin", session: int = 0x1234ABCD, start: int = 1793000000,
-           server: bool = False, part: int = 0) -> bytearray:
+           server: bool = False, part: int = 0, difficulty: int = 0x75) -> bytearray:
     h = bytearray(wrpl.HEADER_SIZE)
     struct.pack_into("<II", h, 0, wrpl.MAGIC, 101404)
     for at, size, value in ((8, 128, level), (136, 260, "gamedata/missions/test.blk"), (396, 128, "test_Dom"),
@@ -319,6 +355,7 @@ def header(level: str = "levels/avg_test_land.bin", session: int = 0x1234ABCD, s
     struct.pack_into("<Q", h, 732, session)
     h[740] = part
     h[742] = 0x5A if server else 0
+    h[688] = difficulty  # low four bits 5: realistic
     struct.pack_into("<III", h, 908, start, 25, 10000)
     return h
 

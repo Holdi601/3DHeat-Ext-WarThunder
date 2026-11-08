@@ -915,7 +915,7 @@ def _ground_position(body: bytes, directions: bool) -> tuple[float, ...] | None:
     else:
         yaw, p, q = r.u16(), r.u16(), r.u16()
         heading = (yaw * 360.0 / 65536 + 90.0) % 360.0
-        pitch, roll = _angle16(p), _angle16(q)
+        pitch, roll = _angle16(p) / 2, -_angle16(q)
     r.bits(1)
     packed = not r.flag()
     if not packed:
@@ -928,6 +928,46 @@ def _ground_position(body: bytes, directions: bool) -> tuple[float, ...] | None:
     if not all(math.isfinite(v) and abs(v) < 1e6 for v in (x, y, z)):
         return None
     return x, y, z, heading, pitch, roll, packed
+
+
+#: A tank's ground state: after the position, this many bits come before its first turret, ...
+TURRET_AT = 141
+#: ... each turret takes this many (yaw u16, gun pitch u16, 30 bits not read), ...
+TURRET_BITS = 62
+#: ... and after the last one come this many more, then the padding to the byte (0-7 bits) and, on some
+#: states, a further 200 bits (25 bytes).
+TURRET_TAIL = (8, 208)
+
+
+def _ground_turrets(body: bytes, count: int) -> list[tuple[float, float]]:
+    """
+    A tank's turrets from its ground state (attitude in 16 bits, not a quaternion): per turret its yaw
+    relative to the hull and its gun's pitch, in degrees. After the position come 141 bits (not read),
+    then per turret 62 bits: the yaw (u16, 360/65536 degrees, signed, positive turned clockwise seen from
+    above, 0 straight ahead), the gun's pitch (u16, same scale, signed) and 30 bits not read; then 8
+    bits, the padding to the byte and on some states 200 bits more. A body whose length does not fit
+    this (static units send a shorter state, ships another layout) gives no turrets. Checked: the
+    recording player's own tank sends its aim as floats (`_aim`), and its turret's world heading (the
+    hull's compass heading plus the turret's yaw) lies within 0.44 degrees (median) of it; an unused
+    weapon's slot reads 0 and 0 exactly; see the README for the check against the shots.
+    """
+    r = Bits(body)
+    r.byte()
+    if not r.flag():
+        return []
+    r.skip(48)
+    r.bits(1)
+    r.skip(64 if not r.flag() else 96)
+    at = r.pos + TURRET_AT
+    left = len(body) * 8 - at - TURRET_BITS * count
+    if count <= 0 or not any(0 <= left - tail < 8 for tail in TURRET_TAIL):
+        return []
+    out = []
+    for i in range(count):
+        r.pos = at + TURRET_BITS * i
+        yaw, pitch = r.u16(), r.u16()
+        out.append((_angle16(yaw), _angle16(pitch)))
+    return out
 
 
 class GroundReader:
@@ -944,7 +984,13 @@ class GroundReader:
         self.history: dict[int, list[tuple[int, bytes] | None]] = {}
 
     def read(self, payload: bytes) -> list[tuple[Any, ...]]:
-        """(uid, x, y, z, heading, pitch, roll, packed) per unit in the batch; see `_ground_position`."""
+        """
+        (uid, x, y, z, heading, pitch, roll, packed, turrets, aim) per unit in the batch: see
+        `_ground_position`, `_ground_turrets` (a list of (yaw, pitch) per turret) and `aim` (four floats
+        or None; the recording player's own tank sends them: its aim's world angle counted
+        anticlockwise from east, so the compass heading is 90 minus it, its pitch in degrees and the
+        aim's distance twice; see the README).
+        """
         r = Bits(payload[4:])
         length = r.uleb()
         r.align()
@@ -992,10 +1038,11 @@ class GroundReader:
                 )
             slots[number % HISTORY] = (number & 0x1FFF, body)
             pos = _ground_position(body, directions)
-            if pos is not None:
-                out.append((uid, *pos))
+            aim = None
             if g.flag():
-                g.skip(4 * 32)
+                aim = struct.unpack("<4f", g.raw(16))
+            if pos is not None:
+                out.append((uid, *pos, [] if directions else _ground_turrets(body, turrets), aim))
             if g.flag():
                 for _ in range(turrets):
                     if not g.flag():

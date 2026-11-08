@@ -96,10 +96,11 @@ def test_ground_whole_then_delta():
     g = wrpl.GroundReader()
     first = g.read(synth.ground({177: (10.0, 150.0, -20.0), 180: (5.0, 1.0, 2.0)}, number=7))
     # The synthetic states' attitude is all zeros: yaw 0 from east, compass 90.
-    assert first == [(177, 10.0, 150.0, -20.0, 90.0, 0.0, 0.0, False), (180, 5.0, 1.0, 2.0, 90.0, 0.0, 0.0, False)]
+    assert first == [(177, 10.0, 150.0, -20.0, 90.0, 0.0, 0.0, False, [], None),
+                     (180, 5.0, 1.0, 2.0, 90.0, 0.0, 0.0, False, [], None)]
     # An unchanged state, sent as a difference to packet 7.
     again = g.read(synth.ground({177: (0, 0, 0)}, number=8, delta={177}))
-    assert again == [(177, 10.0, 150.0, -20.0, 90.0, 0.0, 0.0, False)]
+    assert again == [(177, 10.0, 150.0, -20.0, 90.0, 0.0, 0.0, False, [], None)]
     with pytest.raises(wrpl.FormatError):
         wrpl.GroundReader().read(synth.ground({177: (0, 0, 0)}, number=8, delta={177}))
 

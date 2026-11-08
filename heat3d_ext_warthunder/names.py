@@ -174,6 +174,31 @@ class Weapons:
         return "", ""
 
 
+class Missions(Weapons):
+    """
+    Battle modes' display names from the install's `lang/missions_versus.csv`: the mission key's mode
+    (`missions/_Dom` "Domination", `missions/_I2M` "Enduring Confrontation"), without the brackets the
+    game puts around them.
+    """
+
+    FILES = ("missions_versus.csv",)
+
+    def lookup(self, ident: str) -> tuple[str, str]:
+        text = self.table.get(ident.lower()) if ident and self.table else None
+        if not text:
+            return "", ""
+        # The game font's mode marks (box-drawing and private-use characters) are left out.
+        text = "".join(c for c in _clean(text) if not (0x2500 <= ord(c) <= 0x25FF or 0xE000 <= ord(c) <= 0xF8FF))
+        return text.strip("[] "), ""
+
+
+def load_missions(game: str | os.PathLike[str] | None = None) -> Missions:
+    """The battle modes' names of the install found; `HEAT3D_WT_NO_NAMES=1` turns them off."""
+    if os.environ.get("HEAT3D_WT_NO_NAMES"):
+        return Missions()
+    return Missions.from_game(game)
+
+
 def load_weapons(game: str | os.PathLike[str] | None = None) -> Weapons:
     """The weapon names of the install found; `HEAT3D_WT_NO_NAMES=1` turns them off."""
     if os.environ.get("HEAT3D_WT_NO_NAMES"):
@@ -188,4 +213,4 @@ def load(game: str | os.PathLike[str] | None = None) -> Names:
     return Names.from_game(game)
 
 
-__all__ = ["Names", "Weapons", "load", "load_weapons", "read_table", "LANGUAGE"]
+__all__ = ["Names", "Weapons", "Missions", "load", "load_weapons", "load_missions", "read_table", "LANGUAGE"]

@@ -25,8 +25,10 @@ time: the install is found through Steam or the launcher's default folders, or
 `--game` / `HEAT3D_WT_GAME`. Nothing of the game's text is in this repository;
 without an install the names are the vehicle ids.
 
-Each battle becomes `out/<map>/<map>_<start, UTC>_<session id>.parquet` and
-`.match.json`. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
+Each battle becomes `out/<map>/<map>_<AB|RB|SB>_<start, UTC>_<session id>.parquet` and
+`.match.json` (and the two sidecars named alike): AB, RB and SB are the game's own short forms of arcade,
+realistic and simulator battles (see [Battle mode](#battle-mode)); the part is left out where the header
+names no difficulty. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
 together as one battle; a client replay and the server's parts of the same
 battle are two recordings and stay two. The command prints `ok <table> <summary>`
 or `failed <file>: <why>` per battle and exits 1 when any failed.
@@ -38,6 +40,7 @@ read from your install (see [Levels](#levels-heat3d-wt-level)):
 heat3d-wt-level list                              # every level, its terrain and its maps
 heat3d-wt-level extract <level> -o levels         # one level (names as `list` prints them, wildcards allowed)
 heat3d-wt-level extract --all -o levels           # all of them
+heat3d-wt-level extract <level> -o levels --detail high   # denser ground and more objects (low, medium, high)
 python -m heat3d_ext_warthunder.levelcli ...      # the same, without installing
 ```
 
@@ -66,7 +69,7 @@ reading instructions, so the viewer needs no form filled in.
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop`, `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units) |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop`, `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](#end-of-a-track)) |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
 | `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
@@ -75,13 +78,17 @@ reading instructions, so the viewer needs no form filled in.
 | `match` | the match id (the match document's `match`), on every row; the hints map it as the session, so two loaded replays never join tracks |
 | `life` | `uid#n`: one unit's track, cut where the uid passes to another unit, the unit moves faster than it can (a respawn, a rearm, the game moving it, the client correcting a distant unit; see below) or is long unseen; `w<hex>` a weapon's flight (`w<hex>#n` after a cut) |
 | `uid` | the unit's id in the replay |
-| `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`; weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned` |
+| `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`; weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned`; `camera` the recording player's replay camera (see [The camera](#the-camera)) |
 | `type` | the game's own type where the results name it (`fighter`, `assault`, `destroyer`, `gun_boat`), else as `kind` |
 | `Vehicle` | the game's vehicle id (`f_15a`, `germ_flakpz_I_Gepard`), which the viewer's figures match |
 | `VehicleName`, `VehicleShortName`, `VehicleNameKey` | the vehicle's English name from your install's localisation (`Pz.Kpfw. III Ausf. J1`, short `Pz.III J1`) and its key (`germ_pzkpfw_III_ausf_J_0`); the game font's country marks are left out. Where the game names nothing, or no install is found, the name is the id and the key empty |
 | `mission` | the unit's name in the mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | where the unit points (the look vector): aircraft from the flight model's attitude, ground units and ships from their own, weapons along their flight |
-| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below). The hints say so under `conventions` |
+| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below; a ground unit's right side down). The hints say so under `conventions` |
+| `turretYaw`, `gunPitch`, `turrets` | a tank's main turret: its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks; not ships (see [Turrets](#turrets)) |
+| `aimHeading`, `aimPitch`, `aimDistance` | the recording player's own tank: where it aims (compass degrees, degrees up, the distance in m; 2000 when nothing is in the sight); camera rows: where the player aims (heading, pitch) |
+| `zoom` | camera rows: the camera's magnification (see [The camera](#the-camera)) |
+| `difficulty`, `gameMode` | the battle's `AB`, `RB` or `SB`, and `ground`, `air` or `naval`, on every row (see [Battle mode](#battle-mode)) |
 | `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see below) |
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
@@ -92,7 +99,7 @@ reading instructions, so the viewer needs no form filled in.
 | `throttle`, `elevator`, `aileron`, `rudder`, `ammo` | the recording player's aircraft only: the throttle 0-1.1 from its cockpit (1.1 war emergency power or afterburner; else its flight entry's fifteenths), the controls -1..1 from its flight entry (elevator positive pulling, aileron positive rolling right), the rounds left per weapon (`250 140 170`) |
 | `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` | the recording player's aircraft only, from its cockpit: indicated airspeed and climb rate (m/s), fuel, manifold pressure (atm), gear (0-1, 1 down), oil and cylinder head temperature, where its cockpit has the gauge |
 | `speed` | m/s over about two seconds of the track (worked out here; the replay sends no speed for other units) |
-| `alive` | 0 for a unit's samples after its death (its wreck), for at most 60 s or until the game removes it |
+| `alive` | 0 for a unit's samples after its death (its wreck): a ground unit's or ship's until the game removes it or its samples end, an aircraft's for at most 60 s |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
 
 The match document (`format: heat3d-wt-replay-match`, version 2) has the map,
@@ -100,6 +107,7 @@ mission, battle class, session id, start time and author, and:
 
 | Key | What |
 |---|---|
+| `battle`, `difficulty`, `gameMode` | the battle mode: `difficulty` `AB` / `RB` / `SB` (and its name, and the header byte), `gameMode` `ground` / `air` / `naval`, the mission's mode (`Dom`, `Conq`, `Bttl`, `I2M`, ...) and its English name from your install (`Domination`, `Enduring Confrontation`), the allowed unit types (see [Battle mode](#battle-mode)) |
 | `settings` | the mission blk after the header: mode, environment, weather, score and time limits, countries, allowed unit types, wind, and `stars` (latitude, longitude, date, local time) |
 | `sky` | the first `CustomWeatherParams`: sun and moon direction, wind, sky colours, cloud offsets |
 | `players`, `slots` | the results' line per player (kills, ground kills, deaths, assists, score, captures, squad, clan, country, line-up, the uids they drove); the replay's player slots (name, user id, team) |
@@ -115,7 +123,7 @@ mission, battle class, session id, start time and author, and:
 | `entityMessages` | the entity messages (0x20) by class number: count, target templates, sizes |
 | `chat` | every chat line |
 | `triggers`, `hints`, `missionProgress` | the mission script's actions (RunTriggerAction), its hints, its progress messages |
-| `camera` | the recording player's replay camera every 0.25 s |
+| `camera` | the recording player's replay camera's fields every 0.25 s as sent (the table has it as a track) |
 | `projectileHitReplays` | the recording player's own hits and being hit, with weapon and ammunition and their English names |
 | `results` | the whole results blk as the game wrote it |
 | `counts` | rows, events, lives, kinds, samples, entities by template, weapons, packets read and not read, every message id seen and those not read, samples dropped |
@@ -139,7 +147,8 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Flight packets ahead of their time | now and then a client replay's flight packet holds every other aircraft where it will be about 0.75 s later (the client's extrapolation after a network hitch; the recording player's own aircraft is not ahead), and the next packet is back on time - read at the packet's time each aircraft leaps forward and back at up to 30,000 km/h. The lead is measured per packet (each aircraft's step along its velocity against the time elapsed, from its last on-time samples); when most moving aircraft agree, each one that leads is given the time it stands for. air_afghan has 4 such packets, air_denmark 5. Single aircraft samples that lead the same way are re-timed too. A re-timed sample that then lands within 0.2 s of the sample the game sent for that moment is left out (counted). The packets' own bytes (entries, the tail with the recording player's position) carry no mark of it |
 | Dead-reckoning snaps | a step out of a dead-reckoned run (see below) is measured from the last received state when the snap is at most 300 m: the client's corrections no longer cut tracks (arcade: about 770 lives before, 485 now; one player's 24 tracks are 12, its respawns) |
 | Teleports | a track is cut where its unit moves further than it can: first against its kind (aircraft 750 m/s, ground and ships 40 m/s, weapons 1800 m/s, above a slack of 60, 8 and 40 m), then against its own pace - 1.6 times the 95th percentile of its own steps (0.2 to 5 s long) over all its samples under one entity, no less than 250 m/s for aircraft (a piston fighter's dive) and 15 m/s on the ground, no more than the kind's limit - so a piston fighter's client correction is caught although a jet could fly it. Each cut is listed in `trackBreaks` with its likely cause and, for a pace cut, the unit's limit: a point several cuts lead to (respawn or rearm at a spawn), the recording player's own aircraft moved by the game (its own position in the packet tail moves the same way; once in air_afghan, 2.4 km in mid-air), or a distant unit corrected after the client extrapolated it. Checked on the recording player's own aircraft, which the client does not extrapolate: its own pace cuts it nowhere in the three air replays (only respawns do), its fastest kept steps are 226 m/s (I-185, limit 315) and 569-577 m/s (Eurofighter), and at its one arcade respawn the cockpit altitude runs on at the new spawn. Cuts per replay: 61 to 607 (spain's 387 pace cuts are corrections of distant piston aircraft). After the fixes no step between consecutive rows of any track is faster than its kind or its own pace allows in the four replays (`selfCheck.stepSpeed`; spain's aircraft at most 388 m/s, the jets' at most 739). Ships and boats still show up to 108 m/s between samples 0.02-0.08 s apart: the recording player's own ship comes 25 times a second, stamped at frame times, and steps of under 8 m over such short times read fast; their 99th percentile is 34-36 m/s |
-| Ground and ship positions (0xF073 / 0xF074) | all four, no packet left unread. Heading, pitch and roll from the 16-bit attitude: the heading is within 1.4 to 2 degrees (median) of the direction of travel of moving ships and tanks, the pitch follows the slope (correlation 0.94). Some ships send a quaternion instead; its heading is within 2.5 degrees. Ships sit at the water level (median height 0.0 to 0.4 m on the two maps with sea) |
+| Ground and ship positions (0xF073 / 0xF074) | all 104, no packet left unread. Heading, pitch and roll from the 16-bit attitude: the heading is within 1.4 to 2 degrees (median) of the direction of travel of moving ships and tanks. The pitch counts 180/65536 degrees a step, not 360/65536: read at 360/65536 it was twice the climb of the track (slope 1.99 over 20,612 steps of tanks driving forward in five ground battles, correlation 0.961); now 0.994. The roll's sign is the table's turned (it was read with the left side down positive): with both fixed, the gun's world direction from hull and turret lies within 3 degrees of the line to the unit hit for 95-99 % of tanks' shots, and the replay camera's offset turned into the vehicle's frame equals the offset the game sends in that frame (median 0.00 m; see The camera). Some ships send a quaternion instead; its heading is within 2.5 degrees. Ships sit at the water level (median height 0.0 to 0.4 m on the two maps with sea) |
+| Turrets (in the ground state) | tanks' turret yaw and gun pitch per turret (see [Turrets](#turrets)); checked against the shots and the recording player's aim |
 | Packed ground heights | positions packed in 64 bits count their height from -100 m on three maps and from 1405 m on air_afghan (its water level 1505 m less 100): measured on each replay from units seen in both forms and from their creation points, and added (`selfCheck.packedGroundHeight`; air_afghan: 20 pairs, spread 8 m) |
 | Entity stream (packet type 6: creation, destruction) | all four: 857 to 11,544 entities each, every creation read. The daECS layout comes from the Dagor Engine's published source; War Thunder's own component types (unit storage, part lists, the HUD buffer, projectile state) are skipped by finding where the next component starts, and only a reading that uses the rest of the block exactly is taken. Checked: the vehicle the kill and hit records name for a uid equals the unit entity's vehicle in 960 of 960 records, and the entity's player slot equals the slot those records name in 938 of 938 (`selfCheck`) |
 | Who drove which unit, AI units, ships, ground targets | from the entity stream: every unit has its vehicle and team, every player's unit its player (the slot's name); 111 to 825 lives a replay, all with a vehicle |
@@ -157,7 +166,10 @@ three public sample replays of github.com/llama-for3ver/wt_replay_decoder.
 | Weapon names | from the install's `lang/units_weaponry.csv` (weapons, ammunition) and `units_modifications.csv` (ammunition belts): all 25, 16 and 29 kill weapons of the arcade and the two simulator battles are named, 28 of 32 of the naval battle (the other 4 are ships' default belts, `*_universal`, which the game names nowhere) |
 | Vehicle names | from the install's `lang/units.csv` (`<id>_0` full, `<id>_1` short; ships also `ships/<id>_0`): 62 of 62, 50 of 50, 43 of 45 and 31 of 33 vehicles of the four replays (the rest: two airfield radars the game does not name) |
 | Players and AI | from the entity stream's player slot and the slot's Gaijin id: on the four replays no row of a player in the results is AI, every row not AI is a results player's, and every ground unit of the air battles is AI (`selfCheck.identity`) |
-| Wrecks | a unit's samples after its death keep coming (a ship sinks 90 m over minutes): marked `alive` 0 for 60 s or until the game removes the unit; a ground unit's later samples are dropped (counted in `counts.droppedSamples`); aircraft keep theirs, as a few AI aircraft fly on after a kill names them |
+| Wrecks | a unit's samples after its death keep coming (a ship sinks 90 m over minutes, a burnt-out tank is sent until the game removes it): a ground unit's or ship's wreck is `alive` 0 until its entity is removed or its samples end, and stays one track across gaps (a distant wreck is refreshed every 5.5 s or not for minutes); its death is the entity's first kill record or OnUnitDead. Before, a wreck seen again after a minute became a new track that read as alive: the vehicle a player left for an aircraft seemed to stand there alive. Aircraft keep `alive` 0 for at most 60 s, as a few AI aircraft fly on after a kill names them (`selfCheck.wrecks`: how many, how long they stay) |
+| Vehicle switches | a player's unit still alive when the same player's next unit (another entity, created no earlier, first seen later) appears is ended there: a vehicle left standing, which the game may go on sending where it stands to the end (3 in the 100 ground battles, each never moving and without the spawn's UnitRepair). A killstreak bomber (`*_killstreak`, an AI aircraft the player calls in, in arcade and realistic battles) flies beside the player's tank and ends nothing. `selfCheck.vehicleSwitch.twoLiveVehicles` (one player's two different units alive at the same moment for over a second) is 0 in all 104 replays; before the wrecks were read as above, 6 of the ground battles sampled had 25 such pairs |
+| Tank wrecks | `selfCheck.wrecks`: 5,614 wrecks in the 104 replays, staying a median of 268 s (per battle); a tank's wreck moves at most 58 m (99th percentile per battle, median 7 m) from where it was first seen dead |
+| Battle mode | difficulty from the header, game and mission mode from the mission (see [Battle mode](#battle-mode)) |
 | Aircraft positions, version 101286 and server replays (2025) | not read: their flight packets have a different layout |
 
 ### Messages to units
@@ -223,9 +235,9 @@ Next to each table, so that nothing of the replay is lost to it:
   words of its parameters (`triggers`, `hints`); the parameter blk's layout is
   not read, its bytes are kept.
 - **Mission progress** (0xF07A, 0xF07C): fields as hex (`missionProgress`).
-- **The replay camera** (0xD043, about 20 a second): a quaternion and float
-  triples (`camera`, every 0.25 s; all in the sidecar). Which triple is the
-  camera's position is not checked.
+- **The replay camera** (0xD043, about 20 a second): read, see
+  [The camera](#the-camera); the fields as sent are also in `camera` (every
+  0.25 s) and all in the sidecar.
 
 What stays unread, and why:
 
@@ -418,7 +430,69 @@ the climb angle, and in clear turns the packed roll is positive in left turns
 (235 of 237 samples in the arcade battle, 262 of 263 and 190 of 194 in the
 sim battles): the flight model's roll is left wing down positive, and the
 table turns it to right wing down positive (`selfCheck.aircraftAttitude`).
-The 10-bit angles step 0.18 degrees. Ground units' roll sense is not checked.
+The 10-bit angles step 0.18 degrees. Ground units' attitude is checked against their shots (see Turrets).
+
+### Turrets
+
+A tank's ground state (16-bit attitude) holds, after its position, 141 bits not read, then per turret 62 bits:
+the turret's yaw (u16), the gun's pitch (u16), both 360/65536 degrees a step and signed, and 30 bits not read;
+then 8 bits, the padding to the byte, and on some states 200 bits more. The turret count is the byte the batch
+sends before the state. A state whose length does not fit this gives no turrets (static units send a shorter
+state). The yaw is relative to the hull and clockwise positive, 0 straight ahead; the pitch relative to the
+hull, up positive. An unused weapon's slot reads 0 and 0 exactly. Checked:
+
+- **The shots**: for every projectile hit (0xF0E9) by a tank, its main gun's world direction (the hull's attitude
+  turned by the turret's yaw and the gun's pitch, at the sample at or just before the hit) against the line from
+  the shooter to the unit hit, at least 30 m away: of 61,296 such shots in the 100 ground battles, per battle a
+  median of 98 % within 3 degrees in heading and 99 % in elevation (no battle under 81 % and 88 %; medians of the
+  angles 0.13-0.19 degrees; `selfCheck.turretsVsShots`; the rest are mostly hits by a machine gun in another
+  turret). Before the hull pitch was halved and its roll turned, the
+  elevation agreed for under half of them.
+- **The recording player's aim**: its own tank sends four floats after its state: its aim's world angle (counted
+  anticlockwise from east, so the compass heading is 90 degrees less it), the aim's pitch and its distance
+  twice (2000 m when nothing is in the sight). The hull's heading plus the turret's yaw lies within 0.44
+  degrees (median) of that heading over 4,870 samples (an air-to-ground battle's M8).
+
+Ships' states have another layout after the position; their turrets are not read (the tank layout fits some of
+their states by length, and its "main gun" points 63 degrees away from their shots, so ships get no turret
+columns). Other units' look directions: aircraft send no head or view direction; the AA guns' 0xD020
+(`GmSetGunAngles`) stays unread.
+
+### The camera
+
+0xD043 ReplayCameraParams, about 20 a second, is the recording player's own replay camera: field 1 a quaternion
+(x, y, z, w) turning the camera's (0, 0, 1) to where it looks; 2 the camera's place from the vehicle it follows, in
+the game's axes (m); 4 the same offset in the vehicle's own frame (x forward, y up, z left); 5 where the player
+aims (a unit vector); 3 the zoom (1.19 in a tank's third-person view, about 1.0 in an aircraft, 2.75 and 5.4 in a
+gunner's sight, about 3.7 through binoculars); 6 and 7 the same in every replay. Checked: field 4 is field 2
+turned into the frame of the recording player's vehicle at that moment, within 0.5 m for 375,107 of 393,053
+messages over the 104 replays (95 %; 72 to 100 % per replay; median 0.00 m); the quaternion's forward has the aim's heading (median 0.01 degrees apart) and, in a
+sight, its pitch, while in a tank's third-person view it looks 12 degrees below the aim (the view from above and
+behind). The replay sends no field of view in degrees, only the zoom.
+
+The table has the camera as a track of its own: kind `camera`, track `<player> camera #ca`, life `camera`, a row
+at most every 0.1 s, at the followed vehicle's place plus field 2, looking along the quaternion (`dirX/Y/Z`,
+`heading`, `pitch`, `roll`), with `zoom`, `aimHeading` and `aimPitch`, and `otherLife` the life it follows (where
+two of the player's lives have a sample, the one whose frame gives field 4). `selfCheck.camera` counts the rows
+and the frame check.
+
+### End of a track
+
+A track is drawn from its first row to its last. When its unit is gone before the replay ends, its last row is a
+`despawn` row at its last place: at the time the game removed its entity, when that came within 6 s of its last
+sample, else at its last sample (its data ends there: a living enemy no longer sent, or a track cut). A track
+without one lasts to the end of the replay. Rows of one track can be far apart (a distant unit or a wreck is
+refreshed every 5.5 s, a wreck sometimes not for minutes; a living unit's track goes on over gaps of up to 60 s):
+its last state holds until its next row.
+
+### Battle mode
+
+The header's byte at offset 688 holds the difficulty in its low four bits: 0 arcade (AB), 5 realistic (RB), 10
+simulator (SB). Checked on the 104 replays: the two air simulator battles read 10, the air arcade battle 0, of
+the 100 ground battles 99 read 5 and one 0 - and that one alone names the arcade killstreak aircraft in the
+header's `killStreaks` (`killStreaksAircraftOrHelicopter_1`; the realistic ones leave it empty). The game mode is `ground` when the mission lets tanks
+spawn, else `naval` when it lets ships, else `air` (`allowedUnitTypes`); the mission's own mode comes from its
+key (`missions/_Dom`), named from your install's `lang/missions_versus.csv`.
 
 ### Gunfire
 
@@ -436,22 +510,30 @@ send each single shot (`gun_shot`, no direction), 40 mm AA guns their bursts
 ## Levels (`heat3d-wt-level`)
 
 Each level becomes `<out>/<level>/<level>.glb`, `<level>.json` (what was read,
-the water level, the map rectangles, triangle counts) and the level's tactical
-maps as `<level>_map.png` (the air map) and `<level>_tankmap.png`. The glb is
-written to `<level>.glb.part` and renamed when complete. The install is found
-through Steam or the launcher's default folders; `--game <folder>` or
-`HEAT3D_WT_GAME` say where it is otherwise.
+the water level, the map rectangles, triangle counts, timings) and the level's
+tactical maps as `<level>_map.png` (the air map) and `<level>_tankmap.png`;
+ground maps also get `<level>_terrain.png`, the ground's own colours over the
+tank map. The glb is written to `<level>.glb.part` and renamed when complete;
+while a level is written, `<out>/<level>/.<level>.lock` is held, so two
+extractions never write the same level (the second prints `busy <level>`).
+The install is found through Steam or the launcher's default folders;
+`--game <folder>` or `HEAT3D_WT_GAME` say where it is otherwise.
 
 | Part | What it is |
 |---|---|
-| `ground:<level>` | the terrain heightmap (`HM2`) as a grid, at full detail over the tank map's area (the air map's when there is no tank map), textured with the tactical map where it covers it; on levels without a heightmap, the land mesh |
-| `ground:<level> heightmap surroundings` | the rest of the heightmap, coarser |
+| `ground:<level>` | the terrain heightmap (`HM2`) as a grid; on ground maps the middle of the tank map (half its width) at the `--detail`'s step, coloured with the land classes, ground decals and roads (`<level>_terrain.png`; the tactical map where that cannot be made); on maps without a tank map, the air map's area at full detail, textured with the tactical map; on levels without a heightmap, the land mesh |
+| `ground:<level> tank map` | the rest of the tank map, one step coarser |
+| `ground:<level> heightmap surroundings` | the rest of the heightmap, coarser still |
 | `ground:<level> land mesh` | the land mesh's collision triangles where the heightmap does not reach (the surroundings of a tank map, out to tens of kilometres) |
-| `ground:<level> outside the map` | ground the tactical map does not cover, untextured |
+| `ground:<level> outside the map` | ground the image does not cover, untextured |
 | `water:<level>` | one flat rectangle at the level's `water_level` over all the terrain: the game draws water as one plane, and low ground under it is sea, lake or river bed |
 | `water:<level> rivers` | on levels with a water heightmap (`WHM`), the sloping water surface over the cells it covers |
-| `structure:<level> buildings` | the level's placed objects (buildings, hangars, piers, cranes, walls, fences, rocks), each by its own collision shape, placed by its transform |
-| `structure:<level> trees` | placed trees and bushes, each as a four-sided double cone over its collision box (a tree's collision is only its trunk) |
+| `structure:<level> buildings` | every placed object that is not a plant: houses, ruins, walls, fences, bridges, rails, rocks, props. The fixed ones (`RIGz`) and, over the tank map, those the land classes generate (town blocks, stones). Each is drawn by its render mesh (walls, roofs, window openings, beams), at the LOD the triangle budget allows, coloured per material by the average of its diffuse texture |
+| `structure:<level> trees` | trees and bushes, fixed and generated (forests, hedgerows): their render mesh where the budget allows, otherwise a trunk and a crown (a cone for conifers) in the tree's own leaf colour, over the tree's real size |
+
+Objects without a render mesh fall back to their collision shape; trees
+without one to the crown. Vertex colours (`COLOR_0`) hold sRGB-encoded values,
+which is how the 3DHeat viewer reads them.
 
 **Coordinates** are the game's metres with z mirrored: glb (x, y, z) = game
 (x, y, -z). The game's world is left-handed (x east, y up, z north); glTF is
@@ -460,28 +542,56 @@ mirror it, so a replay and the level of its map land on top of each other with
 no placement step. The JSON gives each tactical map's rectangle in game metres
 and its corners in the glb's space, for loading the PNG as a map image.
 
-**Size.** `--max-grid` (default 1024) caps each heightmap part at that many
-samples a side; a 4 km tank map at 2 m comes out at 2 to 4 million triangles,
-an air map's 131 km at 32 m at about 2 million. Placed objects stay within
-`--max-object-triangles` (default 4 million): over it, the object types that cost
-most are drawn as their boxes, and if that is not enough the smallest objects
-are left out; the JSON lists both. `--no-objects` leaves objects out,
-`--no-texture` leaves the ground untextured.
+**Detail.** `--detail low|medium|high` (default medium) sets, over the tank map:
+
+| | middle of the tank map | rest of the tank map | ground colour | object budget | most triangles per object | generated plants kept |
+|---|---|---|---|---|---|---|
+| low | every 4th sample | every 8th | 4 m a pixel | 1.2 M | 1,500 | trees 35 %, bushes 20 % |
+| medium | every 2nd | every 4th | 2 m | 3.5 M | 4,000 | trees 70 %, bushes 50 % |
+| high | every sample (2 m on most ground maps) | every 2nd | 1 m (at most 4096 pixels a side) | 4.5 M | 12,000 | all |
+
+The two tank-map rings are held to 0.3 M (low), 1 M (medium) and 3.7 M (high)
+triangles: on the maps whose heightmap is finer than 2 m, the steps double
+(the outer ring first) until they fit, so those come out at about 2 m too.
+
+A ground map at `high` comes out at about 8 million triangles (3.5 M of ground,
+4.5 M of objects) and 250 MB; at `medium` at about 4.5 M. The objects' LODs are
+the ones the game itself would draw from one viewing distance, the shortest
+whose total fits the budget: small props drop to coarse LODs first and large
+buildings last, by the ranges their makers gave each LOD (the JSON's
+`lodDistance`); what that step saves beyond the budget goes back to the largest
+objects. If even the coarsest LODs do not fit, the trees that save most become
+crowns, and then the smallest types are left out (`leftOut`); no object is ever
+drawn as a box.
+Generated objects are thinned deterministically by kind (`density`), the same
+ones every run. `--max-object-triangles` overrides the budget,
+`--max-grid` (default 1024) caps the heightmap's coarser parts, `--no-objects`
+leaves objects out, `--no-generated` the generated ones, `--no-terrain-colour`
+textures the ground with the tactical map, `--no-texture` leaves it untextured.
+
+The JSON's `parts.objects` lists instances (fixed and generated, by kind and
+land class), how many were drawn at which LOD (`drawnAs`), the triangles, the
+LOD distance and the seconds; `parts.heightmap.rings` each ground ring's step
+and triangles; `parts.terrainColour` the land classes and their colours, roads
+and ground decals; `trianglesTotal`, `glbBytes` and `secondsBy` the totals.
 
 ### What is read, and how well
 
 | Part | Status |
 |---|---|
 | Level binary (`levels/<level>.bin`, `DBLD` 3x64): block table | all 164 levels of this machine's install |
-| Heightmap (`HM2`, versions 0-2; version 2 is 8-bit values in blocks, Oodle or zstd chunks) | 90 of the 164 levels have one, all version 2 with Oodle chunks; seven levels extracted and checked by eye against their tactical maps (rivers, valleys, coasts and towns line up) |
-| Land mesh collision (`lmap`, its `LTdump` land ray tracer) | 116 levels have one, all Oodle-packed; read on the extracted ones. It is the game's collision surface, not the rendered mesh, so it is coarser where the land is flat |
+| Heightmap (`HM2`, versions 0-2; version 2 is 8-bit values in blocks, Oodle or zstd chunks) | 90 of the 164 levels have one, all version 2 with Oodle chunks; checked by eye against their tactical maps (rivers, valleys, coasts and towns line up) |
+| Land mesh collision (`lmap`, its `LTdump` land ray tracer) | 116 levels have one, all Oodle-packed. It is the game's collision surface, not the rendered mesh, so it is coarser where the land is flat |
+| Ground colour (`lmap` land classes and weight map, `LMp2` physics map, `hspl` splines) | the land classes' colour maps and detail textures (their average colours) weighted by the weight map, the 1 m biome index of indexed land classes, the road and ground-decal shapes of the physics map in the colour of their spline's or material's texture, cliffs on steep slopes. Checked on three ground maps against the tank map: roads, towns, lakes, forest belts and rock outcrops line up. The colour formula of War Thunder's own terrain shader is not in the public source; the engine's published one (daNetGame) is used, which comes out more saturated than the tactical map |
 | Water level | `water_level` from the level's BLK in `aces.vromfs.bin` (0 where it has none) |
 | Water heightmap (`WHM`: a grid of flat cells and 130x130 pages of 16-bit heights) | the one level of this install that has one; its rivers come out 0 to 15 m, sloping with the ground |
-| Tactical maps | from `content/base/res/locations_maps.dxp.bin`, placed by the BLK's `mapCoord0/1` and `tankMapCoord0/1`; the image's top is north (checked on four levels against the terrain) |
-| Placed objects (`RIGz`: the render-instance generator's fixed instances) | every instance, as a 3x4 matrix of 16-bit values or, on some levels, 32-bit ones (the cell's byte count decides); on the replay levels every byte of every cell is accounted for. Positions checked by eye on five levels: buildings along an island's runways, a harbour's piers and cranes, a city's riverbanks against its tank map |
-| Object shapes (`<object>_collision` in `content/*/res/*.grp`) | collision resources of stream version 3: box, sphere and capsule nodes as their boxes, mesh and convex nodes as their triangles. 739 of 800 sampled resources read; the rest hold no usable shape (empty boxes) and the object is counted as without a shape. The collision shape is coarser than the rendered model (a hangar is a few boxes) |
-| Objects the land classes generate at run time (most forests, fields and towns of air maps, some city blocks) | **not placed**: they need the land-class assets and the game's generator. The JSON lists the land classes |
-| Navigation mesh (`Lnav`), splines, wires, the rendered land mesh and its textures | not read |
+| Tactical maps | from `content/base/res/locations_maps.dxp.bin`, placed by the BLK's `mapCoord0/1` and `tankMapCoord0/1`; the image's top is north |
+| Placed objects (`RIGz`: the render-instance generator's fixed instances) | every instance, as a 3x4 matrix of 16-bit values or, on some levels, 32-bit ones (the cell's byte count decides); every byte of every cell accounted for on the replay levels |
+| Generated objects (`RIGz` land-class masks and the `LandClass` resources) | the game's generator, ported: the same spots tried in the same order with the same random numbers, the land-class and exclusion masks, the object picked at each spot, its rotation, scale and height offset; tiled (town blocks) and planted (forests, bushes, fields) entities. Generated over the tank map only. Approximated: the ground height and normal (from the heightmap; the game traces a ray), the exclusion boxes the game registers at run time, and trees' yaw (the game snaps it to the impostor's rotation palette). All 174 land classes of the 35 ground maps of the user's replays read |
+| Render meshes (`RendInst` resources in `content/*/res/*.grp`, materials in `riDesc.bin`) | every LOD's vertices and triangles (float positions; 16 or 32-bit indices, plain or meshoptimizer-packed), each element's material; all 1,448 object types of three ground maps read. Decal and impostor-billboard elements are left out; the transparent ones (glass) are kept |
+| Object colours | per material, the average of its diffuse texture's small mip (alpha-weighted for leaves), from the install's texture packs: t0 for most shaders, the first detail diffuse where t0 is an overlay or a mask. One colour per material: no texture on the objects |
+| Collision shapes (`<object>_collision`) | collision resources of stream version 3, used where an object has no render mesh. Only what the game's rays hit (`TRACEABLE` nodes) is drawn, and boxes, spheres and capsules only when the resource has no mesh: the rest are coarse physics stand-ins that would show as cubes around the object |
+| Navigation mesh (`Lnav`), the rendered land mesh, grass, `spgz`, `stbl`, `d2co` | not read |
 
 Levels are compressed with Oodle, which is proprietary. The game ships a copy,
 `<War Thunder>\win-arm64ec\oo2core_9_win64.dll` (an ordinary x64 build), and
@@ -509,6 +619,24 @@ it; no game code was decompiled. Each module names the source files it follows:
   (`fftWater/fftWater.cpp`).
 - `rigen.py`: the placed objects (`rendInst/riGen/riGenData.h`,
   `rendInst/rendInstGen.cpp`, `rendInst/riGen/genObjUtil.h`).
+- `landgen.py`: the generated objects (`rendInst/rendInstGenLand.cpp`,
+  `riGen/landClassData.h`, `riGen/genObjByMask.h`, `riGen/genObjByDensGridMask.h`,
+  `riGen/genObjUtil.h`, `riGen/riGenData.h`, `riGen/multiPointData.h`,
+  `riGen/riRotationPalette.h`, `rendInstGen.cpp` (`create`, `precomputeCell`,
+  `generateCell`), `gameMath/objgenPrng.h`, `util/dag_roHugeHierBitMap2d.h`,
+  `util/dag_hierBitMap2d.h`, `ioSys/dag_roDataBlock.h`, `ioSys/roDataBlk.cpp`,
+  `gameRes/grpData.h`).
+- `rendinst.py`: render instances (`shaders/rendInstRes.cpp`,
+  `shaders/dag_rendInstRes.h`, `shaders/matVdataLoad.cpp`, `shaders/shaderMesh.cpp`,
+  `shaders/dag_shaderMesh.h`, `shaders/dag_shaderCommon.h`,
+  `drv/3d/dag_consts_base.h`, `gameRes/gameResDescBin.cpp`) and meshoptimizer's
+  index codec (`3rdPartyLibs/meshoptimizer/src/indexcodec.cpp`, MIT).
+- `terrain.py`: the ground's colour (`landMesh/lmeshManager.cpp`,
+  `lmeshLandClasses.cpp`, `lmeshWeightAtlas*.cpp`, `lmeshRenderer.cpp`,
+  `landMesh/shaders/land_weight_atlas.hlsli`, `land_weight_inc.dshl`,
+  `biomes.dshl`, `daNetGame/shaders/land_aces.dshl`, `make_clipmap.dshl`,
+  `physMap/physMapLoad.cpp`, `baseUtil/treeBitmap.cpp`,
+  `levelSplines/levelSplines.cpp`).
 - `collision.py`: resource packs (`gameRes/grpData.h`) and collision resources
   (`sharedInclude/gameRes/collResStream.h`, `gameRes/collisionGameResLoad.cpp`),
   whose triangles are stored as a quad BVH (`daBVH/bvhIO.cpp`,
@@ -531,7 +659,7 @@ machine: **never publish them**, and nothing here ships any game data.
 
 A server replay of a battle, downloaded by hand from warthunder.com, to see
 whether server replays hold everyone's movements and use the same layouts;
-a ground battle (the four replays are air and naval); a helicopter battle.
+a helicopter battle; a ground battle's server replay.
 Each match document's `counts.messageIdsNotRead` and `selfCheck` say what
 a new replay holds and how well it was read.
 
