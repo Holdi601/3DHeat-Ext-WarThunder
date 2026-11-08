@@ -93,6 +93,8 @@ reading instructions, so the viewer needs no form filled in.
 | `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see below) |
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
+| `hitOutcome`, `hitFlags` | a `shot`'s outcome on a ground unit: `kill`, `critical`, `penetration` or `nonpenetration` (bounced or stopped: the replay does not tell a ricochet apart), from the bits the server sends with the hit (`hitFlags`, raw); empty where none is sent (aircraft, ships). See [Hit outcomes](#hit-outcomes) |
+| `hitShell`, `calibre` | a `shot`'s shell signature (four bytes of the hit message, the same for every hit of one shell type; raw hex) and its calibre in mm where a kill names the weapon of a hit with that signature. See [Hit outcomes](#hit-outcomes) |
 | `rpm` | an aircraft's engine rpm (the mean over its engines) as last sent, within 2 s |
 | `vx`, `vy`, `vz` | an aircraft's velocity as its flight entry sends it (m/s, the game's axes; speeds over 500 m/s read 500) |
 | `engine`, `afterburner`, `engineCondition` | an aircraft's engines from its flight entry: `off`, `starting`, `running`, `dead` (`/`-joined when its engines differ); the afterburner 0-1; a byte sent only after the engine was hit |
@@ -519,6 +521,44 @@ player's rounds left (its `ammo` column) fall as it fires, so its bursts can
 be told, but not where those rounds went. Heavy AA and artillery
 send each single shot (`gun_shot`, no direction), 40 mm AA guns their bursts
 (`fire_start`, `fire_stop`).
+
+### Hit outcomes
+
+With every projectile hit on a ground unit the server sends 0xF144
+(UnitOnHit) to the unit: four one-byte fields, the fourth bits of what the
+hit did. Found on the ground test battle (1,745 messages, 1,619 hits; the
+check below is `selfCheck.unitMessages.outcome_*`):
+
+| Bit | Meaning | Evidence |
+|---|---|---|
+| 0x20 | a projectile's own hit | 98-100% come with a 0xF0E9 hit on the unit within 5 ms; without it 99% come with an explosion (0xF133): splash, not a shot row |
+| 0x01 | it got through (penetration) | every message with 0x02, 0x04 or 0x08 has it too; 0x20 alone (464) never has a kill or crit record within 0.2 s more often than chance |
+| 0x02 | critical hit | 11 of the 15 critical hit records have it, against 13% of all messages |
+| 0x04 | destroyed | 64% have a kill record on the unit within 0.2 s and 66% its death within 1 s, against 2-3% without it; 25 of the 36 killing hits found |
+| 0x08 | heavy damage | 4 of the 15 critical hit records, 0.5% of all messages |
+
+`hitOutcome` takes the worst: `kill` (0x04), `critical` (0x02 or 0x08),
+`penetration` (0x01), `nonpenetration` (0x20 alone). A hit is paired with the
+nearest unpaired 0xF144 with 0x20 to its unit within 5 ms (1,510 of 1,619).
+The game's hit camera tells a ricochet from a non-penetration
+(`hitcamera/result/ricochet`, `hitcamera/result/bounce` in `menu.csv`), but
+no bit or field found here does: the first three bytes vary from hit to hit
+and are not known. Client replays (the air test battles) send 0xF144 only
+for the recording player's own aircraft, all bits clear: aircraft and ship
+hits have no outcome. 0xF13E's effect numbers (5 in the ground battle) are
+too few to say more.
+
+The calibre: after the hit point the 0xF0E9 bit stream goes on undecoded,
+but a byte 0x30-0x3F, a byte with its low six bits clear and a zero byte are
+followed by four bytes that are the same for every hit of one shell type
+(`hitShell`): the 39 killing hits of the ground battle give one signature per
+kill weapon (120 mm KE-W `02401a00`, 125 mm 3BM46 `02800660`, 30 mm 3UBR8
+`01c009a0`). Each kill's killing hit gives its weapon's calibre (from the id,
+`120mm_ke_w`) to its signature, and every hit with the signature gets it
+(`selfCheck.unitMessages.hitsWithCalibre`: 651 of 1,451 hits with a
+signature; 3 of 6 named signatures were named by two calibres, 120 and
+125 mm APFSDS, the most named kept). Machine guns and shells that killed no
+one stay without a calibre.
 
 ### Vehicle fires
 

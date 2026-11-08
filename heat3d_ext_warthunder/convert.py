@@ -77,7 +77,8 @@ HINTS = {
                   "kind", "type", "uid", "ai", "isPlayer", "other", "weapon", "weaponName", "heading", "pitch", "roll", "speed", "alive",
                   "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
                   "rollRaw", "targetX", "targetY", "targetZ", "otherVehicle", "otherLife", "hitLocalX", "hitLocalY",
-                  "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "fireId", "fireKind",
+                  "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "hitFlags", "hitOutcome",
+                  "hitShell", "calibre", "fireId", "fireKind",
                   "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
@@ -146,6 +147,10 @@ COLUMNS = [
     ("hitDirZ", "f32"),
     ("hitPart", "f32"),
     ("hitFlag", "f32"),
+    ("hitFlags", "f32"),
+    ("hitOutcome", "str"),
+    ("hitShell", "str"),
+    ("calibre", "f32"),
     ("fireId", "str"),
     ("fireKind", "f32"),
     ("fireLocalX", "f32"),
@@ -2051,6 +2056,15 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
 
     out: list[dict[str, Any]] = []
     check: Counter = Counter()
+    # What each hit did: the 0xF144 sent to the unit with it (within 5 ms; the nearest not yet taken).
+    on_hit: dict[int, list[list[Any]]] = defaultdict(list)
+    for m in msgs:
+        if m.mid == 0xF144 and m.uid is not None:
+            d = wrpl.read_unit_on_hit(m.body)
+            if d is not None:
+                on_hit[m.uid].append([m.t, d["flags"], False])
+    # Each hit with a shell signature, for the calibres named by the kills (below).
+    shells: list[tuple[int, int, float, str, dict[str, Any]]] = []
     for m in msgs:
         if m.mid == 0xF0E9:
             try:
@@ -2093,6 +2107,19 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                 row.update(otherVehicle=victim.vehicle, otherLife=victim.id)
             row["hitPart"] = hit["part"]
             row["hitFlag"] = hit["part"] >> 8
+            best = None
+            for rec in on_hit.get(m.uid, []):
+                if not rec[2] and abs(rec[0] - m.t) <= 0.005 and rec[1] & wrpl.HIT_DIRECT \
+                        and (best is None or abs(rec[0] - m.t) < abs(best[0] - m.t)):
+                    best = rec
+            if best is not None:
+                best[2] = True
+                row["hitFlags"] = best[1]
+                row["hitOutcome"] = wrpl.hit_outcome(best[1])
+                check[f"outcome_{row['hitOutcome']}"] += 1
+            if hit.get("shell"):
+                row["hitShell"] = hit["shell"]
+                shells.append((m.uid, hit["shooter"], m.t, hit["shell"], row))
             if target is not None:
                 d = [target[k] - pos[k] for k in range(3)]
                 n = math.sqrt(sum(c * c for c in d))
@@ -2125,7 +2152,51 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                         "player": f"{m.entity.class_name.rpartition('/')[2]} #{m.uid}" if m.uid is not None else "",
                         "Vehicle": m.entity.class_name.rpartition("/")[2], "ai": True, "isPlayer": False,
                         "x": pos[0], "y": pos[1], "z": pos[2]})
+    check.update(_shell_calibres(r, shells))
     return out, dict(check)
+
+
+#: A weapon or ammunition id's calibre: "120mm_ke_w" 120, "12_7mm_..." 12.7.
+_CALIBRE = re.compile(r"(?:^|[^0-9])(\d+)(?:_(\d))?mm", re.I)
+
+
+def calibre_of(ident: str) -> float | None:
+    """The calibre an id names, mm, or None."""
+    m = _CALIBRE.search(ident or "")
+    return float(f"{m.group(1)}.{m.group(2) or 0}") if m else None
+
+
+def _shell_calibres(r: Replay, shells: list[tuple[int, int, float, str, dict[str, Any]]]) -> dict[str, int]:
+    """
+    The calibre of every hit whose shell signature a kill names: each kill's
+    killing hit (the killer's last on the victim before it) gives its
+    weapon's calibre to its signature, and every hit with that signature
+    gets it (the most named where kills disagree).
+    """
+    by_victim: dict[int, list[tuple[int, float, str]]] = defaultdict(list)
+    for victim, shooter, t, sig, _ in shells:
+        by_victim[victim].append((shooter, t, sig))
+    votes: dict[str, Counter] = defaultdict(Counter)
+    for k in r.kills:
+        cal = calibre_of(k.get("weapon") or "")
+        killer = (k.get("killerUid") or 0) & wrpl.NO_UID
+        if cal is None:
+            continue
+        last = None
+        for shooter, t, sig in by_victim.get(k.get("victimUid"), []):
+            if shooter == killer and t <= k["t"] + 0.05 and (last is None or t >= last[0]):
+                last = (t, sig)
+        if last:
+            votes[last[1]][cal] += 1
+    named = {sig: c.most_common(1)[0][0] for sig, c in votes.items()}
+    n = 0
+    for _, _, _, sig, row in shells:
+        if sig in named:
+            row["calibre"] = named[sig]
+            n += 1
+    return {"shellSignatures": len({s[3] for s in shells}), "shellSignaturesNamed": len(named),
+            "shellSignatureConflicts": sum(1 for c in votes.values() if len(c) > 1), "hitsWithCalibre": n,
+            "hitsWithShell": len(shells)}
 
 
 #: The hash naming the entity event (0x20, the class that carries a hashed event: LEB128 bit count, the hash, its
@@ -3068,6 +3139,11 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "hits": "rows at the position of the unit hit; 'other' is who hit it, 'weapon' their vehicle",
             "module_destroyed": "rows at the unit; 'weapon' the part's number, 'other' who last hit the unit "
                                 "within 5 s before (empty when no hit record is that close)",
+            "hitOutcome": "shot rows on ground units: what the hit did - kill, critical, penetration or "
+                          "nonpenetration (bounced or stopped) - from the bits of the UnitOnHit message sent with it "
+                          "(hitFlags, raw: 0x20 a projectile's hit, 0x01 through, 0x02 critical, 0x04 destroyed, "
+                          "0x08 heavy damage); hitShell the hit's shell signature (hex), calibre its calibre in mm "
+                          "where a kill names the weapon of a hit with that signature (README: Hit outcomes)",
             "hitLocalX": "shot rows: the hit point on the unit hit, in its own frame as the replay sends it (m; "
                          "hitLocalX forward, hitLocalY up, hitLocalZ right): aircraft and ships as sent (cm), "
                          "ground units' read in mm and kept only within 6 m of the unit (about one in six lies "

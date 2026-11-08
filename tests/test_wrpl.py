@@ -181,3 +181,27 @@ def test_unit_messages_decoded():
     assert wrpl.read_part_list(bytes([3]) + recs) is None
     assert wrpl.decode_unit_message(0xF031, eff)["effect"] == 4505
     assert wrpl.decode_unit_message(0x1234, eff) is None
+
+
+def test_hit_outcomes_from_unit_on_hit():
+    # 0xF144 as sent with a hit that got through, one that destroyed, and one that did not get through.
+    assert wrpl.read_unit_on_hit(bytes.fromhex("07001e3b682d214920"))["flags"] == 0x21
+    assert wrpl.hit_outcome(wrpl.read_unit_on_hit(bytes.fromhex("07001e193b40274920"))["flags"]) == "kill"
+    assert wrpl.hit_outcome(0x21) == "penetration"
+    assert wrpl.hit_outcome(0x23) == "critical"
+    assert wrpl.hit_outcome(0x2B) == "critical"
+    assert wrpl.hit_outcome(0x20) == "nonpenetration"
+    assert wrpl.hit_outcome(0x00) == "splash"
+    assert wrpl.hit_outcome(None) == ""
+
+
+def test_shell_signature_and_calibre():
+    from heat3d_ext_warthunder.convert import calibre_of
+
+    # The rest of two 120 mm KE-W hits, the marker one byte apart, and a guided missile's without one.
+    assert wrpl.shell_signature(bytes.fromhex("ba7fc000c8d336000002401a005fcff3816322400380")) == "02401a00"
+    assert wrpl.shell_signature(bytes.fromhex("d74000106436000002401a005fcff3816322400380")) == "02401a00"
+    assert wrpl.shell_signature(bytes.fromhex("dccfc020285b3621e06d4014621fcff7416326400380")) == ""
+    assert calibre_of("120mm_ke_w") == 120
+    assert calibre_of("12_7mm_m2_hb") == 12.7
+    assert calibre_of("us_aim_120c_5") is None

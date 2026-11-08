@@ -1372,7 +1372,53 @@ def read_hit_effect(body: bytes) -> dict[str, Any] | None:
     shooter = _le16(v, 0) & NO_UID
     local = [x / 100.0 for x in struct.unpack_from("<3h", v, 8)]
     return {"shooter": shooter, "local": (local[0], local[1], -local[2]), "number": _le16(v, 3), "kind": v[2],
-            "part": _le16(v, 6), "aligned": v[7] in (0x43, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4D, 0x23)}
+            "part": _le16(v, 6), "aligned": v[7] in (0x43, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4D, 0x23),
+            "shell": shell_signature(v[14:])}
+
+
+#: In the rest of a 0xF0E9 hit (after the point; a bit stream not decoded): a byte 0x30-0x3F, a byte with its low six
+#: bits clear, a zero byte, then four bytes that are the same for every hit of one shell type (the 39 killing hits of
+#: the ground test battle: one signature per kill weapon; 120 mm KE-W 02401a00, 125 mm 3BM46 02800660, 30 mm 3UBR8
+#: 01c009a0). Not every hit has the marker (guided missiles, some others).
+_SHELL = re.compile(rb"[\x30-\x3f][\x00\x40\x80\xc0]\x00([\x00-\x0f][\x00-\xff]{3})", re.S)
+
+
+def shell_signature(tail: bytes) -> str:
+    """A hit's shell signature (hex, see `_SHELL`), '' when the hit has none."""
+    m = _SHELL.search(tail)
+    return m.group(1).hex() if m else ""
+
+
+#: 0xF144 UnitOnHit, to a ground unit hit, its fourth field: bits of what the hit did. Found against the ground test
+#: battle (1,745 messages; see the README's Hit outcomes): 0x20 a projectile's own hit (98-100% come with a 0xF0E9 hit
+#: on the unit within 5 ms; without it, 99% with an explosion 0xF133: splash), 0x01 it got through (every flag
+#: with 0x02, 0x04 or 0x08 has it too), 0x02 a critical hit (11 of the 15 critical hit records have it, against
+#: 13% of all messages), 0x04 destroyed (64% with a kill record on the unit within 0.2 s, 66% dead within 1 s,
+#: against 2-3% without it), 0x08 heavy damage (4 of the 15 critical hit records, 0.5% of all messages).
+HIT_DIRECT, HIT_THROUGH, HIT_CRITICAL, HIT_KILL, HIT_HEAVY = 0x20, 0x01, 0x02, 0x04, 0x08
+
+
+def read_unit_on_hit(body: bytes) -> dict[str, Any] | None:
+    """0xF144 UnitOnHit: four one-byte fields; the first three not known, the fourth the hit's bits (`HIT_*`)."""
+    f = id_field_map(body)
+    if 4 not in f or not f[4][1]:
+        return None
+    return {"flags": f[4][1][0], "bytes": bytes(f[k][1][0] if k in f and f[k][1] else 0 for k in (1, 2, 3)).hex()}
+
+
+def hit_outcome(flags: int | None) -> str:
+    """What a hit did by its 0xF144 bits: kill, critical, penetration, nonpenetration (a projectile that did not get
+    through: bounced or stopped, the replay does not tell which), splash (an explosion near, not a projectile's hit),
+    '' when not known."""
+    if flags is None:
+        return ""
+    if flags & HIT_KILL:
+        return "kill"
+    if flags & (HIT_CRITICAL | HIT_HEAVY):
+        return "critical"
+    if flags & HIT_THROUGH:
+        return "penetration"
+    return "nonpenetration" if flags & HIT_DIRECT else "splash"
 
 
 def read_unit_explosion(body: bytes) -> dict[str, Any] | None:
@@ -1481,7 +1527,7 @@ def decode_unit_message(mid: int, body: bytes) -> dict[str, Any] | list | None:
     """A message to a unit decoded as far as it is known (None when nothing is)."""
     reader = {0xF0E9: read_hit_effect, 0xF133: read_unit_explosion, 0xF13E: read_part_damage, 0xD047: read_rpm,
               0xF031: read_effect, 0xD041: read_gunner, 0xD048: read_part_list, 0xF117: read_after_hit,
-              0xD0FE: read_projectile_hit_replay}.get(mid)
+              0xD0FE: read_projectile_hit_replay, 0xF144: read_unit_on_hit}.get(mid)
     if reader is None:
         return None
     try:
