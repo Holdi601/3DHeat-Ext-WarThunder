@@ -38,6 +38,7 @@ _RAW, _SHORT, _SHORT_FLIP = 0xFF, 0xFE, 0xFD
 _LEAF_FLAG = 1 << 31
 _FLIPA, _FLIPB = 1 << 29, 1 << 30
 TYPE_MESH, TYPE_POINTS, TYPE_BOX, TYPE_SPHERE, TYPE_CAPSULE, TYPE_CONVEX = range(6)
+TRACEABLE = 1  # CollisionNode::BehaviorFlag
 
 
 class CollisionError(ValueError):
@@ -219,37 +220,42 @@ def read_collision(blob: bytes) -> Shape:
     r.take(8 * n_nodes)  # bind records
     nodes = []
     tms: list[np.ndarray] = []
-    vs, fs = [], []
+    parts: list = []  # (vertices, triangles, is a primitive, traceable)
     for aid in range(_ARRAYS):
         if aid == 0:
             for _ in range(n_nodes):
                 rec = r.take(48)
                 n_idx = struct.unpack_from("<I", rec, 4)[0]
+                (behaviour,) = struct.unpack_from("<H", rec, 8)
                 ntype = rec[19]
                 lo, hi = struct.unpack_from("<3f", rec, 20), struct.unpack_from("<3f", rec, 32)
-                nodes.append((n_idx, ntype, lo, hi))
+                nodes.append((n_idx, ntype, lo, hi, behaviour))
         elif aid == 1:
             # The node's placement in the object (TMatrix: three axes, then the position). Primitive
             # nodes (boxes, spheres, capsules) keep their box in the node's own space; meshes are stored
             # already placed.
             tms = [np.frombuffer(r.take(48), "<f4").reshape(4, 3) for _ in range(n_nodes)]
         elif aid == 4:
-            for k, (n_idx, ntype, lo, hi) in enumerate(nodes):
+            for k, (n_idx, ntype, lo, hi, behaviour) in enumerate(nodes):
                 if n_idx:
                     v, f = _chunk(r)
-                    vs.append(v)
-                    fs.append(f)
+                    parts.append((v, f, False, bool(behaviour & TRACEABLE)))
                 elif ntype in (TYPE_BOX, TYPE_SPHERE, TYPE_CAPSULE) and _sane(lo, hi) and all(a < b for a, b in zip(lo, hi)):
                     v, f = _box(lo, hi)
                     if tms:
                         v = v @ tms[k][:3] + tms[k][3]
-                    vs.append(v)
-                    fs.append(f)
+                    parts.append((v, f, True, bool(behaviour & TRACEABLE)))
         elif aid != 5 and counts[aid]:
             r.take(counts[aid] * _ELEM[aid])
-    keep = [(v, f) for v, f in zip(vs, fs) if len(v) and np.isfinite(v).all() and np.abs(v).max() < _SANE]
-    if not keep and _sane(*box) and box[0] != box[1]:
-        keep = [_box(*box)]
+    parts = [p for p in parts if len(p[0]) and np.isfinite(p[0]).all() and np.abs(p[0]).max() < _SANE]
+    # A resource often holds, beside its detailed meshes, coarse stand-ins for physics: boxes, spheres and
+    # capsules, or nodes the ray tracer never sees (no TRACEABLE flag, `dag_collisionResource.h`). Drawn, they
+    # are cubes around the object; they are drawn only when there is nothing else.
+    if any(p[3] for p in parts):
+        parts = [p for p in parts if p[3]]
+    if any(not p[2] for p in parts):
+        parts = [p for p in parts if not p[2]]
+    keep = [(p[0], p[1]) for p in parts]
     if not keep:
         raise CollisionError("no usable shape")
     # Re-index after dropping parts: each part's faces were offset by the vertices before it.

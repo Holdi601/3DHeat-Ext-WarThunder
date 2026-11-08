@@ -66,6 +66,8 @@ class Game:
     _blks: dict[str, Blk] = field(default_factory=dict)
     _resources: object = None
     _shapes: dict = field(default_factory=dict)
+    _textures: object = None
+    _render: object = None
 
     def levels(self) -> list[Path]:
         return sorted((self.root / "levels").glob("*.bin"))
@@ -111,6 +113,28 @@ class Game:
         s = self._shapes[name]
         return None if isinstance(s, Exception) else s
 
+    def textures(self):
+        """Every texture of the install by name (`terrain.Textures`), or None when the packs cannot be indexed."""
+        if self._textures is None:
+            from .terrain import Textures
+
+            try:
+                self._textures = Textures(self.root)
+            except Exception:
+                self._textures = False
+        return self._textures or None
+
+    def render_index(self):
+        """The render instances' meshes and materials (`rendinst.RenderIndex`), or None without `riDesc.bin`."""
+        if self._render is None:
+            from .rendinst import RenderIndex
+
+            try:
+                self._render = RenderIndex(self.resources(), self.textures())
+            except Exception:
+                self._render = False
+        return self._render or None
+
 
 #: Objects drawn as a tree glyph rather than by their collision shape (a trunk, for most trees).
 VEGETATION = re.compile(
@@ -119,104 +143,317 @@ VEGETATION = re.compile(
 )
 
 
-def _tree_glyph(box) -> tuple[np.ndarray, np.ndarray]:
-    """A double cone over the object's box: the crown of a tree whose collision is only its trunk."""
+CONIFER = re.compile(r"pine|(?<![a-z])fir|spruce|cypress|conifer|larch|cedar|thuja|juniper|picea|abies")
+
+
+def _tree_glyph(box, conifer: bool = False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """A tree over its box in 18 triangles: a three-sided trunk and a six-sided crown (a cone for conifers, a
+    double cone for broadleaves). Returns vertices, triangles and which of them are crown (True) or trunk."""
     (x0, y0, z0), (x1, y1, z1) = box
     h = max(y1 - y0, 0.5)
     cx, cz = (x0 + x1) / 2, (z0 + z1) / 2
-    r = max(h * 0.22, (x1 - x0) / 2, (z1 - z0) / 2)
-    mid = y0 + h * 0.55
-    ring = [(cx + r * np.cos(a), mid, cz + r * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 5)[:-1]]
-    v = np.array([(cx, y0, cz), (cx, y0 + h, cz)] + ring, np.float32)
+    r = max(min((x1 - x0), (z1 - z0)) / 2, h * 0.12)
+    base = y0 + h * (0.15 if conifer else 0.3)
+    mid = y0 + h * (0.3 if conifer else 0.6)
+    rt = max(h * 0.025, 0.08)
+    trunk = [(cx + rt * np.cos(a), yy, cz + rt * np.sin(a)) for yy in (y0, base + h * 0.05) for a in (0, 2.1, 4.2)]
+    ring = [(cx + r * np.cos(a), mid, cz + r * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 7)[:-1]]
+    v = np.array(trunk + [(cx, y0 + h, cz), (cx, base, cz)] + ring, np.float32)
     f = []
-    for i in range(4):
-        a, b = 2 + i, 2 + (i + 1) % 4
-        f += [(1, b, a), (0, a, b)]
-    return v, np.array(f, np.int64)
+    for i in range(3):  # trunk sides, outward
+        a, b = i, (i + 1) % 3
+        f += [(a, b + 3, b), (a, a + 3, b + 3)]
+    top, bottom = 6, 7
+    for i in range(6):
+        a, b = 8 + i, 8 + (i + 1) % 6
+        f += [(top, b, a), (bottom, a, b)]
+    crown = np.zeros(len(v), bool)
+    crown[6:] = True
+    return v, np.array(f, np.int64), crown
 
 
 DEFAULT_MAX_OBJECT_TRIANGLES = 4_000_000
 
+#: What each `--detail` costs and gives. `core` is the middle share of the tank map (by width) drawn at `core_step`
+#: heightmap samples, the rest of the tank map at `ring_step`, both coarser where the two would pass `ground`
+#: triangles (a heightmap finer than 2 m); `objects` is the placed objects' triangle budget,
+#: `per_object` the most triangles one object may have before a coarser LOD is taken; `terrain_mpp` the ground
+#: colour's metres per pixel; `density` the share of generated objects kept, by kind.
+DETAIL = {
+    "low": {"core": 0.5, "core_step": 4, "ring_step": 8, "ground": 300_000, "objects": 1_200_000, "per_object": 1_500, "terrain_mpp": 4.0,
+            "density": {"trees": 0.35, "bushes": 0.2, "props": 0.5, "buildings": 1.0}},
+    "medium": {"core": 0.5, "core_step": 2, "ring_step": 4, "ground": 1_000_000, "objects": 3_500_000, "per_object": 4_000, "terrain_mpp": 2.0,
+               "density": {"trees": 0.7, "bushes": 0.5, "props": 1.0, "buildings": 1.0}},
+    "high": {"core": 0.5, "core_step": 1, "ring_step": 2, "ground": 3_700_000, "objects": 4_500_000, "per_object": 12_000, "terrain_mpp": 1.0,
+             "density": {"trees": 1.0, "bushes": 1.0, "props": 1.0, "buildings": 1.0}},
+}
+DEFAULT_DETAIL = "medium"
+_GLYPH, _SHAPE = -1, -3  # stand-ins: a tree's crown, an object's collision shape (never a box: drawn, boxes are
+#                         cubes around objects)
 
-def _box_shape(box) -> tuple[np.ndarray, np.ndarray]:
-    from .collision import _box
 
-    return _box(*box)
+def _srgb(c: np.ndarray) -> np.ndarray:
+    c = np.clip(np.asarray(c, np.float32), 0.0, 1.0)
+    return np.where(c <= 0.0031308, c * 12.92, 1.055 * np.power(c, 1 / 2.4) - 0.055).astype(np.float32)
 
 
-def _add_objects(geo, game: "Game", data_level, name: str, record: dict, log,
-                 budget: int = DEFAULT_MAX_OBJECT_TRIANGLES) -> None:
-    """The level's fixed objects (RIGz) as structure parts: buildings by their collision shapes, trees as glyphs.
+def height_sampler(hm: Heightmap):
+    """Bilinear ground height at game (x, z) arrays from the heightmap, clamped to its edge."""
+    hh = hm.heights
+    rows, cols = hh.shape
 
-    Within `budget` triangles: over it, the object types costing most are drawn as their boxes, and if that
-    is not enough, the smallest objects (by box volume) are left out; the JSON lists both.
+    def height(x, z):
+        fx = np.clip((np.asarray(x, np.float64) - hm.origin_x) / hm.cell, 0, cols - 1.001)
+        fz = np.clip((np.asarray(z, np.float64) - hm.origin_z) / hm.cell, 0, rows - 1.001)
+        c, r = np.floor(fx).astype(np.int64), np.floor(fz).astype(np.int64)
+        tx, tz = fx - c, fz - r
+        a = hh[r, c] * (1 - tx) + hh[r, c + 1] * tx
+        b = hh[r + 1, c] * (1 - tx) + hh[r + 1, c + 1] * tx
+        return (a * (1 - tz) + b * tz).astype(np.float32)
+
+    return height
+
+
+@dataclass
+class _Type:
+    name: str
+    tree: bool
+    matrices: np.ndarray  # (n, 3, 4)
+    options: list  # [(LOD index or _GLYPH / _SHAPE, triangles, LOD range)], finest first
+    pick: int  # index into options
+    volume: float
+    box: tuple = ((0, 0, 0), (0, 0, 0))
+    shape: object = None
+    generated: int = 0
+    first: int = 0  # the pick within the per-object limit, the finest the budget may give back
+
+    @property
+    def cost(self) -> int:
+        return len(self.matrices) * self.options[self.pick][1]
+
+
+def _pick_at(t: _Type, d: float) -> int:
+    """The option the game itself would draw at distance `d`: the first mesh LOD whose range reaches it; past the
+    last one, a tree's glyph (the game shows its impostor there) or a building's coarsest LOD."""
+    last = t.first
+    for k in range(t.first, len(t.options)):
+        opt, _n, rng = t.options[k]
+        if opt < 0 and opt != _SHAPE:
+            break
+        last = k
+        if rng >= d:
+            return k
+    if t.tree and t.options[-1][0] == _GLYPH:
+        return len(t.options) - 1
+    return last
+
+
+def _choose(types: list[_Type], budget: int) -> tuple[list[str], float]:
+    """LODs as the game would pick them for one viewing distance, the shortest whose total fits the budget: small
+    props drop to coarse LODs early and large buildings late, by the ranges their makers gave each LOD. If even the
+    coarsest fits not, the trees that save most become crowns, and then the smallest types are left out."""
+    import heapq
+
+    def total_at(d: float) -> int:
+        return sum(len(t.matrices) * t.options[_pick_at(t, d)][1] for t in types)
+
+    ranges = sorted({0.0} | {o[2] for t in types for o in t.options if np.isfinite(o[2])} | {float("inf")})
+    lo, hi = 0, len(ranges) - 1
+    if total_at(ranges[0]) <= budget:
+        hi = 0
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if total_at(ranges[mid]) <= budget:
+            hi = mid
+        else:
+            lo = mid + 1
+    d = ranges[hi]
+    for t in types:
+        t.pick = _pick_at(t, d)
+    total = sum(t.cost for t in types)
+    if hi > 0:
+        # What the step to `d` saved beyond the budget goes back to the largest objects: the LOD they had a step
+        # nearer, largest first, while it fits.
+        nearer = ranges[hi - 1]
+        for t in sorted(types, key=lambda t: -t.volume):
+            k = _pick_at(t, nearer)
+            extra = len(t.matrices) * (t.options[k][1] - t.options[t.pick][1])
+            if k < t.pick and total + extra <= budget:
+                t.pick = k
+                total += extra
+    heap: list = []
+
+    def push(i: int) -> None:
+        t = types[i]
+        if t.pick + 1 < len(t.options):
+            heapq.heappush(heap, (-len(t.matrices) * (t.options[t.pick][1] - t.options[t.pick + 1][1]), i))
+
+    if total > budget:
+        for i in range(len(types)):
+            push(i)
+    while total > budget and heap:
+        _gain, i = heapq.heappop(heap)
+        t = types[i]
+        total -= t.cost
+        t.pick += 1
+        total += t.cost
+        push(i)
+    dropped = []
+    if total > budget:
+        for t in sorted(types, key=lambda t: t.volume):
+            if total <= budget:
+                break
+            total -= t.cost
+            dropped.append(t.name)
+    return dropped, d
+
+
+def _add_objects(geo, game: "Game", level, name: str, record: dict, log, budget: int = DEFAULT_MAX_OBJECT_TRIANGLES,
+                 detail: dict | None = None, generate: bool = True, rect=None, kinds=None) -> None:
+    """The level's objects as structure parts: the fixed ones (RIGz) and, with `generate`, those its land classes
+    generate (forests, bushes, town blocks), each drawn by its render mesh at the finest LOD the budget allows and
+    coloured by its materials' textures. Objects without a render mesh fall back to their collision shape, trees
+    without one to a crown glyph. Over the budget, the types costing most step down a LOD at a time (then to their
+    crown), and if that is not enough the smallest types are left out; the JSON lists it.
     """
     from .rigen import read_rigen
 
-    data, bl = data_level
+    detail = detail or DETAIL[DEFAULT_DETAIL]
+    data, bl = level.data, level.table
     if "RIGz" not in bl:
         return
+    t0 = time.time()
     rg = read_rigen(data, bl["RIGz"][0])
-    missing: dict[str, int] = {}
-    plan = []  # [name, tree, matrices, verts, faces, box, volume]
+    instances: dict[str, list[np.ndarray]] = {}
+    generated: dict[str, int] = {}
     for obj, placed in rg.placed.items():
-        shape = game.shape(obj)
-        if shape is None:
-            missing[obj] = rg.counts.get(obj, 0)
+        instances.setdefault(obj, []).append(np.concatenate(placed.matrices))
+    gen_stats = None
+    kind_of: dict[str, str] = {}
+    if generate and level.heightmap is not None:
+        from .landgen import generate as land_generate
+
+        try:
+            gmats, gen_stats = land_generate(game, data, bl, height=height_sampler(level.heightmap), rect=rect,
+                                             kinds=kinds or ("trees", "bushes", "buildings", "props"),
+                                             density=detail.get("density"))
+            for obj, m in gmats.items():
+                instances.setdefault(obj, []).append(m.astype(np.float32))
+                generated[obj] = len(m)
+                kind_of[obj] = gen_stats.get("objects", {}).get(obj, {}).get("kind", "")
+        except Exception as e:  # the fixed objects stand without the generated ones
+            gen_stats = {"error": f"{type(e).__name__}: {e}"}
+            log(f"  generated objects: not made ({type(e).__name__}: {e})")
+    t_gen = time.time() - t0
+    ri = game.render_index()
+    missing: dict[str, int] = {}
+    types: list[_Type] = []
+    for obj, ms in instances.items():
+        m = np.concatenate(ms) if len(ms) > 1 else ms[0]
+        if not len(m):
             continue
-        tree = bool(VEGETATION.search(obj.lower()))
-        sv, sf = _tree_glyph(shape.box) if tree else (shape.verts, shape.faces)
-        m = np.concatenate(placed.matrices)
-        lo, hi = sv.min(0), sv.max(0)  # the drawn shape's box (a tree's crown, not its trunk)
-        (x0, y0, z0), (x1, y1, z1) = lo, hi
-        scale = float(np.abs(np.linalg.det(m[0, :, :3]))) if len(m) else 1.0
-        plan.append([obj, tree, m, sv, sf, shape.box, max((x1 - x0) * (y1 - y0) * (z1 - z0), 0.0) * scale])
-    total = sum(len(p[2]) * len(p[4]) for p in plan)
-    boxed, dropped = [], []
-    if total > budget:
-        for p in sorted(plan, key=lambda p: -len(p[2]) * (len(p[4]) - 12)):
-            if total <= budget:
-                break
-            if len(p[4]) > 12:
-                total -= len(p[2]) * (len(p[4]) - 12)
-                p[3], p[4] = _box_shape(p[5])
-                boxed.append(p[0])
-    if total > budget:
-        for p in sorted(plan, key=lambda p: p[6]):
-            if total <= budget:
-                break
-            total -= len(p[2]) * len(p[4])
-            dropped.append(p[0])
-        plan = [p for p in plan if p[0] not in set(dropped)]
-    groups = {"buildings": ([], []), "trees": ([], [])}
+        tree = kind_of.get(obj) in ("trees", "bushes", "grass") or bool(VEGETATION.search(obj.lower()))
+        lods = ri.mesh_lods(obj, ranges=True) if ri is not None else []
+        # (option, triangles, the game's LOD range in metres). A LOD that costs what the one before it does gains
+        # nothing (it only stretches that one's range).
+        options: list = []
+        for i, (n, rng) in enumerate(lods):
+            if n <= 0:
+                continue
+            if options and n >= options[-1][1]:
+                options[-1] = (options[-1][0], options[-1][1], rng)
+            else:
+                options.append((i, n, rng))
+        inf = float("inf")
+        res = ri.resource(obj) if (ri is not None and options) else None
+        shape = None
+        if res is not None:
+            box = res.box
+            if tree:
+                options.append((_GLYPH, 18, inf))
+        else:
+            shape = game.shape(obj)
+            if shape is None:
+                missing[obj] = len(m)
+                continue
+            box = shape.box
+            options = [(_GLYPH, 18, inf)] if tree else [(_SHAPE, len(shape.faces), inf)]
+        # The finest LOD within the per-object limit (or the coarsest mesh LOD).
+        pick = next((k for k, o in enumerate(options) if o[1] <= detail["per_object"]), max(len(options) - 2, 0))
+        (x0, y0, z0), (x1, y1, z1) = box
+        scale = float(np.abs(np.linalg.det(m[0, :, :3])))
+        types.append(_Type(obj, tree, m, options, pick, max((x1 - x0) * (y1 - y0) * (z1 - z0), 0.0) * scale,
+                           box, shape, generated.get(obj, 0), pick))
+    dropped, lod_distance = _choose(types, budget)
+    dropped = set(dropped)
+    groups = {"buildings": ([], [], []), "trees": ([], [], [])}
     counts = {"buildings": 0, "trees": 0}
-    for obj, tree, m, sv, sf, _box, _vol in plan:
-        w = np.einsum("nij,vj->nvi", m[:, :, :3], sv) + m[:, None, :, 3]
-        w[:, :, 2] *= -1  # glb z = -game z
-        key = "trees" if tree else "buildings"
-        vl, fl = groups[key]
+    drawn_as: dict[str, int] = {}
+    tris = 0
+    for t in types:
+        if t.name in dropped:
+            continue
+        opt = t.options[t.pick][0]
+        if opt == _GLYPH:
+            sv, sf, crown = _tree_glyph(t.box, bool(CONIFER.search(t.name.lower())))
+            leaves = ri.leaf_colour(t.name) if (ri is not None and t.shape is None) else None
+            sc = np.where(crown[:, None], leaves if leaves is not None else np.float32([0.05, 0.09, 0.03]),
+                          np.float32([0.09, 0.06, 0.04])).astype(np.float32)
+            label = "glyph"
+        elif opt == _SHAPE:
+            sv, sf = t.shape.verts, t.shape.faces
+            sc, label = np.tile(np.float32([0.36, 0.32, 0.27]), (len(sv), 1)), "collision"
+        else:
+            look = ri.look(t.name, opt)
+            if look is None:
+                continue
+            sv, sf, sc, label = look.verts, look.faces, look.colours, f"lod{opt}"
+        drawn_as[label] = drawn_as.get(label, 0) + len(t.matrices)
+        m = t.matrices
+        key = "trees" if t.tree else "buildings"
+        vl, fl, cl = groups[key]
         start = sum(len(x) for x in vl)
+        w = np.einsum("nij,vj->nvi", m[:, :, :3], sv.astype(np.float32)) + m[:, None, :, 3]
+        w[:, :, 2] *= -1  # glb z = -game z
         vl.append(w.reshape(-1, 3).astype(np.float32))
+        cl.append(np.tile(sc.astype(np.float32), (len(m), 1)))
+        # Mirroring z turns the winding; an instance that is itself mirrored turns it back.
+        flip = np.linalg.det(m[:, :, :3].astype(np.float64)) < 0
         offs = (np.arange(len(m)) * len(sv))[:, None, None]
-        fl.append((sf[None, :, [0, 2, 1]] + offs).reshape(-1, 3) + start)  # mirrored: winding swapped
+        f = np.where(flip[:, None, None], sf[None, :, :], sf[None, :, [0, 2, 1]]) + offs
+        fl.append(f.reshape(-1, 3) + start)
         counts[key] += len(m)
-    for key, (vl, fl) in groups.items():
+        tris += len(m) * len(sf)
+    for key, (vl, fl, cl) in groups.items():
         if vl:
-            v = np.concatenate(vl)
-            f = np.concatenate(fl).astype(np.uint32)
-            geo.add(f"structure:{name} {key}", v, f, colour=(0.62, 0.56, 0.48) if key == "buildings" else (0.30, 0.45, 0.28))
+            # sRGB-encoded, as the 3DHeat viewer reads COLOR_0 (it shows vertex colours as they are, the same
+            # way it shows texture texels); the colours were averaged in linear light.
+            geo.add(f"structure:{name} {key}", np.concatenate(vl), np.concatenate(fl).astype(np.uint32),
+                    vcolours=_srgb(np.concatenate(cl)))
+    gen_record = None
+    if gen_stats is not None:
+        gen_record = {k: gen_stats[k] for k in ("instances", "kinds", "tried", "seconds", "missingLandClasses", "error")
+                      if k in gen_stats}
+        gen_record["perLandClass"] = gen_stats.get("landClasses")
+        gen_record["rect"] = list(rect) if rect is not None else None
+        gen_record["density"] = detail.get("density")
     record["parts"]["objects"] = {
-        "instances": counts, "types": len(rg.placed),
-        "withoutShape": {"types": len(missing), "instances": int(sum(missing.values()))},
-        "budget": budget, "drawnAsBoxes": sorted(boxed), "leftOut": sorted(dropped),
-        "landClassesNotGenerated": rg.land_classes,
-        "note": "the level's fixed objects (RIGz pregen) by their collision shapes; trees as a crown glyph over their "
-                "collision box. Objects the land classes generate at run time (most forests and fields of air maps) "
-                "are not placed.",
+        "instances": counts, "types": len(types), "triangles": int(tris), "budget": budget,
+        "lodDistance": lod_distance if np.isfinite(lod_distance) else "coarsest",
+        "fixed": int(sum(sum(len(x) for x in p.matrices) for p in rg.placed.values())),
+        "generated": gen_record,
+        "drawnAs": drawn_as,
+        "withoutShape": {"types": len(missing), "instances": int(sum(missing.values())), "names": sorted(missing)[:200]},
+        "leftOut": sorted(dropped),
+        "seconds": {"generate": round(t_gen, 1), "total": round(time.time() - t0, 1)},
+        "note": "fixed objects (RIGz pregen) and the land classes' generated ones, by their render meshes (a LOD "
+                "chosen within the budget; decals and impostor billboards left out), coloured per material by "
+                "the average of its diffuse texture (COLOR_0 holds sRGB-encoded values, as the 3DHeat viewer reads "
+                "them); without a render mesh by their collision shape, trees by a crown glyph.",
     }
-    log(f"  objects: {counts['buildings']} buildings, {counts['trees']} trees ({len(missing)} types without a shape"
-        + (f", {len(boxed)} types as boxes, {len(dropped)} left out to stay within {budget:,} triangles" if boxed or dropped else "")
-        + ")")
+    log(f"  objects: {counts['buildings']} buildings, {counts['trees']} trees and plants, {tris:,} triangles "
+        f"({sum(generated.values())} generated; drawn as {drawn_as}; {len(missing)} types without a shape"
+        + (f", {len(dropped)} types left out to stay within {budget:,} triangles" if dropped else "") + ")")
 
 
 def _add_sloping_water(geo, level, name: str, record: dict, cells: int = 512) -> None:
@@ -320,15 +557,22 @@ class Geometry:
     verts: list[np.ndarray] = field(default_factory=list)
     uvs: list[np.ndarray] = field(default_factory=list)
     parts: list[Part] = field(default_factory=list)
+    colours: list = field(default_factory=list)
     count: int = 0
 
-    def add(self, name: str, verts: np.ndarray, faces: np.ndarray, *, uv=None, texture=None, colour=None, extras=None):
+    def add(self, name: str, verts: np.ndarray, faces: np.ndarray, *, uv=None, texture=None, colour=None, extras=None,
+            vcolours=None):
+        """A part; `vcolours` gives each vertex its own linear colour (else `colour` for all of them)."""
         if not len(faces):
             return
         used, local = np.unique(faces, return_inverse=True)
         v = verts[used]
         self.verts.append(v)
         self.uvs.append(uv[used] if uv is not None else np.zeros((len(v), 2), np.float32))
+        if vcolours is not None:
+            self.colours.append(np.asarray(vcolours, np.float32)[used])
+        else:
+            self.colours.append(None if colour is None else np.tile(np.float32(colour), (len(v), 1)))
         self.parts.append(
             Part(name=name, faces=local.reshape(-1, 3).astype(np.uint32) + self.count,
                  texture=texture, colour=colour, extras=extras)
@@ -353,11 +597,84 @@ def _add_textured(geo: Geometry, name: str, verts, faces, image: MapImage | None
     geo.add(f"{name} outside the map", verts, faces[~inside], colour=colour)
 
 
+def _replace(tmp: Path, dest: Path, tries: int = 10) -> None:
+    """Rename the finished file over the old one; on Windows a viewer or a scanner holding the old file open
+    refuses that for a moment, so retry before giving up (and then leave no half-file behind)."""
+    for i in range(tries):
+        try:
+            tmp.replace(dest)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                tmp.unlink(missing_ok=True)
+                raise
+            time.sleep(3)
+
+
+def _add_rings(geo: Geometry, hm: Heightmap, name: str, tank_rect, preset: dict, whole_step: int, image, air,
+               colour, record: dict) -> None:
+    """The heightmap in rings: its middle (the `core` share of the tank map) every `core_step` samples, the rest of
+    the tank map every `ring_step`, the rest of the heightmap every `whole_step` (at least four ring steps). Each ring leaves out the cells of
+    the one inside it, and each ring's window lies on its own step's lattice, so the samples of an outer ring are
+    samples of the inner one too."""
+    h, w = hm.heights.shape
+    x0, z0, x1, z1 = tank_rect
+    cx, cz, half = (x0 + x1) / 2, (z0 + z1) / 2, preset["core"] * max(x1 - x0, z1 - z0) / 2
+    core_rect = (max(cx - half, x0), max(cz - half, z0), min(cx + half, x1), min(cz + half, z1))
+    core_step, ring_step = preset["core_step"], max(preset["ring_step"], preset["core_step"])
+    # A heightmap finer than the usual 2 m would cost four times the triangles at the same steps: coarser steps,
+    # the rest of the tank map first, until the two rings fit the detail's ground budget.
+    tw, th = (x1 - x0) / hm.cell, (z1 - z0) / hm.cell
+    cw, ch = (core_rect[2] - core_rect[0]) / hm.cell, (core_rect[3] - core_rect[1]) / hm.cell
+
+    def cost(cs: int, rs: int) -> float:
+        return 2 * (cw * ch / cs ** 2 + max(tw * th - cw * ch, 0) / rs ** 2)
+
+    while cost(core_step, ring_step) > preset.get("ground", float("inf")) and core_step < 64:
+        if ring_step <= core_step:
+            ring_step *= 2
+        else:
+            core_step *= 2
+    surround = (hm.origin_x, hm.origin_z, hm.origin_x + (w - 1) * hm.cell, hm.origin_z + (h - 1) * hm.cell)
+    rings = [(core_rect, core_step, f"ground:{name}", image),
+             (tank_rect, ring_step, f"ground:{name} tank map", image),
+             (surround, max(whole_step, 4 * ring_step), f"ground:{name} heightmap surroundings", air)]
+    inner = None
+    steps = []
+    for rect, step, part, img in rings:
+        win = _sample_window(hm, rect)
+        if win is None:
+            continue
+        (c0, c1), (r0, r1) = win
+        c0, r0 = c0 - c0 % step, r0 - r0 % step
+        c1, r1 = min(c1 + (-c1) % step, w - 1), min(r1 + (-r1) % step, h - 1)
+        gv, gf = _grid(hm, step, (c0, c1), (r0, r1))
+        if inner is not None:
+            gf = gf[~_cells_inside(gv, gf, inner)]
+        here = (hm.origin_x + c0 * hm.cell, hm.origin_z + r0 * hm.cell, hm.origin_x + c1 * hm.cell, hm.origin_z + r1 * hm.cell)
+        inner = here if inner is None else (min(inner[0], here[0]), min(inner[1], here[1]),
+                                            max(inner[2], here[2]), max(inner[3], here[3]))
+        if not len(gf):
+            continue
+        _add_textured(geo, part, gv, gf, img, colour)
+        steps.append({"part": part, "step": step, "metres": step * hm.cell, "x": [here[0], here[2]],
+                      "z": [here[1], here[3]], "triangles": int(len(gf))})
+    record["parts"]["heightmap"] = {"samples": [w, h], "cell": hm.cell, "rings": steps}
+
+
 def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAULT_MAX_GRID,
-          textures: bool = True, objects: bool = True, max_object_triangles: int = DEFAULT_MAX_OBJECT_TRIANGLES,
-          log=print) -> dict:
-    """Write `<out>/<level>.glb`, `.json` and the map PNGs. Returns the record written to the JSON."""
+          textures: bool = True, objects: bool = True, max_object_triangles: int | None = None,
+          detail: str = DEFAULT_DETAIL, generate: bool = True, terrain: bool = True, log=print) -> dict:
+    """Write `<out>/<level>.glb`, `.json` and the map PNGs. Returns the record written to the JSON.
+
+    `detail` (low, medium, high) sets the ground's sampling over the tank map, the ground colour's resolution and
+    the objects' triangle budget (`max_object_triangles` overrides it); `generate` adds the objects the land classes
+    generate over the tank map; `terrain` colours the ground over the tank map from the land classes and roads
+    instead of the tactical map."""
     t0 = time.time()
+    preset = DETAIL[detail]
+    budget = max_object_triangles if max_object_triangles is not None else preset["objects"]
+    timings: dict[str, float] = {}
     name = level_path.stem
     out_dir.mkdir(parents=True, exist_ok=True)
     blk = game.level_blk(name)
@@ -369,7 +686,8 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
         "coordinates": "metres; glb (x, y, z) = game (x east, y up, -z north): z mirrored, matching heat3d-wt-replay tables with their flipZ hint",
         "blocks": level.tags,
         "parts": {},
-        "notRead": ["objects the land classes generate at run time (most forests and fields of air maps)", "the water heightmap (WHM) where a level has one"],
+        "detail": detail,
+        "notRead": ["the water heightmap (WHM) where a level has one"],
     }
     water_level = float(blk.get("water_level", 0.0)) if blk is not None else 0.0
     record["waterLevel"] = water_level
@@ -400,6 +718,27 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
     ]
     air = next((m for m in maps if m.kind == "map" and m.image is not None), None) if textures else None
     tank = next((m for m in maps if m.kind == "tankmap" and m.image is not None), None) if textures else None
+    tank_rect = _rect(blk, "tankMapCoord0", "tankMapCoord1") if blk is not None else None
+    timings["maps"] = round(time.time() - t0, 1)
+    ground_image = tank or air
+    if textures and terrain and tank_rect is not None and "lmap" in level.table:
+        t1 = time.time()
+        try:
+            from .terrain import terrain_colour
+
+            img, info = terrain_colour(game, level.data, level.table, tank_rect, metres_per_pixel=preset["terrain_mpp"],
+                                       heightmap=level.heightmap, textures=game.textures(), log=None)
+            ground_image = MapImage("terrain", "land classes, ground decals and roads", tank_rect, img)
+            from PIL import Image
+
+            Image.fromarray(img).save(out_dir / f"{name}_terrain.png")
+            info["file"] = f"{name}_terrain.png"
+            record["parts"]["terrainColour"] = info
+            log(f"  terrain colour: {img.shape[1]}x{img.shape[0]} px over the tank map ({time.time() - t1:.1f} s)")
+        except Exception as e:  # the tactical map stands in
+            record["parts"]["terrainColour"] = {"error": f"{type(e).__name__}: {e}"}
+            log(f"  terrain colour: not made ({type(e).__name__}: {e}); the tactical map is used")
+        timings["terrainColour"] = round(time.time() - t1, 1)
 
     geo = Geometry()
     ground_colour = (0.42, 0.40, 0.36)
@@ -410,18 +749,20 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
         x0, z0 = hm.origin_x, hm.origin_z
         x1, z1 = x0 + (w - 1) * hm.cell, z0 + (h - 1) * hm.cell
         extents.append((x0, z0, x1, z1))
-        detail = (tank or air)
+        detail_map = (tank or air)
         fine_rect = None
-        if detail is not None:
-            fine_rect = detail.rect
+        if detail_map is not None:
+            fine_rect = detail_map.rect
         elif blk is not None:
-            fine_rect = _rect(blk, "tankMapCoord0", "tankMapCoord1")
+            fine_rect = tank_rect
         window = _sample_window(hm, fine_rect) if fine_rect else None
         whole_step = max(1, int(np.ceil(max(w, h) / max_grid)))
-        if window and (window[0][1] - window[0][0] < w - 1 or window[1][1] - window[1][0] < h - 1):
+        if tank_rect is not None and _sample_window(hm, tank_rect):
+            _add_rings(geo, hm, name, tank_rect, preset, whole_step, ground_image, air, ground_colour, record)
+        elif window and (window[0][1] - window[0][0] < w - 1 or window[1][1] - window[1][0] < h - 1):
             fine_step = max(1, int(np.ceil(max(window[0][1] - window[0][0], window[1][1] - window[1][0]) / max_grid)))
             fv, ff = _grid(hm, fine_step, window[0], window[1])
-            _add_textured(geo, f"ground:{name}", fv, ff, tank or air, ground_colour)
+            _add_textured(geo, f"ground:{name}", fv, ff, ground_image, ground_colour)
             cv, cf = _grid(hm, whole_step, (0, w - 1), (0, h - 1))
             keep = ~_cells_inside(cv, cf, (x0 + window[0][0] * hm.cell, z0 + window[1][0] * hm.cell,
                                            x0 + window[0][1] * hm.cell, z0 + window[1][1] * hm.cell))
@@ -430,7 +771,7 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
                                             "surroundingsStep": whole_step}
         else:
             gv, gf = _grid(hm, whole_step, (0, w - 1), (0, h - 1))
-            _add_textured(geo, f"ground:{name}", gv, gf, tank or air, ground_colour)
+            _add_textured(geo, f"ground:{name}", gv, gf, ground_image, ground_colour)
             record["parts"]["heightmap"] = {"samples": [w, h], "cell": hm.cell, "step": whole_step}
         record["parts"]["heightmap"].update(
             x=[x0, x1], z=[z0, z1], height=[float(hm.heights.min()), float(hm.heights.max())], version=hm.version)
@@ -458,8 +799,12 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
         record["parts"]["landMesh"] = {"triangles": int(len(f)), "of": int(len(lm.faces)),
                                        "x": [float(mn[0]), float(mx[0])], "z": [float(mn[2]), float(mx[2])],
                                        "height": [float(mn[1]), float(mx[1])]}
+    timings["ground"] = round(time.time() - t0 - sum(timings.values()), 1)
     if objects and geo.parts:
-        _add_objects(geo, game, (level.data, level.table), name, record, log, max_object_triangles)
+        t1 = time.time()
+        _add_objects(geo, game, level, name, record, log, budget, preset, generate and tank_rect is not None,
+                     rect=tank_rect)
+        timings["objects"] = round(time.time() - t1, 1)
     if not geo.parts:
         raise ValueError(f"{name}: no heightmap and no land mesh")
 
@@ -475,13 +820,22 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
     if level.table and "WHM" in level.table:
         _add_sloping_water(geo, level, name, record)
 
+    t1 = time.time()
     positions = np.concatenate(geo.verts)
     uvs = np.concatenate(geo.uvs) if any(p.texture is not None for p in geo.parts) else None
+    colours = None
+    if any(c is not None for c in geo.colours):
+        colours = np.concatenate([c if c is not None else np.full((len(v), 3), 0.5, np.float32)
+                                  for c, v in zip(geo.colours, geo.verts)])
     glb_path = out_dir / f"{name}.glb"
     tmp = glb_path.with_suffix(".glb.part")
-    write_glb(tmp, positions, parts=geo.parts, uvs=uvs)
-    tmp.replace(glb_path)
+    write_glb(tmp, positions, parts=geo.parts, uvs=uvs, colours=colours)
+    _replace(tmp, glb_path)
+    timings["write"] = round(time.time() - t1, 1)
     record["triangles"] = {p.name: int(len(p.faces)) for p in geo.parts}
+    record["trianglesTotal"] = int(sum(record["triangles"].values()))
+    record["glbBytes"] = glb_path.stat().st_size
+    record["secondsBy"] = timings
     record["seconds"] = round(time.time() - t0, 1)
     (out_dir / f"{name}.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     return record

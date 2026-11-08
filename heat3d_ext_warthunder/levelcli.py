@@ -17,7 +17,7 @@ from pathlib import Path
 
 from . import __version__
 from .install import find_game
-from .level import DEFAULT_MAX_GRID, DEFAULT_MAX_OBJECT_TRIANGLES, Game, build, describe
+from .level import DEFAULT_DETAIL, DEFAULT_MAX_GRID, DETAIL, Game, build, describe
 
 
 def _game(args) -> Game | None:
@@ -51,8 +51,13 @@ def main(argv: list[str] | None = None) -> int:
     ex.add_argument("--max-grid", type=int, default=DEFAULT_MAX_GRID,
                     help=f"heightmap samples a side, per part (default {DEFAULT_MAX_GRID})")
     ex.add_argument("--no-objects", action="store_true", help="leave out buildings, trees and other placed objects")
-    ex.add_argument("--max-object-triangles", type=int, default=DEFAULT_MAX_OBJECT_TRIANGLES,
-                    help=f"budget for placed objects (default {DEFAULT_MAX_OBJECT_TRIANGLES:,}): over it, costly types become boxes")
+    ex.add_argument("--detail", choices=list(DETAIL), default=DEFAULT_DETAIL,
+                    help=f"ground sampling, ground colour and object budget over the tank map (default {DEFAULT_DETAIL}; "
+                         + ", ".join(f"{k}: {v['objects']:,} object triangles" for k, v in DETAIL.items()) + ")")
+    ex.add_argument("--max-object-triangles", type=int, default=None,
+                    help="budget for objects (default: the --detail's): over it, costly types step down a LOD, then to boxes")
+    ex.add_argument("--no-generated", action="store_true", help="leave out the objects the land classes generate (forests, towns)")
+    ex.add_argument("--no-terrain-colour", action="store_true", help="texture the ground with the tactical map, not the land classes")
     ex.add_argument("--no-texture", action="store_true", help="do not texture the ground with the tactical map")
     ex.add_argument("--skip-existing", action="store_true", help="leave levels whose .glb exists")
     args = ap.parse_args(argv)
@@ -92,16 +97,46 @@ def main(argv: list[str] | None = None) -> int:
         if args.skip_existing and (dest / f"{p.stem}.glb").exists():
             print(f"skip {dest / (p.stem + '.glb')}")
             continue
+        lock = _lock(dest, p.stem)
+        if lock is None:
+            print(f"busy {p.stem}: another extraction is writing it", flush=True)
+            continue
         try:
-            rec = build(game, p, dest, max_grid=args.max_grid, textures=not args.no_texture, objects=not args.no_objects, max_object_triangles=args.max_object_triangles,
+            rec = build(game, p, dest, max_grid=args.max_grid, textures=not args.no_texture, objects=not args.no_objects,
+                        max_object_triangles=args.max_object_triangles, detail=args.detail,
+                        generate=not args.no_generated, terrain=not args.no_terrain_colour,
                         log=lambda s: print(s, flush=True))
-            print(f"ok {dest / (p.stem + '.glb')} {sum(rec['triangles'].values())} triangles", flush=True)
+            print(f"ok {dest / (p.stem + '.glb')} {sum(rec['triangles'].values())} triangles {rec['seconds']} s", flush=True)
         except Exception as e:
             failed += 1
             print(f"failed {p.stem}: {type(e).__name__}: {e}", flush=True)
             if "HEAT3D_DEBUG" in __import__("os").environ:
                 traceback.print_exc()
+        finally:
+            lock.close()
     return 1 if failed else 0
+
+
+def _lock(dest: Path, name: str):
+    """An open lock file held while a level is written, or None when another process holds it.
+
+    The operating system lets go of it when the process ends, so a crashed extraction leaves no stale lock."""
+    dest.mkdir(parents=True, exist_ok=True)
+    fh = open(dest / f".{name}.lock", "a+b")
+    try:
+        if sys.platform == "win32":
+            import msvcrt
+
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.close()
+        return None
+    return fh
 
 
 if __name__ == "__main__":

@@ -109,9 +109,12 @@ def test_build_heightmap_level_with_map_and_water(tmp_path):
     assert rec["waterLevel"] == 2.0 and rec["maps"][0]["kind"] == "tankmap"
     assert (tmp_path / "out" / "lvl_tankmap.png").exists()
     # z is mirrored: the heightmap's z 0..62 lands at glb z 0..-62.
-    ground = next(m for m in doc["meshes"] if m["name"] == "ground:lvl")
-    acc = doc["accessors"][ground["primitives"][0]["attributes"]["POSITION"]]
-    assert acc["min"][2] == pytest.approx(-62.0) and acc["max"][2] == pytest.approx(0.0)
+    # The tank map is drawn in rings (its middle finer); together they cover it.
+    accs = [doc["accessors"][m["primitives"][0]["attributes"]["POSITION"]] for m in doc["meshes"]
+            if m["name"] in ("ground:lvl", "ground:lvl tank map")]
+    assert len(accs) == 2
+    assert min(a["min"][2] for a in accs) == pytest.approx(-62.0) and max(a["max"][2] for a in accs) == pytest.approx(0.0)
+    assert [r["part"] for r in rec["parts"]["heightmap"]["rings"]][:2] == ["ground:lvl", "ground:lvl tank map"]
     # The land mesh's two triangles lie partly outside the heightmap, so they are kept.
     assert rec["parts"]["landMesh"]["triangles"] == 2
     assert not list((tmp_path / "out").glob("*.part"))
@@ -157,30 +160,41 @@ def test_collision_shapes(tmp_path):
     quad = np.array([[0, 0, 0], [4, 0, 0], [0, 3, 0], [4, 3, 0]], np.float64)
     # A box node whose matrix swaps y and z (as resources exported z-up have them).
     swap = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0], [5, 0, 0]], np.float32)
+    box_only = collision.read_collision(levelsynth.collision_resource([(((-1, -2, 0), (1, 2, 6)), swap)], None))
+    assert len(box_only.faces) == 12
+    assert np.allclose(box_only.verts.min(0), [4, 0, -2]) and np.allclose(box_only.verts.max(0), [6, 6, 2])
+    # Beside a mesh, a box is a coarse stand-in and is left out: drawn, it is a cube around the object.
     blob = levelsynth.collision_resource([(((-1, -2, 0), (1, 2, 6)), swap)], quad)
     shape = collision.read_collision(blob)
-    assert len(shape.faces) == 12 + 2
-    box_v = shape.verts[:8]
-    assert np.allclose(box_v.min(0), [4, 0, -2]) and np.allclose(box_v.max(0), [6, 6, 2])
-    mesh = shape.verts[8:]
-    assert np.allclose(mesh, quad, atol=1e-3)
-    assert sorted(map(tuple, shape.faces[12:] - 8)) == [(0, 1, 2), (1, 2, 3)]
+    assert np.allclose(shape.verts, quad, atol=1e-3)
+    assert sorted(map(tuple, shape.faces)) == [(0, 1, 2), (1, 2, 3)]
     res = tmp_path / "res"
     res.mkdir()
     (res / "pack.grp").write_bytes(levelsynth.grp_pack({"hut": (collision.RENDINST_CLASS, b"x"),
                                                         "hut_collision": (collision.COLLISION_CLASS, blob)}))
     idx = collision.ResourceIndex(res)
-    assert collision.load_shape(idx, "hut").faces.shape == (14, 3)
+    assert collision.load_shape(idx, "hut").faces.shape == (2, 3)
     assert collision.load_shape(idx, "nothing") is None
+
+
+def test_collision_keeps_only_what_rays_hit():
+    from heat3d_ext_warthunder import collision
+
+    quad = np.array([[0, 0, 0], [4, 0, 0], [0, 3, 0], [4, 3, 0]], np.float64)
+    eye = np.r_[np.eye(3), [[0, 0, 0]]]
+    # A traceable box and a physics-only mesh: the box is what the game traces against, so it stays.
+    blob = levelsynth.collision_resource([(((0, 0, 0), (1, 1, 1)), eye)], quad, box_flags=collision.TRACEABLE)
+    assert len(collision.read_collision(blob).faces) == 12
 
 
 def test_collision_skips_empty_boxes():
     from heat3d_ext_warthunder import collision
 
-    # A node box stored as "empty" (+-1e32) is dropped; the resource's own box stands in for it.
+    # A node box stored as "empty" (+-1e32) is dropped; with nothing else the object has no shape (no
+    # stand-in cube from the resource's own box).
     blob = levelsynth.collision_resource([(((-1e32, -1e32, -1e32), (1e32, 1e32, 1e32)), np.r_[np.eye(3), [[0, 0, 0]]])], None)
-    shape = collision.read_collision(blob)
-    assert np.abs(shape.verts).max() == pytest.approx(1.0)
+    with pytest.raises(collision.CollisionError):
+        collision.read_collision(blob)
 
 
 def test_water_heightmap():

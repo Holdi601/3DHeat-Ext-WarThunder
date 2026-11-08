@@ -230,12 +230,12 @@ def _leaf(o1: int, o2: int, o3: int, base: int = 0) -> tuple[int, int]:
     return w0, w1
 
 
-def collision_resource(box_nodes: list[tuple], quad: np.ndarray | None) -> bytes:
+def collision_resource(box_nodes: list[tuple], quad: np.ndarray | None, box_flags: int = 0, mesh_flags: int = 0) -> bytes:
     """A version-3 collision resource: box nodes ((lo, hi), node matrix 4x3) and, optionally, one mesh node
-    holding a single quad (four corners, two triangles)."""
+    holding a single quad (four corners, two triangles); `*_flags` are the nodes' behaviour flags."""
     nodes, tms, chunks = [], [], b""
     for (lo, hi), tm in box_nodes:
-        nodes.append(struct.pack("<IIHhHHHBB6ff", 0, 0, 0, -1, 0xFFFF, 0, 0, 0, 2, *lo, *hi, 1.0))
+        nodes.append(struct.pack("<IIHhHHHBB6ff", 0, 0, box_flags, -1, 0xFFFF, 0, 0, 0, 2, *lo, *hi, 1.0))
         tms.append(np.asarray(tm, np.float32).tobytes())
     if quad is not None:
         lo, hi = quad.min(0), quad.max(0)
@@ -248,7 +248,7 @@ def collision_resource(box_nodes: list[tuple], quad: np.ndarray | None) -> bytes
         w0, w1 = _leaf(1, 2, 3)
         tree = bytes([0xFE]) + struct.pack("<II", w0, w1)
         chunks = frame + head + packed.astype("<u8").tobytes() + tree
-        nodes.append(struct.pack("<IIHhHHHBB6ff", 0, 6, 0, -1, 0xFFFF, 0, 0, 0, 0, *lo, *hi, 1.0))
+        nodes.append(struct.pack("<IIHhHHHBB6ff", 0, 6, mesh_flags, -1, 0xFFFF, 0, 0, 0, 0, *lo, *hi, 1.0))
         tms.append(np.r_[np.eye(3), np.zeros((1, 3))].astype(np.float32).tobytes())
     n = len(nodes)
     counts = [n, n, 0, 0, len(chunks), 0, 0, 0, 0, 1, 0]
@@ -290,3 +290,66 @@ def water_heightmap_block(heights: np.ndarray, extent: float, offset: float, sca
     raw = delta.astype("<u2").tobytes() + grid.astype("<u2").tobytes()
     head = struct.pack("<4i6f", 2, 1, 1, 1, offset, scale, 0.5, 0.5, 1 / extent, 1 / extent)
     return _block(b"WHM", head + _sub(zstandard.ZstdCompressor().compress(raw), 1))
+
+
+def pack_index_sequence(indices) -> bytes:
+    """meshoptimizer's index-sequence codec, every index against baseline 0 (enough for the decoder to undo)."""
+    out = bytearray([0xD1])
+    last = 0
+    for i in indices:
+        d = int(i) - last
+        last = int(i)
+        z = (d << 1) ^ (d >> 63) if d < 0 else d << 1  # zigzag
+        v = (z << 1) | 0  # baseline 0
+        while True:
+            b = v & 0x7F
+            v >>= 7
+            out.append(b | (0x80 if v else 0))
+            if not v:
+                break
+    return bytes(out) + b"\0\0\0\0"
+
+
+def rendinst_resource(lods: list[tuple[float, list[tuple[np.ndarray, np.ndarray, int]]]], packed: bool = True,
+                      box=((-1.0, 0.0, -1.0), (1.0, 2.0, 1.0))) -> bytes:
+    """A render-instance resource with materials kept in riDesc (-1, -1): per LOD (range, [(vertices, triangles,
+    material)]), each LOD one vertex buffer of float3 positions (stride 12), indices 16 bit, packed or plain."""
+    vds = []
+    for _rng, elems in lods:
+        verts = np.concatenate([e[0] for e in elems]).astype("<f4")
+        tris, at = [], 0
+        for v, f, _m in elems:
+            tris.append(np.asarray(f) + at)
+            at += len(v)
+        idx = np.concatenate(tris).reshape(-1).astype(np.uint16)
+        ib = pack_index_sequence(idx) if packed else idx.astype("<u2").tobytes()
+        vds.append((verts, idx, ib))
+    n = len(vds)
+    hdr = bytearray(32 + 32 * n + 12 * n)
+    struct.pack_into("<II", hdr, 0, 32 + 32 * n, 0)  # materials: none here
+    struct.pack_into("<II", hdr, 16, 32, n)
+    for i, (verts, idx, ib) in enumerate(vds):
+        flags = 0x20 | (0x200 if packed else 0)
+        a = 12 | ((len(ib) & 0xFFFFFF) << 8)
+        bb = (len(idx) * 2) | ((len(ib) >> 24) << 28)
+        struct.pack_into("<IIIIII", hdr, 32 + 32 * i, len(verts), a, bb, flags, 32 + 32 * n + 12 * i, 1)
+        struct.pack_into("<iihH", hdr, 32 + 32 * n + 12 * i, 2 << 16, 0, 0, 0)
+    body = bytes(hdr) + b"".join(v.tobytes() + ib for v, _i, ib in vds)
+    dump = bytearray(80 + 16 * n)
+    struct.pack_into("<II", dump, 0, 80, n)
+    struct.pack_into("<6f", dump, 16, *box[0], *box[1])
+    for i, (rng, _e) in enumerate(lods):
+        struct.pack_into("<Iiff", dump, 80 + 16 * i, 0, 0, rng, 0.0)
+    out = struct.pack("<iiiiI", len(dump), -1, -1, n, len(hdr)) + body + bytes(dump)
+    for i, (_rng, elems) in enumerate(lods):
+        mesh = bytearray(40 + 48 * len(elems))
+        struct.pack_into("<II", mesh, 0, 40, len(elems))
+        struct.pack_into("<I", mesh, 32, 0x80000000 | 1)
+        struct.pack_into("<8H", mesh, 16, *([len(elems)] * 8))
+        sv = si = 0
+        for k, (v, f, mat) in enumerate(elems):
+            struct.pack_into("<QQQiiiiii", mesh, 40 + 48 * k, 0, mat, i, k, sv, len(v), si, len(f), 0)
+            sv += len(v)
+            si += 3 * len(f)
+        out += struct.pack("<ii", len(mesh), 0) + bytes(mesh)
+    return out
