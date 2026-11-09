@@ -1,7 +1,9 @@
 """
 `heat3d-wt-replay <replay, folder or zip>... -o <folder>`
 
-Each battle becomes `<folder>/<map>/<match>.parquet` and `<match>.match.json`.
+Each battle becomes one file, `<folder>/<map>/<match>.3dheat` (container.py):
+the table `<match>.parquet`, `<match>.match.json` and the sidecars packed
+together; `--loose` keeps them as separate files.
 Files of one battle (a server replay's parts) are read together; files of
 different battles are converted one battle at a time. A .zip (a server
 replay as downloaded) is read for the .wrpl files in it. Prints one line per
@@ -18,6 +20,7 @@ client's dead reckoning is still marked; see convert.py).
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 import tempfile
@@ -26,6 +29,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from . import __version__, names
+from .container import pack
 from .convert import convert
 from .wrpl import FormatError, read_header
 
@@ -89,6 +93,15 @@ def battles(inputs: list[Path], scratch: Path | None = None) -> tuple[dict[str, 
     return dict(groups), bad
 
 
+def _info(doc: Path) -> dict:
+    """What the container's manifest says of the battle, from its match document."""
+    d = json.loads(doc.read_text(encoding="utf-8"))
+    return {"game": "warthunder", "source": "server replay" if d.get("server") else "client replay",
+            "converter": {"name": "heat3d-wt-replay", "version": __version__}, "match": d.get("match"),
+            "map": d.get("map"), "mode": " ".join(x for x in (d.get("difficulty"), d.get("gameMode")) if x) or None,
+            "started": d.get("started")}
+
+
 def main(argv: list[str] | None = None) -> int:
     # A newer release is offered, and installed only if the user says yes (notified only when nobody can be asked).
     try:
@@ -103,6 +116,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--game", help="the War Thunder folder whose localisation names the vehicles (found if not given)")
     ap.add_argument("--no-smoothing", action="store_true",
                     help="keep other units' dead-reckoned and received samples where the replay has them")
+    ap.add_argument("--container", action="store_true",
+                    help="pack each battle into one .3dheat file (the default)")
+    ap.add_argument("--loose", action="store_true",
+                    help="keep each battle as separate files (table, match.json, sidecars), not one .3dheat container")
     ap.add_argument("--version", action="version", version=f"heat3d-wt-replay {__version__}")
     args = ap.parse_args(argv)
     scratch = Path(tempfile.mkdtemp(prefix="heat3d-wt-"))
@@ -131,5 +148,12 @@ def _run(args: argparse.Namespace, scratch: Path) -> int:
             print(f"failed {files[0]}: {type(e).__name__}: {e}")
             bad.append((files[0], str(e)))
             continue
-        print(f"ok {table} {doc}")
+        if args.loose:
+            print(f"ok {table} {doc}")
+            continue
+        try:
+            print(f"ok {pack(table, _info(doc))}")
+        except (OSError, ValueError, zipfile.BadZipFile) as e:
+            print(f"failed {files[0]}: packing {table.name}: {e} (the loose files are kept)")
+            bad.append((files[0], str(e)))
     return 1 if bad else 0

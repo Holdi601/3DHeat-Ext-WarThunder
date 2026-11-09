@@ -6,6 +6,7 @@ import json
 import math
 import os
 import struct
+import zipfile
 from pathlib import Path
 
 import pyarrow.parquet as pq
@@ -142,7 +143,13 @@ def test_cli(tmp_path, capsys):
     out = capsys.readouterr().out
     assert code == 1  # the bad one
     assert "failed" in out and out.count("ok ") == 1
-    assert list((tmp_path / "out" / "avg_test_land").glob("*.match.json"))
+    # One file a battle by default; --loose keeps the table, the document and the sidecars apart.
+    packed = list((tmp_path / "out" / "avg_test_land").iterdir())
+    assert [p.suffix for p in packed] == [".3dheat"]
+    with zipfile.ZipFile(packed[0]) as z:
+        assert any(n.endswith(".match.json") for n in z.namelist())
+    assert cli.main([str(tmp_path / "in" / "a.wrpl"), "-o", str(tmp_path / "loose"), "--loose"]) == 0
+    assert list((tmp_path / "loose" / "avg_test_land").glob("*.match.json"))
     assert cli.main([str(tmp_path / "empty-folder-that-is-missing"), "-o", str(tmp_path / "o2")]) in (1, 2)
 
 
@@ -384,7 +391,7 @@ def test_cli_reads_a_server_replay_zip(tmp_path, capsys):
     empty = tmp_path / "empty.zip"
     with zipfile.ZipFile(empty, "w") as w:
         w.writestr("a.txt", "x")
-    code = cli.main([str(z), str(empty), "-o", str(tmp_path / "out")])
+    code = cli.main([str(z), str(empty), "-o", str(tmp_path / "out"), "--loose"])
     out = capsys.readouterr().out
     assert code == 1 and out.count("ok ") == 1 and "no .wrpl file in the zip" in out
     doc = json.loads(next((tmp_path / "out" / "avg_test_land").glob("*.match.json")).read_text(encoding="utf-8"))
