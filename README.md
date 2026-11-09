@@ -94,7 +94,8 @@ reading instructions, so the viewer needs no form filled in.
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
 | `hitOutcome`, `hitFlags` | a `shot`'s outcome on a ground unit: `kill`, `critical`, `penetration` or `nonpenetration` (bounced or stopped: the replay does not tell a ricochet apart), from the bits the server sends with the hit (`hitFlags`, raw); empty where none is sent (aircraft, ships). See [Hit outcomes](#hit-outcomes) |
-| `hitShell`, `calibre` | a `shot`'s shell signature (four bytes of the hit message, the same for every hit of one shell type; raw hex) and its calibre in mm where a kill names the weapon of a hit with that signature. See [Hit outcomes](#hit-outcomes) |
+| `hitShell` | a `shot`'s shell signature: four bytes of the hit message (raw hex); one signature can stand for different shells (120 and 125 mm APFSDS share one), so it is kept raw, not read as a calibre |
+| `ammoType`, `ammoName`, `ammoSlot`, `calibre` | a `shot`'s ammunition: its type (`APFSDS`, `APDS`, `HE`, `HEAT-FS`, `HESH`, `ATGM`...) and id (`125mm_3bm46`) where a kill names the shooter's slot, else `explosive` (the hit burst) or `kinetic`; the gun's `weapon/slot` from its reloads; the calibre in mm from the install's weapon files. See [Hit outcomes](#hit-outcomes) |
 | `rpm` | an aircraft's engine rpm (the mean over its engines) as last sent, within 2 s |
 | `vx`, `vy`, `vz` | an aircraft's velocity as its flight entry sends it (m/s, the game's axes; speeds over 500 m/s read 500) |
 | `engine`, `afterburner`, `engineCondition` | an aircraft's engines from its flight entry: `off`, `starting`, `running`, `dead` (`/`-joined when its engines differ); the afterburner 0-1; a byte sent only after the engine was hit |
@@ -548,17 +549,51 @@ for the recording player's own aircraft, all bits clear: aircraft and ship
 hits have no outcome. 0xF13E's effect numbers (5 in the ground battle) are
 too few to say more.
 
-The calibre: after the hit point the 0xF0E9 bit stream goes on undecoded,
-but a byte 0x30-0x3F, a byte with its low six bits clear and a zero byte are
-followed by four bytes that are the same for every hit of one shell type
-(`hitShell`): the 39 killing hits of the ground battle give one signature per
-kill weapon (120 mm KE-W `02401a00`, 125 mm 3BM46 `02800660`, 30 mm 3UBR8
-`01c009a0`). Each kill's killing hit gives its weapon's calibre (from the id,
-`120mm_ke_w`) to its signature, and every hit with the signature gets it
-(`selfCheck.unitMessages.hitsWithCalibre`: 651 of 1,451 hits with a
-signature; 3 of 6 named signatures were named by two calibres, 120 and
-125 mm APFSDS, the most named kept). Machine guns and shells that killed no
-one stay without a calibre.
+The ammunition (`selfCheck.unitMessages.ammunition`; numbers from the ground
+test battle, 1,619 hits):
+
+* **Explosive or not.** A shell that bursts sends 0xF133 (UnitOnExplosion)
+  with the shooter's uid and the hit's number; a hit whose number has one is
+  `explosive` (165 hits), the rest `kinetic`. Certain: the number is the
+  hit's own.
+* **The gun and its slot.** 0xF0BD (UnitBulletRearm) is the next round
+  loaded: the weapon's index in the vehicle's weapon list
+  (`gamedata/units/tankmodels/<vehicle>.blk`: `commonWeapons`, then its
+  weapon preset's), the ammunition slot and the rounds left. A manual
+  loader's comes a steady 7.6 s after each of its hits (its reload), an
+  autocannon's 0.1 s after. A shooter's hits are grouped by vehicle,
+  signature and burst; a group is a weapon's when that weapon loads a round
+  within 20 s after half its hits or more at a steady delay (median absolute
+  deviation 1 s or less). `ammoSlot` is `weapon/slot`, the slot loaded
+  before the hit (1,003 hits). Likely: the slot is the one loaded, which is
+  the one fired unless the player changed the ammunition in between.
+  Machine guns send no 0xF0BD.
+* **The shell.** A kill's weapon is the shell's id (`125mm_3bm46`); the
+  killer's last hit on the victim gives it to that shooter's slot (the
+  player chose what each slot holds, so it is never carried to another
+  player), where the gun's calibre agrees (26 of 28 kills; the other two name
+  nothing). Its type and
+  calibre are the weapon blk's (`bullet` blocks: `bulletName`, `bulletType`,
+  `caliber`; `apds_fs_*` APFSDS, `heat_fs_*` HEAT-FS, `he_*` HE...): 720
+  hits named, 12 slots.
+* **The calibre** of the rest: a slot's weapon's; a machine-gun group's the
+  one machine-gun calibre the signature can have on every vehicle that
+  fires it, after the calibres other signatures took (`00c01f20` 7.62,
+  `01401400` 12.7); an explosive or gun-signature hit without a slot the
+  vehicle's main gun's. 1,611 of 1,619 hits have one. Without the install
+  (`--game`) there is no type, name or calibre beyond `explosive`/`kinetic`.
+
+Not found: ricochet. Checked on the ground battle: the three unknown bytes
+of 0xF144 (spread alike over penetrations and non-penetrations, no value or
+bit only on the 470 non-penetrations); the 0xF0E9 rest after the hit point
+(the signature goes with the shell's class, not the outcome; the bit stream
+shifts by whole fields from hit to hit and is not decoded); 0xF0C2, sent
+for 850 hits with the hit's shooter and number and a long bit stream of
+one to nineteen records (likely the hit camera's path through the vehicle:
+1 record for most non-penetrations, more for penetrations), not decoded;
+0xF117 and 0xF13C (carry the hit's shooter and number, nearly all on
+penetrations); 0xF13E (5 messages). A non-penetration stays
+`nonpenetration`.
 
 ### Vehicle fires
 

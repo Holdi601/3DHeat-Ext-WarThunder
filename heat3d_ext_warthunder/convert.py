@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import ecs, names as vehicle_names, wrpl
+from . import arsenal, ecs, names as vehicle_names, wrpl
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
 AIR_TYPES = {"fighter", "assault", "bomber", "helicopter", "attack_helicopter", "utility_helicopter", "aircraft"}
@@ -78,7 +78,7 @@ HINTS = {
                   "mission", "match", "extrapolated", "moved", "xRaw", "yRaw", "zRaw", "headingRaw", "pitchRaw",
                   "rollRaw", "targetX", "targetY", "targetZ", "otherVehicle", "otherLife", "hitLocalX", "hitLocalY",
                   "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "hitFlags", "hitOutcome",
-                  "hitShell", "calibre", "fireId", "fireKind",
+                  "hitShell", "calibre", "ammoType", "ammoName", "ammoSlot", "fireId", "fireKind",
                   "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
@@ -151,6 +151,9 @@ COLUMNS = [
     ("hitOutcome", "str"),
     ("hitShell", "str"),
     ("calibre", "f32"),
+    ("ammoType", "str"),
+    ("ammoName", "str"),
+    ("ammoSlot", "str"),
     ("fireId", "str"),
     ("fireKind", "f32"),
     ("fireLocalX", "f32"),
@@ -2014,7 +2017,8 @@ def _unrotate(s: Sample, v: tuple[float, float, float]) -> tuple[float, float, f
     return tuple(sum(axis[k] * v[k] for k in range(3)) for axis in b)
 
 
-def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
+              arms: "arsenal.Arsenal | None" = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
     Rows from the messages to units, and their check:
 
@@ -2063,8 +2067,14 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
             d = wrpl.read_unit_on_hit(m.body)
             if d is not None:
                 on_hit[m.uid].append([m.t, d["flags"], False])
-    # Each hit with a shell signature, for the calibres named by the kills (below).
-    shells: list[tuple[int, int, float, str, dict[str, Any]]] = []
+    # Each hit, for its ammunition (below): (victim, shooter, time, shell signature, row, burst).
+    shells: list[tuple[int, int, float, str, dict[str, Any], bool]] = []
+    bursts = set()
+    for m in msgs:
+        if m.mid == 0xF133:
+            d = wrpl.read_unit_explosion(m.body)
+            if d is not None and d["number"] is not None:
+                bursts.add((d["shooter"], d["number"]))
     for m in msgs:
         if m.mid == 0xF0E9:
             try:
@@ -2119,7 +2129,7 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                 check[f"outcome_{row['hitOutcome']}"] += 1
             if hit.get("shell"):
                 row["hitShell"] = hit["shell"]
-                shells.append((m.uid, hit["shooter"], m.t, hit["shell"], row))
+            shells.append((m.uid, hit["shooter"], m.t, hit.get("shell") or "", row, (hit["shooter"], hit["number"]) in bursts))
             if target is not None:
                 d = [target[k] - pos[k] for k in range(3)]
                 n = math.sqrt(sum(c * c for c in d))
@@ -2152,12 +2162,12 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life]) -> tupl
                         "player": f"{m.entity.class_name.rpartition('/')[2]} #{m.uid}" if m.uid is not None else "",
                         "Vehicle": m.entity.class_name.rpartition("/")[2], "ai": True, "isPlayer": False,
                         "x": pos[0], "y": pos[1], "z": pos[2]})
-    check.update(_shell_calibres(r, shells))
+    check["ammunition"] = _shot_ammo(r, msgs, shells, arms)
     return out, dict(check)
 
 
 #: A weapon or ammunition id's calibre: "120mm_ke_w" 120, "12_7mm_..." 12.7.
-_CALIBRE = re.compile(r"(?:^|[^0-9])(\d+)(?:_(\d))?mm", re.I)
+_CALIBRE = re.compile(r"(?:^|[^0-9_])(\d+)(?:_(\d+))?mm", re.I)
 
 
 def calibre_of(ident: str) -> float | None:
@@ -2166,37 +2176,182 @@ def calibre_of(ident: str) -> float | None:
     return float(f"{m.group(1)}.{m.group(2) or 0}") if m else None
 
 
-def _shell_calibres(r: Replay, shells: list[tuple[int, int, float, str, dict[str, Any]]]) -> dict[str, int]:
+#: How long after a hit its weapon may report its next round loaded (a manual loader's reload is 6-8 s, some
+#: guns' more), and how steady that delay must be over a group of hits (median absolute deviation, s).
+RELOAD_MAX, RELOAD_STEADY = 20.0, 1.0
+
+
+def shots_fired(msgs: list[UnitMessage]) -> dict[int, list[tuple[float, int, int]]]:
     """
-    The calibre of every hit whose shell signature a kill names: each kill's
-    killing hit (the killer's last on the victim before it) gives its
-    weapon's calibre to its signature, and every hit with that signature
-    gets it (the most named where kills disagree).
+    Every round loaded after a shot that 0xF0BD (UnitBulletRearm) reports,
+    per shooter uid: (time, weapon index, ammunition slot). 0xF0BD carries
+    three fields: the weapon's index in the vehicle's weapon list (see
+    arsenal.py), the slot of the ammunition loaded and that slot's rounds
+    left (u32). The server sends it when a count changes: one lower than the
+    slot's last is a round taken from the stowage after a shot (on the ground
+    test battle a manual loader's comes a steady 7.6 s after each of its
+    hits, an autocannon's 0.1 s after); a higher one is a resupply or a new
+    life. Machine guns (`user_machinegun`) are not counted by it.
     """
-    by_victim: dict[int, list[tuple[int, float, str]]] = defaultdict(list)
-    for victim, shooter, t, sig, _ in shells:
-        by_victim[victim].append((shooter, t, sig))
-    votes: dict[str, Counter] = defaultdict(Counter)
-    for k in r.kills:
-        cal = calibre_of(k.get("weapon") or "")
-        killer = (k.get("killerUid") or 0) & wrpl.NO_UID
-        if cal is None:
+    last: dict[tuple[int, int, int], int] = {}
+    out: dict[int, list[tuple[float, int, int]]] = defaultdict(list)
+    for m in msgs:
+        if m.mid != 0xF0BD or m.uid is None:
             continue
+        f = wrpl.id_field_map(m.body)
+        if not all(k in f and f[k][1] for k in (1, 2, 3)):
+            continue
+        key = (m.uid, f[1][1][0], f[2][1][0])
+        n = int.from_bytes(f[3][1][:4], "little")
+        if key in last and n < last[key]:
+            out[m.uid].append((m.t, key[1], key[2]))
+        last[key] = n
+    return out
+
+
+def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, float, str, dict[str, Any], bool]],
+               arms: "arsenal.Arsenal | None") -> dict[str, Any]:
+    """
+    Each hit's weapon and ammunition (`calibre`, `ammoType`, `ammoName`,
+    `ammoSlot`), as far as the replay and the install tell:
+
+    * The weapon: a shooter's hits are grouped by vehicle, shell signature
+      (`hitShell`) and whether the hit burst (an explosion 0xF133 with the
+      hit's number: an explosive shell). A group is a weapon's when that
+      weapon reports its next round loaded (0xF0BD, see `shots_fired`) within
+      `RELOAD_MAX` after at least half its hits, at a steady delay (its
+      reload, within `RELOAD_STEADY`). A group without one is a weapon 0xF0BD
+      does not count: a machine gun.
+    * The slot (`ammoSlot` "weapon/slot"): the one the weapon last loaded
+      before the hit (else the one it loads next).
+    * The name: a slot is the ammunition a kill by it names (`125mm_3bm46`,
+      the killer's last hit on the victim) when the calibres agree, for that
+      shooter's slot only (the player chose what each slot holds); its type
+      and calibre from the weapon blk (see arsenal.py).
+    * Else the calibre is the weapon's or, for a machine gun, the one calibre
+      among the vehicle's machine guns that the signature can be: the same on
+      every vehicle that fires it, and not one another signature already took
+      on that vehicle. The type is then `explosive` for a hit that burst, else
+      `kinetic`.
+    """
+    arms = arms or arsenal.Arsenal()
+    fired = shots_fired(msgs)
+    loads: dict[tuple[int, int], list[tuple[float, int]]] = defaultdict(list)
+    for uid, v in fired.items():
+        for t, w, slot in v:
+            loads[(uid, w)].append((t, slot))
+    groups: dict[tuple, list[int]] = defaultdict(list)
+    for i, (_, shooter, t, sig, row, burst) in enumerate(hits):
+        groups[(shooter, row.get("Vehicle") or "", sig, burst)].append(i)
+    slot_of: dict[int, tuple[int, int]] = {}
+    for (shooter, _, _, _), idx in groups.items():
+        best = None
+        for (uid, w), seq in loads.items():
+            if uid != shooter:
+                continue
+            ts = [x[0] for x in seq]
+            delays = []
+            for i in idx:
+                j = bisect.bisect_right(ts, hits[i][2])
+                if j < len(ts) and ts[j] - hits[i][2] <= RELOAD_MAX:
+                    delays.append(ts[j] - hits[i][2])
+            if not delays or len(delays) * 2 < len(idx):
+                continue
+            med = sorted(delays)[len(delays) // 2]
+            mad = sorted(abs(d - med) for d in delays)[len(delays) // 2]
+            if mad <= RELOAD_STEADY and (best is None or len(delays) > best[0]):
+                best = (len(delays), w, ts, seq)
+        if best is None:
+            continue
+        _, w, ts, seq = best
+        for i in idx:
+            j = bisect.bisect_right(ts, hits[i][2])
+            slot_of[i] = (w, seq[j - 1][1] if j > 0 else seq[0][1])
+    # Kills name their slot's ammunition.
+    by_victim: dict[int, list[int]] = defaultdict(list)
+    for i, h in enumerate(hits):
+        by_victim[h[0]].append(i)
+    named: dict[tuple[int, str, int, int], str] = {}
+    kills_checked = kills_agree = 0
+    for k in r.kills:
+        killer = (k.get("killerUid") or 0) & wrpl.NO_UID
         last = None
-        for shooter, t, sig in by_victim.get(k.get("victimUid"), []):
-            if shooter == killer and t <= k["t"] + 0.05 and (last is None or t >= last[0]):
-                last = (t, sig)
-        if last:
-            votes[last[1]][cal] += 1
-    named = {sig: c.most_common(1)[0][0] for sig, c in votes.items()}
-    n = 0
-    for _, _, _, sig, row in shells:
-        if sig in named:
-            row["calibre"] = named[sig]
-            n += 1
-    return {"shellSignatures": len({s[3] for s in shells}), "shellSignaturesNamed": len(named),
-            "shellSignatureConflicts": sum(1 for c in votes.values() if len(c) > 1), "hitsWithCalibre": n,
-            "hitsWithShell": len(shells)}
+        for i in by_victim.get(k.get("victimUid"), []):
+            if hits[i][1] == killer and hits[i][2] <= k["t"] + 0.05 and (last is None or hits[i][2] >= hits[last][2]):
+                last = i
+        if last is None or last not in slot_of or not k.get("weapon"):
+            continue
+        veh = hits[last][4].get("Vehicle") or ""
+        guns = arms.guns(veh)
+        w = slot_of[last][0]
+        cal = calibre_of(k["weapon"])
+        agree = True
+        if cal is not None and w < len(guns) and guns[w].calibre:
+            kills_checked += 1
+            agree = abs(guns[w].calibre - cal) < 1
+            kills_agree += agree
+        if agree:
+            named.setdefault((killer, veh, *slot_of[last]), str(k["weapon"]).lower())
+    # Machine guns: the calibre each signature can be on each vehicle.
+    # A signature whose hits came mostly from guns 0xF0BD counts is a gun's (its hits without a slot: the vehicle's
+    # main gun, below), not a machine gun's.
+    by_sig = Counter(h[3] for h in hits)
+    gun_sigs = {s for s, n in Counter(hits[i][3] for i in slot_of).items() if s and n * 2 >= by_sig[s]}
+    mg_cals: dict[str, float | None] = {}
+    options: dict[tuple[str, str], set[float]] = {}
+    for (shooter, veh, sig, burst), idx in groups.items():
+        if sig and sig not in gun_sigs and not burst and idx[0] not in slot_of:
+            cals = {g.calibre for g in arms.guns(veh) if g.machine_gun and g.calibre}
+            if cals:
+                options[(veh, sig)] = cals
+    for _ in range(3):
+        for sig in {s for _, s in options}:
+            common = set.intersection(*[c for (v, s), c in options.items() if s == sig])
+            if len(common) == 1:
+                mg_cals[sig] = next(iter(common))
+        for (veh, sig), c in options.items():
+            if sig not in mg_cals:
+                left = c - {mg_cals[s] for v, s in options if v == veh and s in mg_cals}
+                if len(left) == 1:
+                    options[(veh, sig)] = left
+    check: Counter = Counter()
+    for i, (_, shooter, _, sig, row, burst) in enumerate(hits):
+        veh = row.get("Vehicle") or ""
+        kind, name, cal = ("explosive" if burst else "kinetic"), "", None
+        if i in slot_of:
+            w, slot = slot_of[i]
+            row["ammoSlot"] = f"{w}/{slot}"
+            guns = arms.guns(veh)
+            gun = guns[w] if w < len(guns) else None
+            cal = gun.calibre if gun else None
+            name = named.get((shooter, veh, w, slot), "")
+            shell = gun.shells.get(name) if gun and name else None
+            if shell:
+                kind = shell[0] or kind
+                cal = shell[1] or cal
+            elif name:
+                cal = calibre_of(name) or cal
+            check["hitsWithShot"] += 1
+        elif sig in mg_cals and not burst:
+            cal = mg_cals[sig]
+            check["hitsByMachineGun"] += 1
+        elif burst or sig in gun_sigs:
+            main = next((g for g in arms.guns(veh) if not g.machine_gun and g.calibre), None)
+            cal = main.calibre if main else None
+            check["hitsByMainGun"] += 1
+        row["ammoType"] = kind
+        if name:
+            row["ammoName"] = name
+            check["hitsWithAmmoName"] += 1
+        if cal:
+            row["calibre"] = cal
+            check["hitsWithCalibre"] += 1
+        check[f"type_{kind}"] += 1
+    return {"hits": len(hits), "roundsLoaded": sum(len(v) for v in fired.values()), **dict(check),
+            "slotsNamedByKills": len(named), "killsWeaponCalibreChecked": kills_checked,
+            "killsWeaponCalibreAgree": kills_agree, "machineGunSignatures": {s: c for s, c in sorted(mg_cals.items())},
+            "install": bool(arms), "hitsWithShell": sum(1 for h in hits if h[3]),
+            "hitsThatBurst": sum(1 for h in hits if h[5])}
 
 
 #: The hash naming the entity event (0x20, the class that carries a hashed event: LEB128 bit count, the hash, its
@@ -3142,8 +3297,11 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "hitOutcome": "shot rows on ground units: what the hit did - kill, critical, penetration or "
                           "nonpenetration (bounced or stopped) - from the bits of the UnitOnHit message sent with it "
                           "(hitFlags, raw: 0x20 a projectile's hit, 0x01 through, 0x02 critical, 0x04 destroyed, "
-                          "0x08 heavy damage); hitShell the hit's shell signature (hex), calibre its calibre in mm "
-                          "where a kill names the weapon of a hit with that signature (README: Hit outcomes)",
+                          "0x08 heavy damage); hitShell the hit's shell signature (hex, raw)",
+            "ammoType": "shot rows: the ammunition - APFSDS, APDS, HE, HEAT-FS, ATGM... where a kill names the "
+                        "shooter's slot, else explosive (the hit burst) or kinetic; ammoName the shell's id "
+                        "(125mm_3bm46), ammoSlot the gun's 'weapon/slot' from its reloads, calibre in mm from the "
+                        "install's weapon files (README: Hit outcomes)",
             "hitLocalX": "shot rows: the hit point on the unit hit, in its own frame as the replay sends it (m; "
                          "hitLocalX forward, hitLocalY up, hitLocalZ right): aircraft and ships as sent (cm), "
                          "ground units' read in mm and kept only within 6 m of the unit (about one in six lies "
@@ -3479,7 +3637,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     all_weapons = weapons(r, all_lives)
     msgs = unit_messages(r)
     rpm = rpm_series(msgs)
-    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives)
+    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arsenal.Arsenal.from_game(game))
     more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
                                 rpm=_rpm_check(r, rpm, all_lives),
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))

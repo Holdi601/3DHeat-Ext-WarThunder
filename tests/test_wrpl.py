@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import struct
+import types
 
 import pytest
 
@@ -205,3 +206,68 @@ def test_shell_signature_and_calibre():
     assert calibre_of("120mm_ke_w") == 120
     assert calibre_of("12_7mm_m2_hb") == 12.7
     assert calibre_of("us_aim_120c_5") is None
+
+
+def test_bullet_rearm_counts_rounds_loaded_after_shots():
+    from heat3d_ext_warthunder.convert import UnitMessage, shots_fired
+
+    tank = types.SimpleNamespace(uid=7)
+
+    def rearm(t, weapon, slot, left):
+        body = synth.id_fields({1: (8, weapon), 2: (8, slot), 3: (32, left.to_bytes(4, "little"))})
+        return UnitMessage(t, 0xF0BD, tank, body)
+
+    # A first count, two rounds taken from slot 0, a resupply (higher), one more; slot 1 never changes.
+    msgs = [rearm(1.0, 0, 0, 20), rearm(1.0, 0, 1, 5), rearm(9.0, 0, 0, 19), rearm(9.0, 0, 1, 5),
+            rearm(17.0, 0, 0, 18), rearm(30.0, 0, 0, 30), rearm(38.0, 0, 0, 29)]
+    assert shots_fired(msgs) == {7: [(9.0, 0, 0), (17.0, 0, 0), (38.0, 0, 0)]}
+
+
+def test_ammunition_types_and_calibres():
+    from heat3d_ext_warthunder.arsenal import ammo_type
+    from heat3d_ext_warthunder.convert import calibre_of
+
+    assert ammo_type("apds_fs_long_l30_tank") == "APFSDS"
+    assert ammo_type("apds_tank") == "APDS"
+    assert ammo_type("heat_fs_tank") == "HEAT-FS"
+    assert ammo_type("he_frag_dist_fuse") == "HE"
+    assert ammo_type("hesh_tank") == "HESH"
+    assert ammo_type("atgm_tandem_tank") == "ATGM"
+    assert ammo_type("apcbc_tank") == "APCBC"
+    assert calibre_of("7_62mm_PKT_user_machinegun") == 7.62
+    assert calibre_of("125mm_3bm46") == 125
+
+
+def test_hits_take_the_weapon_that_reloads_after_them():
+    from heat3d_ext_warthunder import arsenal
+    from heat3d_ext_warthunder.convert import UnitMessage, _shot_ammo
+
+    class Arms(arsenal.Arsenal):
+        def __bool__(self):
+            return True
+
+        def guns(self, vehicle):
+            return [arsenal.Gun("125mm_gun_user_cannon.blk", 125.0, {"125mm_3bm46": ("APFSDS", 125.0)}),
+                    arsenal.Gun("7_62mm_pkt_user_machinegun.blk", 7.62)]
+
+    tank = types.SimpleNamespace(uid=7)
+
+    def rearm(t, left):
+        return UnitMessage(t, 0xF0BD, tank, synth.id_fields({1: (8, 0), 2: (8, 0), 3: (32, left.to_bytes(4, "little"))}))
+
+    class R:
+        kills = [{"t": 30.05, "killerUid": 7, "victimUid": 9, "weapon": "125mm_3bm46"}]
+
+    # The gun's hits each 7.5 s before a round is loaded; machine-gun hits at random times; one hit that burst.
+    msgs = [rearm(0.0, 20)] + [rearm(t + 7.5, 19 - k) for k, t in enumerate((10.0, 20.0, 30.0))]
+    rows = [{"Vehicle": "tank_x"} for _ in range(8)]
+    hits = [(9, 7, 10.0, "02800660", rows[0], False), (9, 7, 20.0, "02800660", rows[1], False),
+            (9, 7, 30.0, "02800660", rows[2], False), (9, 7, 3.0, "00c01f20", rows[3], False),
+            (9, 7, 21.0, "00c01f20", rows[4], False), (9, 7, 45.0, "00c01f20", rows[5], False),
+            (9, 7, 61.0, "00c01f20", rows[6], False), (9, 7, 90.0, "", rows[7], True)]
+    check = _shot_ammo(R(), msgs, hits, Arms())
+    assert rows[0] == {"Vehicle": "tank_x", "ammoSlot": "0/0", "ammoType": "APFSDS", "ammoName": "125mm_3bm46",
+                       "calibre": 125.0}
+    assert rows[3]["calibre"] == 7.62 and rows[3]["ammoType"] == "kinetic" and "ammoSlot" not in rows[3]
+    assert rows[7]["ammoType"] == "explosive" and rows[7]["calibre"] == 125.0
+    assert check["killsWeaponCalibreAgree"] == 1 and check["hitsWithAmmoName"] == 3
