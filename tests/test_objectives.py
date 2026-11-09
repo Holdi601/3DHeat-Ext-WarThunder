@@ -1,3 +1,4 @@
+import math
 import struct
 
 import pytest
@@ -116,3 +117,20 @@ def test_scene_units_are_named_and_stand_still(monkeypatch):
     assert life.died is not None and life.died < samples[0].t
     # One sample every 10 s and the last: 0, 10, 20, ..., 40, 49.5.
     assert [s.t for s in life.samples] == [0.0, 10.0, 20.0, 30.0, 40.0, 49.5]
+
+
+def test_turret_held_to_its_drive_and_set_to_the_shot():
+    # The replay's yaw jumps 30 degrees in 0.04 s; without an install the drive is 45 deg/s (x1.3).
+    samples = [convert.Sample(i * 0.04, 0.0, 0.0, 0.0, angles=(0.0, 0.0, 0.0), turrets=[(0.0 if i < 5 else 30.0, 0.0)])
+               for i in range(40)]
+    life = convert.Life(9, "ground", 1, samples, figure="tank")
+    # A shot at 1.2 s along yaw 25 (hull heading 0, so compass 25).
+    h = math.radians(25.0)
+    shot = {"event": "shot", "life": life.id, "time": 1.2, "dirX": math.sin(h), "dirY": 0.0, "dirZ": math.cos(h)}
+    got = convert.limit_turrets([life], [shot], None)
+    yaws = [s.turret[0] for s in samples]
+    steps = [abs(b - a) / 0.04 for a, b in zip(yaws, yaws[1:])]
+    assert max(steps) <= 45.0 * convert.DRIVE_ALLOWANCE + 1e-3
+    assert samples[30].turret[0] == pytest.approx(25.0, abs=1e-3) and shot["turretYaw"] == pytest.approx(25.0, abs=1e-3)
+    assert samples[0].turret[0] == 0.0 and got["shotsSnapped"] == 1
+    assert [s.turrets[0][0] for s in samples[5:7]] == [30.0, 30.0]  # the replay's own value is kept

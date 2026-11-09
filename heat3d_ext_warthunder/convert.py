@@ -82,7 +82,7 @@ HINTS = {
                   "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
-                  "turrets", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
+                  "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
                   "gameMode"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
@@ -185,6 +185,8 @@ COLUMNS = [
     ("turretYaw", "f32"),
     ("gunPitch", "f32"),
     ("turrets", "str"),
+    ("turretYawRaw", "f32"),
+    ("gunPitchRaw", "f32"),
     ("viewYaw", "f32"),
     ("viewPitch", "f32"),
     ("aimHeading", "f32"),
@@ -228,6 +230,8 @@ class Sample:
     turrets: list[tuple[float, float]] | None = None
     #: The recording player's own tank: its aim as sent (world angle anticlockwise from east, pitch, distance, distance).
     aim: tuple[float, float, float, float] | None = None
+    #: Tanks: the main turret's (yaw, pitch) held to its drive's speed (see `limit_turrets`).
+    turret: tuple[float, float] | None = None
 
 
 @dataclass
@@ -1702,8 +1706,9 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
                 row.update(headingRaw=ra[0], pitchRaw=ra[1], rollRaw=ra[2])
             # Ships' states have another layout after the position (their turrets are not read).
             if s.turrets and life.figure not in NO_TURRETS:
-                row.update(turretYaw=s.turrets[0][0], gunPitch=s.turrets[0][1],
-                           turrets=";".join(f"{y:.2f} {q:.2f}" for y, q in s.turrets))
+                main = s.turret or s.turrets[0]
+                row.update(turretYaw=main[0], gunPitch=main[1], turretYawRaw=s.turrets[0][0],
+                           gunPitchRaw=s.turrets[0][1], turrets=";".join(f"{y:.2f} {q:.2f}" for y, q in s.turrets))
             if s.aim is not None and all(math.isfinite(v) for v in s.aim[:3]):
                 row.update(aimHeading=(90.0 - s.aim[0]) % 360, aimPitch=s.aim[1], aimDistance=s.aim[2])
                 # Where the player looks, as a world compass heading and pitch like aimHeading / aimPitch; all four
@@ -2984,7 +2989,7 @@ def _jsonable(v: Any) -> Any:
     return v
 
 
-def _turret_check(table_rows: list[dict[str, Any]], all_lives: list[Life]) -> dict[str, Any]:
+def _turret_check(table_rows: list[dict[str, Any]], all_lives: list[Life], raw: bool = False) -> dict[str, Any]:
     """
     The turrets against the shots: for every shot row (a projectile that hit) of a tank whose sample at or just
     before the hit (within 0.5 s) has turrets, the main gun's world direction (the hull's attitude turned by the
@@ -3014,7 +3019,7 @@ def _turret_check(table_rows: list[dict[str, Any]], all_lives: list[Life]) -> di
         b = _basis(s)
         if b is None:
             continue
-        yaw, pitch = (math.radians(v) for v in s.turrets[0])
+        yaw, pitch = (math.radians(v) for v in (s.turrets[0] if raw or s.turret is None else s.turret))
         local = (math.cos(pitch) * math.cos(yaw), math.sin(pitch), math.cos(pitch) * math.sin(yaw))
         g = tuple(sum(axis[k] * c for axis, c in zip(b, local)) for k in range(3))
         h1, p1, _ = _look(g)
@@ -3029,6 +3034,117 @@ def _turret_check(table_rows: list[dict[str, Any]], all_lives: list[Life]) -> di
             "headingWithin3Deg": round(sum(x <= 3 for x in dh) / len(dh), 3),
             "elevationMedianDeg": round(de[len(de) // 2], 2),
             "elevationWithin3Deg": round(sum(x <= 3 for x in de) / len(de), 3)}
+
+
+#: Crew skills and the drive's modifications speed a turret up; the limit allows this much over the install's speed.
+DRIVE_ALLOWANCE = 1.3
+#: Where the install names no drive (no install, a vehicle not found): traverse and elevation, degrees a second.
+DRIVE_DEFAULT = (45.0, 20.0)
+#: A shot is the main gun's (and the turret is set to it) when its line lies within this many degrees of the turret
+#: as sent at the sample nearest the hit, and that sample within ANCHOR_NEAR seconds of it.
+SHOT_SNAP = 10.0
+ANCHOR_NEAR = 0.25
+
+
+def limit_turrets(all_lives: list[Life], extra: list[dict[str, Any]], arms: arsenal.Arsenal | None = None
+                  ) -> dict[str, Any]:
+    """
+    The main turret held to its drive (`Sample.turret`; the replay's own value stays in `turrets`). The value the
+    server sends follows the drive while the player's aim is far from the gun (BMPT-72: 1.55 degrees every 0.041 s,
+    38 degrees a second) but jumps onto the aim when it is near (5-11 degrees in 0.041 s, up to 270 degrees a
+    second): no turret turns so. Here each turret's yaw and gun pitch, relative to the hull, move towards the
+    replay's value at no more than its drive's speed (`speedYaw`, `speedPitch` from the install, times
+    DRIVE_ALLOWANCE for crew and modifications; a stabiliser takes back the hull's turn with the same drive), and
+    take the replay's value wherever that is within reach. At every shot of the main gun (a `shot`
+    row of the life whose line lies within SHOT_SNAP degrees of the turret as sent) the turret is set exactly to the
+    shot's line, and a backward pass makes it arrive there in time. The shot row gets the same `turretYaw` and
+    `gunPitch`.
+    """
+    shots: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in extra:
+        if row.get("event") == "shot" and row.get("life") and row.get("dirX") is not None:
+            shots[row["life"]].append(row)
+    rates_raw: list[float] = []
+    rates: list[float] = []
+    stats: Counter = Counter()
+    no_drive: set[str] = set()
+    for life in all_lives:
+        if life.kind != "ground" or life.figure in NO_TURRETS:
+            continue
+        S = [s for s in life.samples if s.turrets]
+        if not S:
+            continue
+        own = arms.drive(life.vehicle) if arms else None
+        stats["livesWithInstallDrive" if own else "livesWithDefaultDrive"] += 1
+        if not own:
+            no_drive.add(life.vehicle or f"uid {life.uid}")
+        vy, vp = ((own or DRIVE_DEFAULT)[k] * DRIVE_ALLOWANCE for k in (0, 1))
+        t = [s.t for s in S]
+        yaw = [S[0].turrets[0][0]]
+        for s in S[1:]:
+            yaw.append(yaw[-1] + (s.turrets[0][0] - yaw[-1] + 180) % 360 - 180)  # unwrapped
+        pitch = [s.turrets[0][1] for s in S]
+        reach_y = [0.0] + [(t[i] - t[i - 1]) * vy for i in range(1, len(S))]
+        reach_p = [0.0] + [(t[i] - t[i - 1]) * vp for i in range(1, len(S))]
+        anchors: dict[int, tuple[float, float]] = {}
+        for row in shots.get(life.id, []):
+            i = bisect.bisect_left(t, row["time"])
+            near = [k for k in (i - 1, i) if 0 <= k < len(S) and abs(t[k] - row["time"]) <= ANCHOR_NEAR]
+            if not near:
+                continue
+            k = min(near, key=lambda k: abs(t[k] - row["time"]))
+            h, p, _ = _look((row["dirX"], row["dirY"], row["dirZ"]))
+            line = _in_hull(S[k], h, p)
+            if line is None or abs((line[0] - S[k].turrets[0][0] + 180) % 360 - 180) > SHOT_SNAP:
+                stats["shotsNotMainGun"] += 1
+                continue
+            anchors[k] = (yaw[k] + (line[0] - yaw[k] + 180) % 360 - 180, line[1])
+            row["_line"] = line
+        # Two shots the drive cannot turn between (a coaxial gun's burst at another target, hits that came late):
+        # the later one is not taken.
+        last = None
+        for k in sorted(anchors):
+            if last is not None and (abs(anchors[k][0] - anchors[last][0]) > (t[k] - t[last]) * vy + 1e-6
+                                     or abs(anchors[k][1] - anchors[last][1]) > (t[k] - t[last]) * vp + 1e-6):
+                del anchors[k]
+                stats["shotsBeyondDrive"] += 1
+                continue
+            last = k
+        for row in shots.get(life.id, []):
+            line = row.pop("_line", None)
+            if line is not None:
+                k = min(range(len(S)), key=lambda i: abs(t[i] - row["time"]))
+                if k in anchors:
+                    row.update(turretYaw=round(line[0], 3), gunPitch=round(line[1], 3))
+                    stats["shotsSnapped"] += 1
+        fy, fp = list(yaw), list(pitch)
+        for i in range(len(S)):
+            if i in anchors:
+                fy[i], fp[i] = anchors[i]
+            elif i:
+                fy[i] = min(max(yaw[i], fy[i - 1] - reach_y[i]), fy[i - 1] + reach_y[i])
+                fp[i] = min(max(pitch[i], fp[i - 1] - reach_p[i]), fp[i - 1] + reach_p[i])
+        for i in range(len(S) - 2, -1, -1):
+            if i not in anchors:
+                fy[i] = min(max(fy[i], fy[i + 1] - reach_y[i + 1]), fy[i + 1] + reach_y[i + 1])
+                fp[i] = min(max(fp[i], fp[i + 1] - reach_p[i + 1]), fp[i + 1] + reach_p[i + 1])
+        for i, s in enumerate(S):
+            s.turret = (round((fy[i] + 180) % 360 - 180, 3), round(fp[i], 3))
+            stats["samples"] += 1
+            stats["samplesAsSent"] += abs(fy[i] - yaw[i]) < 1e-6 and abs(fp[i] - pitch[i]) < 1e-6
+            if i and t[i] > t[i - 1] and (life.died is None or t[i] < life.died):
+                dt = t[i] - t[i - 1]
+                rates_raw.append(abs(yaw[i] - yaw[i - 1]) / dt)
+                rates.append(abs(fy[i] - fy[i - 1]) / dt)
+                stats["stepsOverDrive"] += abs(fy[i] - fy[i - 1]) > reach_y[i] + 1e-6
+
+    def q(v: list[float]) -> dict[str, float]:
+        v = sorted(v)
+        return {"p50": round(v[len(v) // 2], 1), "p99": round(v[int(len(v) * 0.99)], 1),
+                "max": round(v[-1], 1)} if v else {}
+
+    return {**stats, "allowance": DRIVE_ALLOWANCE, "defaultDrive": sorted(no_drive)[:20],
+            "yawRateRawDegS": q(rates_raw), "yawRateDegS": q(rates)}
 
 
 def _turret_view_check(all_lives: list[Life], window: float = 0.5) -> dict[str, Any]:
@@ -3052,8 +3168,9 @@ def _turret_view_check(all_lives: list[Life], window: float = 0.5) -> dict[str, 
                 continue
             view = _in_hull(s, (90.0 - s.aim[0]) % 360, s.aim[1])
             if view is not None:
-                both.append((s.t, s.turrets[0][0], view[0]))
-                diffs.append(abs((s.turrets[0][0] - view[0] + 180) % 360 - 180))
+                yaw = (s.turret or s.turrets[0])[0]
+                both.append((s.t, yaw, view[0]))
+                diffs.append(abs((yaw - view[0] + 180) % 360 - 180))
         ts = [b[0] for b in both]
         for i, (t, ty, vy) in enumerate(both):
             j = bisect.bisect_left(ts, t + window)
@@ -3872,7 +3989,9 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     all_weapons = weapons(r, all_lives)
     msgs = unit_messages(r)
     rpm = rpm_series(msgs)
-    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arsenal.Arsenal.from_game(game))
+    arms_install = arsenal.Arsenal.from_game(game)
+    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arms_install)
+    more["turretLimit"] = limit_turrets(all_lives, extra, arms_install)
     more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
                                 rpm=_rpm_check(r, rpm, all_lives),
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
@@ -3880,6 +3999,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     cam, more["camera"] = camera_rows(r, all_lives)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
     more["turretsVsShots"] = _turret_check(data, all_lives)
+    more["turretsVsShotsRaw"] = _turret_check(data, all_lives, raw=True)
     more["turretVsView"] = _turret_view_check(all_lives)
     more["wrecks"] = _wreck_check(all_lives)
     arms = weapon_names if weapon_names is not None else vehicle_names.load_weapons(game)

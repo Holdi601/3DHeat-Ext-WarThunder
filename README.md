@@ -87,7 +87,8 @@ reading instructions, so the viewer needs no form filled in.
 | `mission` | the unit's name in the mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | where the unit points (the look vector): aircraft from the flight model's attitude, ground units and ships from their own, weapons along their flight |
 | `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below; a ground unit's right side down). The hints say so under `conventions` |
-| `turretYaw`, `gunPitch`, `turrets` | a tank's main turret as the game simulates it - where the gun really points, not where its player looks: its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks, in client and server replays; not ships (see [Turrets](#turrets)) |
+| `turretYaw`, `gunPitch`, `turrets` | a tank's main turret - where the gun points, not where its player looks; the replay's value held to the turret drive's speed and set to each main-gun shot's line (see [Turrets](#turrets)): its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks, in client and server replays; not ships (see [Turrets](#turrets)) |
+| `turretYawRaw`, `gunPitchRaw` | the main turret as the replay sends it; `turretYaw` / `gunPitch` are it held to the turret drive's speed and set to each main-gun shot's line (see [Turrets](#turrets)) |
 | `viewYaw`, `viewPitch` | where the player looks (aims with the camera) in the world: compass degrees (0 north, clockwise) and degrees up, the same convention as `aimHeading` / `aimPitch` (unlike `turretYaw` / `gunPitch`, which stay relative to the hull). Every player's tank in a server replay, the recording player's own in a client replay; empty where the player aims nowhere (all four aim floats 0). The turret follows it at its own traverse speed, so the two differ while it turns (see [Turrets](#turrets)) |
 | `aimHeading`, `aimPitch`, `aimDistance` | the recording player's own tank: where it aims (compass degrees, degrees up, the distance in m; 2000 when nothing is in the sight); camera rows: where the player aims (heading, pitch) |
 | `zoom` | camera rows: the camera's magnification (see [The camera](#the-camera)) |
@@ -489,12 +490,31 @@ inside the state is now read (at least the main one: 98 % of tank rows). It is t
   while it turns: over half a second the view swings at up to 294-357 degrees a second (99th percentile 95-130),
   the turret at most 71-224 (99th percentile 31-73, which includes the hull's own turn of up to 50-85 degrees a
   second; the vehicles' turret drives in the install turn 24-45 degrees a second before crew skills). A turret
-  that copied the camera would turn as fast as the camera (`selfCheck.turretVsView`).
+  that copied the camera would turn as fast as the camera (`selfCheck.turretVsView`, on the turret as held to its
+  drive, below).
+- **But not always at a drive's speed**: sample by sample (relative to the hull, so no hull turn in it; every
+  0.041 s; angles unwrapped; only while the unit lives) the value as sent turns at 122 degrees a second at the 99th
+  percentile and up to 1,072 (the first battle). It is no decoding slip: the same value moves at its drive's speed
+  while the player's aim is far from the gun (a BMPT-72: 1.55 degrees every 0.041 s, 38 degrees a second, for
+  seconds) and jumps onto the aim when it is near (5-11 degrees in one step, the gun's world heading then within
+  0.3 degrees of the aim). No wrap, life change, death, timing or hull turn is in these steps.
 
-So `turretYaw` / `gunPitch` are measured, not made up: no simulated turret is needed where they exist, and none is
-added where they do not (a tank whose state carries no turret has empty turret columns; the viewer may fall back to
-`viewYaw`). `gunPitch` lies a little above `viewPitch` at range (median 1.9 degrees apart in the first battle):
-the gun's elevation for the shell's drop, which the view does not have.
+So the table holds the turret **held to its drive** (`limit_turrets`): `turretYaw` / `gunPitch` move towards the
+value as sent at no more than the main gun's `speedYaw` / `speedPitch` from the install's vehicle file
+(`gamedata/units/tankmodels/<vehicle>.blk`, its first `commonWeapons` weapon) times 1.3 for crew skills and
+modifications (45 and 20 degrees a second where the install names none), and take that value wherever it is within
+reach (89 % of samples in the first battle). At every hit of the main gun (a `shot` row whose line lies within 10
+degrees of the turret as sent, at the sample nearest it) the turret is set exactly to the shot's line and a backward
+pass brings it there in time; of two shots the drive cannot turn between, the later is not taken
+(`selfCheck.turretLimit`: steps over the drive 0, the rates before and after). The `shot` row carries that
+`turretYaw` / `gunPitch` too. The shot rows stand at the moment of the hit, not of the firing, so a turret moving
+during the shell's flight is set to the line it hit along. The value as sent stays in `turretYawRaw` /
+`gunPitchRaw` and `turrets`; `selfCheck.turretsVsShotsRaw` checks it as `turretsVsShots` checks the held one. A tank
+whose state carries no turret has empty turret columns (the viewer may fall back to `viewYaw`). `gunPitch` lies a
+little above `viewPitch` at range (median 1.9 degrees apart in the first battle): the gun's elevation for the
+shell's drop, which the view does not have.
+
+
 
 Ships' states have another layout after the position; their turrets are not read (the tank layout fits some of
 their states by length, and its "main gun" points 63 degrees away from their shots, so ships get no turret

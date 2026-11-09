@@ -75,6 +75,22 @@ class Arsenal:
     def __bool__(self) -> bool:
         return self.archive is not None
 
+    def drive(self, vehicle: str) -> tuple[float, float] | None:
+        """The main gun's turret drive: its traverse and elevation speed (`speedYaw`, `speedPitch` of the first
+        `commonWeapons` weapon; degrees a second, before crew skills and modifications), None where not known."""
+        if self.archive is None or not vehicle:
+            return None
+        try:
+            b = self.archive.blk(f"gamedata/units/tankmodels/{vehicle.lower()}.blk")
+        except Exception:  # no such vehicle file: no drive
+            return None
+        cw = b.block("commonWeapons") if b is not None else None
+        for w in cw.blocks if cw else []:
+            yaw, pitch = w.get("speedYaw"), w.get("speedPitch")
+            if isinstance(yaw, (int, float)) and isinstance(pitch, (int, float)) and yaw > 0 and pitch > 0:
+                return float(yaw), float(pitch)
+        return None
+
     def _gun(self, blk_path: str) -> Gun:
         key = blk_path.lower().replace("\\", "/")
         if key in self._blks:
