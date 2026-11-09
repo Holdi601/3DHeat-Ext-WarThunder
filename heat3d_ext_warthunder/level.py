@@ -178,13 +178,14 @@ DEFAULT_MAX_OBJECT_TRIANGLES = 4_000_000
 #: heightmap samples, the rest of the tank map at `ring_step`, both coarser where the two would pass `ground`
 #: triangles (a heightmap finer than 2 m); `objects` is the placed objects' triangle budget,
 #: `per_object` the most triangles one object may have before a coarser LOD is taken; `terrain_mpp` the ground
-#: colour's metres per pixel; `density` the share of generated objects kept, by kind.
+#: colour's metres per pixel; `whole_grid` the samples a side of a level without a tank map (air maps), drawn
+#: whole at one step when `max_grid` is left at its default; `density` the share of generated objects kept, by kind.
 DETAIL = {
-    "low": {"core": 0.5, "core_step": 4, "ring_step": 8, "ground": 300_000, "objects": 1_200_000, "per_object": 1_500, "terrain_mpp": 4.0,
+    "low": {"core": 0.5, "core_step": 4, "ring_step": 8, "ground": 300_000, "objects": 1_200_000, "per_object": 1_500, "terrain_mpp": 4.0, "whole_grid": 1024,
             "density": {"trees": 0.35, "bushes": 0.2, "props": 0.5, "buildings": 1.0}},
-    "medium": {"core": 0.5, "core_step": 2, "ring_step": 4, "ground": 1_000_000, "objects": 3_500_000, "per_object": 4_000, "terrain_mpp": 2.0,
+    "medium": {"core": 0.5, "core_step": 2, "ring_step": 4, "ground": 1_000_000, "objects": 3_500_000, "per_object": 4_000, "terrain_mpp": 2.0, "whole_grid": 1024,
                "density": {"trees": 0.7, "bushes": 0.5, "props": 1.0, "buildings": 1.0}},
-    "high": {"core": 0.5, "core_step": 1, "ring_step": 2, "ground": 3_700_000, "objects": 4_500_000, "per_object": 12_000, "terrain_mpp": 1.0,
+    "high": {"core": 0.5, "core_step": 1, "ring_step": 2, "ground": 3_700_000, "objects": 4_500_000, "per_object": 12_000, "terrain_mpp": 1.0, "whole_grid": 2048,
              "density": {"trees": 1.0, "bushes": 1.0, "props": 1.0, "buildings": 1.0}},
 }
 DEFAULT_DETAIL = "medium"
@@ -721,20 +722,34 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
     tank_rect = _rect(blk, "tankMapCoord0", "tankMapCoord1") if blk is not None else None
     timings["maps"] = round(time.time() - t0, 1)
     ground_image = tank or air
-    if textures and terrain and tank_rect is not None and "lmap" in level.table:
+    # Without a tank map (air maps) the ground colour covers the air map's area, clipped to the heightmap (or the
+    # land mesh where there is none), at the coarser resolution the 4096-pixel cap gives (about 32 m over 131 km).
+    colour_rect = tank_rect
+    if colour_rect is None and air is not None and (level.heightmap is not None or level.landmesh is not None):
+        if level.heightmap is not None:
+            hm0 = level.heightmap
+            hh, hw = hm0.heights.shape
+            ext = (hm0.origin_x, hm0.origin_z, hm0.origin_x + (hw - 1) * hm0.cell, hm0.origin_z + (hh - 1) * hm0.cell)
+        else:
+            lv0 = level.landmesh.vertices
+            ext = (float(lv0[:, 0].min()), float(lv0[:, 2].min()), float(lv0[:, 0].max()), float(lv0[:, 2].max()))
+        r = (max(air.rect[0], ext[0]), max(air.rect[1], ext[1]), min(air.rect[2], ext[2]), min(air.rect[3], ext[3]))
+        colour_rect = r if r[2] > r[0] and r[3] > r[1] else None
+    if textures and terrain and colour_rect is not None and "lmap" in level.table:
         t1 = time.time()
         try:
             from .terrain import terrain_colour
 
-            img, info = terrain_colour(game, level.data, level.table, tank_rect, metres_per_pixel=preset["terrain_mpp"],
+            img, info = terrain_colour(game, level.data, level.table, colour_rect, metres_per_pixel=preset["terrain_mpp"],
                                        heightmap=level.heightmap, textures=game.textures(), log=None)
-            ground_image = MapImage("terrain", "land classes, ground decals and roads", tank_rect, img)
+            ground_image = MapImage("terrain", "land classes, ground decals and roads", colour_rect, img)
             from PIL import Image
 
             Image.fromarray(img).save(out_dir / f"{name}_terrain.png")
             info["file"] = f"{name}_terrain.png"
             record["parts"]["terrainColour"] = info
-            log(f"  terrain colour: {img.shape[1]}x{img.shape[0]} px over the tank map ({time.time() - t1:.1f} s)")
+            where = "the tank map" if tank_rect is not None else "the air map"
+            log(f"  terrain colour: {img.shape[1]}x{img.shape[0]} px over {where} ({time.time() - t1:.1f} s)")
         except Exception as e:  # the tactical map stands in
             record["parts"]["terrainColour"] = {"error": f"{type(e).__name__}: {e}"}
             log(f"  terrain colour: not made ({type(e).__name__}: {e}); the tactical map is used")
@@ -756,6 +771,8 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
         elif blk is not None:
             fine_rect = tank_rect
         window = _sample_window(hm, fine_rect) if fine_rect else None
+        if tank_rect is None and max_grid == DEFAULT_MAX_GRID:
+            max_grid = preset["whole_grid"]
         whole_step = max(1, int(np.ceil(max(w, h) / max_grid)))
         if tank_rect is not None and _sample_window(hm, tank_rect):
             _add_rings(geo, hm, name, tank_rect, preset, whole_step, ground_image, air, ground_colour, record)
@@ -793,7 +810,7 @@ def build(game: Game, level_path: Path, out_dir: Path, *, max_grid: int = DEFAUL
             if n[:, 1].sum() < 0:
                 f = f[:, [0, 2, 1]]
         part = f"ground:{name}" if hm is None else f"ground:{name} land mesh"
-        _add_textured(geo, part, v, f, air, ground_colour)
+        _add_textured(geo, part, v, f, ground_image if hm is None else air, ground_colour)
         mn, mx = lm.vertices.min(0), lm.vertices.max(0)
         extents.append((float(mn[0]), float(mn[2]), float(mx[0]), float(mx[2])))
         record["parts"]["landMesh"] = {"triangles": int(len(f)), "of": int(len(lm.faces)),

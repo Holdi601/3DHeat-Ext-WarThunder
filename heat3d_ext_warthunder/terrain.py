@@ -803,6 +803,43 @@ def _class_look(tex: Textures, lc: LandClass, max_size: int) -> _ClassLook:
     return _ClassLook(cm_lin, np.clip(base * dm * COLOUR_MULTIPLIER, 0, 1), splat_f, details)
 
 
+def _box_down(img: np.ndarray, size_m: tuple[float, float], mpp: float) -> np.ndarray:
+    """`img` (h, w, c) repeating over `size_m` metres, averaged down by a power of two to about `mpp` metres a texel."""
+    h, w = img.shape[:2]
+    ratio = min(mpp * w / size_m[0], mpp * h / size_m[1])
+    f = 1
+    while f * 2 <= ratio and w % (f * 2) == 0 and h % (f * 2) == 0:
+        f *= 2
+    if f == 1:
+        return img
+    return img.reshape(h // f, f, w // f, f, -1).mean(axis=(1, 3)).astype(np.float32)
+
+
+def _prefilter(look: _ClassLook, lc: LandClass, mpp: float) -> _ClassLook:
+    """The look with its tiled textures averaged down to the image's pixel size, so a coarse image (an air map at
+    32 m a pixel) samples their mean instead of aliasing into a moire of the tile. Unchanged where texels are
+    already as large as a pixel."""
+    size_m = (1.0 / lc.tile[0], 1.0 / lc.tile[1])
+    if look.indices is not None:
+        h, w = look.indices.shape
+        if min(mpp * w / size_m[0], mpp * h / size_m[1]) < 2:
+            return look
+        d = look.index_colours[look.indices].astype(np.float32)
+        if look.colormap is not None:
+            u = (np.arange(w) + 0.5) / w
+            v = (np.arange(h) + 0.5) / h
+            gu, gv = np.meshgrid(u, v)
+            d = d * _sample_wrap(look.colormap, gu, gv)
+        else:
+            d = d / COLOUR_MULTIPLIER
+        # an ordinary look whose colour map already holds colour map x detail
+        return _ClassLook(_box_down(d, size_m, mpp), look.mean, None, np.ones((4, 3), np.float32))
+    if look.colormap is None:
+        return look
+    splat = _box_down(look.splat, size_m, mpp) if look.splat is not None else None
+    return _ClassLook(_box_down(look.colormap, size_m, mpp), look.mean, splat, look.details)
+
+
 def _class_colour(look: _ClassLook, lc: LandClass, x: np.ndarray, z: np.ndarray) -> np.ndarray:
     """The land class's linear colour at game (x, z)."""
     if look.indices is not None:
@@ -1025,7 +1062,7 @@ def terrain_colour(game, data: bytes, table: dict, rect: tuple[float, float, flo
     if detail is None:
         raise TerrainError("the level has no land mesh, so no land classes")
     tex = textures or Textures(game.root)
-    looks = [_class_look(tex, lc, texture_size) for lc in detail.classes]
+    looks = [_prefilter(_class_look(tex, lc, texture_size), lc, mpp) for lc in detail.classes]
     info["landClasses"] = [{"name": lc.name, "colormap": tex.clean(lc.colormap or "") or None,
                             "size": [1 / lc.tile[0], 1 / lc.tile[1]],
                             "mean": [round(float(v), 3) for v in linear_to_srgb(lk.mean)]}

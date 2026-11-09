@@ -639,10 +639,10 @@ The install is found through Steam or the launcher's default folders;
 
 | Part | What it is |
 |---|---|
-| `ground:<level>` | the terrain heightmap (`HM2`) as a grid; on ground maps the middle of the tank map (half its width) at the `--detail`'s step, coloured with the land classes, ground decals and roads (`<level>_terrain.png`; the tactical map where that cannot be made); on maps without a tank map, the air map's area at full detail, textured with the tactical map; on levels without a heightmap, the land mesh |
+| `ground:<level>` | the terrain heightmap (`HM2`) as a grid; on ground maps the middle of the tank map (half its width) at the `--detail`'s step, coloured with the land classes, ground decals and roads (`<level>_terrain.png`; the tactical map where that cannot be made); on maps without a tank map (air maps), the whole heightmap at one step (2048 samples a side at `high`, 1024 otherwise), coloured with the land classes over the air map's area (4096 pixels a side, about 32 m a pixel over 131 km; the tactical map where that cannot be made); on levels without a heightmap, the land mesh |
 | `ground:<level> tank map` | the rest of the tank map, one step coarser |
 | `ground:<level> heightmap surroundings` | the rest of the heightmap, coarser still |
-| `ground:<level> land mesh` | the land mesh's collision triangles where the heightmap does not reach (the surroundings of a tank map, out to tens of kilometres) |
+| `ground:<level> land mesh` | the land mesh's collision triangles where the heightmap does not reach (the surroundings of a tank map, out to tens of kilometres); on levels with no heightmap it is the ground, coloured as above |
 | `ground:<level> outside the map` | ground the image does not cover, untextured |
 | `water:<level>` | one flat rectangle at the level's `water_level` over all the terrain: the game draws water as one plane, and low ground under it is sea, lake or river bed |
 | `water:<level> rivers` | on levels with a water heightmap (`WHM`), the sloping water surface over the cells it covers |
@@ -678,7 +678,8 @@ the ones the game itself would draw from one viewing distance, the shortest
 whose total fits the budget: small props drop to coarse LODs first and large
 buildings last, by the ranges their makers gave each LOD (the JSON's
 `lodDistance`); what that step saves beyond the budget goes back to the largest
-objects. If even the coarsest LODs do not fit, the trees that save most become
+objects. Coarse ground colour (air maps) averages each land class's tiled textures down to the pixel size first, so
+the tiles do not alias into a moire. If even the coarsest LODs do not fit, the trees that save most become
 crowns, and then the smallest types are left out (`leftOut`); no object is ever
 drawn as a box.
 Generated objects are thinned deterministically by kind (`density`), the same
