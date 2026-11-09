@@ -26,10 +26,11 @@ time: the install is found through Steam or the launcher's default folders, or
 `--game` / `HEAT3D_WT_GAME`. Nothing of the game's text is in this repository;
 without an install the names are the vehicle ids.
 
-Each battle becomes `out/<map>/<map>_<AB|RB|SB>_<start, UTC>_<session id>.parquet` and
-`.match.json` (and the two sidecars named alike): AB, RB and SB are the game's own short forms of arcade,
-realistic and simulator battles (see [Battle mode](#battle-mode)); the part is left out where the header
-names no difficulty. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
+Each battle becomes `out/<map>/<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>.parquet` and
+`.match.json` (and the three sidecars named alike): AB, RB and SB are the game's own short forms of arcade,
+realistic and simulator battles, `<mode>` the mission's mode as the game keys it (`Conq4` Conquest #4, `Dom`
+Domination, `Bttl` Battle; see [Battle mode](#battle-mode)); either part is left out where the header
+names none. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
 together as one battle; a client replay and the server's parts of the same
 battle are two recordings and stay two. The command prints `ok <table> <summary>`
 or `failed <file>: <why>` per battle and exits 1 when any failed.
@@ -79,14 +80,15 @@ reading instructions, so the viewer needs no form filled in.
 | `match` | the match id (the match document's `match`), on every row; the hints map it as the session, so two loaded replays never join tracks |
 | `life` | `uid#n`: one unit's track, cut where the uid passes to another unit, the unit moves faster than it can (a respawn, a rearm, the game moving it, the client correcting a distant unit; see below) or is long unseen; `w<hex>` a weapon's flight (`w<hex>#n` after a cut) |
 | `uid` | the unit's id in the replay |
-| `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`; weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned`; `camera` the recording player's replay camera (see [The camera](#the-camera)) |
+| `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`, `train` (a tram or rail wagon the level places, see [Scene units](#scene-units-trams-and-rail-wagons)); weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned`; `camera` the recording player's replay camera (see [The camera](#the-camera)) |
 | `type` | the game's own type where the results name it (`fighter`, `assault`, `destroyer`, `gun_boat`), else as `kind` |
 | `Vehicle` | the game's vehicle id (`f_15a`, `germ_flakpz_I_Gepard`), which the viewer's figures match |
 | `VehicleName`, `VehicleShortName`, `VehicleNameKey` | the vehicle's English name from your install's localisation (`Pz.Kpfw. III Ausf. J1`, short `Pz.III J1`) and its key (`germ_pzkpfw_III_ausf_J_0`); the game font's country marks are left out. Where the game names nothing, or no install is found, the name is the id and the key empty |
 | `mission` | the unit's name in the mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | where the unit points (the look vector): aircraft from the flight model's attitude, ground units and ships from their own, weapons along their flight |
 | `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below; a ground unit's right side down). The hints say so under `conventions` |
-| `turretYaw`, `gunPitch`, `turrets` | a tank's main turret: its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks; not ships (see [Turrets](#turrets)) |
+| `turretYaw`, `gunPitch`, `turrets` | a tank's main turret as the game simulates it - where the gun really points, not where its player looks: its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks, in client and server replays; not ships (see [Turrets](#turrets)) |
+| `viewYaw`, `viewPitch` | where the player looks (aims with the camera) in the world: compass degrees (0 north, clockwise) and degrees up, the same convention as `aimHeading` / `aimPitch` (unlike `turretYaw` / `gunPitch`, which stay relative to the hull). Every player's tank in a server replay, the recording player's own in a client replay; empty where the player aims nowhere (all four aim floats 0). The turret follows it at its own traverse speed, so the two differ while it turns (see [Turrets](#turrets)) |
 | `aimHeading`, `aimPitch`, `aimDistance` | the recording player's own tank: where it aims (compass degrees, degrees up, the distance in m; 2000 when nothing is in the sight); camera rows: where the player aims (heading, pitch) |
 | `zoom` | camera rows: the camera's magnification (see [The camera](#the-camera)) |
 | `difficulty`, `gameMode` | the battle's `AB`, `RB` or `SB`, and `ground`, `air` or `naval`, on every row (see [Battle mode](#battle-mode)) |
@@ -117,6 +119,7 @@ mission, battle class, session id, start time and author, and:
 | `players`, `slots` | the results' line per player (kills, ground kills, deaths, assists, score, captures, squad, clan, country, line-up, the uids they drove); the replay's player slots (name, user id, team) |
 | `units` | every unit entity the replay created: eid, uid, template, vehicle, kind, type, team, player, mission name, when it was created and removed, where it was created, which components could not be read |
 | `objects` | the mission's named objects: capture zones and airfields with their position and size, airfields' outlines as points, spawn areas |
+| `objectives` | the battle's objectives, each `type` (`capture_zone`, `airfield`, `helipad`, `base`, `spawn`, `convoy_spawn`, `battle_area`, `bombing_target`, `exit_zone`, `kill_area`, `rearm_zone`), `team` (the replay's 1 or 2, empty for both), `name` (a capture zone its letter, `A`), `shape` (`sphere`, `cylinder`, `box`, `point`, `points`, `outline`) with `position`, `radius` / `height` / `size` and `heading`, `source` (`replay` or `mission`) and what else is known (see [Objectives](#objectives)) |
 | `kills`, `hits`, `modulesDestroyed` | with names and vehicles of both sides; kills with the weapon's English name |
 | `weapons` | every rocket, missile, bomb, torpedo, drop tank and jettisoned load: when, where released (position, attitude, velocity), by which unit (the nearest within 300 m and 1.5 s), how many flight samples, where last seen, when removed |
 | `explosions`, `flak` | `PlayExplosionVisual` (position, direction, kind) and `PlayFlakExplosionVisual` (position) |
@@ -192,7 +195,7 @@ an entity alive at that moment. Read from them:
 
 | Message | What, and the check |
 |---|---|
-| 0xF0E9 UnitHitEffects | one projectile's hit on the unit: the shooter's uid and the hit point in the unit's frame (int16 cm; x forward, y up, z left). Becomes a `shot` row (below). Of the hit and kill records with these messages on the victim in the 3 s before, the record's attacker is among their shooters in 147 of 148, 97 of 99, 222 of 223 and 355 of 359; shooter-to-hit range median 309 m, 99th percentile 952 m (arcade); the hit points lie on the side facing the shooter |
+| 0xF0E9 UnitHitEffects | one projectile's hit on the unit: the shooter's uid and the hit point in the unit's frame (three int16; x forward, y up, z left): cm on aircraft and ships, on ground units a fraction of 20 m (20/32768 m a step: fitted on the ten ground test battles, the hits' top lies 1,520-1,640 steps above the origin for turret roofs 2.2-2.7 m high and their sides 1,620-1,930 steps out for half-widths of 1.75-1.88 m, five tank families; 1,638 steps a metre. Read as mm, as before, the points lay 1.6 times too far out). `hitLocalX/Y/Z` in m. Becomes a `shot` row (below). Of the hit and kill records with these messages on the victim in the 3 s before, the record's attacker is among their shooters in 147 of 148, 97 of 99, 222 of 223 and 355 of 359; shooter-to-hit range median 309 m, 99th percentile 952 m (arcade); the hit points lie on the side facing the shooter |
 | 0xF133 UnitOnExplosion | the same shooter uid (used in the check) |
 | 0xF04B OnUnitDead | `dead` rows: every kill record's victim has one within 2 s (97 of 97, 63 of 63, 112 of 112, 219 of 219); the others are deaths without a kill record (crashes, ground targets) |
 | 0xD047 FmwRpm | the engines' rpm: the `rpm` column. The recording player's against its own cockpit instrument 93: correlation 0.973 to 0.996, median 4.6 to 8 rpm apart |
@@ -220,6 +223,10 @@ Next to each table, so that nothing of the replay is lost to it:
   (with its entity and class number), every replicated object of 0xF02D and
   0xF0AA (`ReflectionData <kind>/<index>`, its fields as hex) and every
   packet no reader here takes, whole.
+- `<match>.objectives.parquet`: the capture zones over time, one row per change the server sent: `time`,
+  `event` (`state`, `progress`, `captured`, `neutralised`), `zone` (its letter), `zoneId`, `object`, `owner`
+  (0 none, 1, 2), `progress` (-100..100, positive towards team 2), the zone's `x`, `y`, `z`, and all `fields`
+  of the object as hex (see [Objectives](#objectives)).
 - `<match>.flight.parquet`: every flight-model entry of every aircraft whole
   (its bits, and `phase`: the bit of its first byte it started at), with its
   velocity, the 14 nibbles after it (`control1-3`, `throttle`), its engines
@@ -469,6 +476,26 @@ hull, up positive. An unused weapon's slot reads 0 and 0 exactly. Checked:
   twice (2000 m when nothing is in the sight). The hull's heading plus the turret's yaw lies within 0.44
   degrees (median) of that heading over 4,870 samples (an air-to-ground battle's M8).
 
+**Server replays** (0xF074) send every tank's state in the same layout, followed by data of their own (ammunition
+counts and more), so the state's length no longer fits the client's and before this every server-replay tank but a
+few came without turrets (2 % of tank rows in the first ground test battle). Every turret whose two angles lie
+inside the state is now read (at least the main one: 98 % of tank rows). It is the turret, not the camera:
+
+- **The shots**: the main gun's world direction at each hit against the line to the unit hit (as above): over the
+  ten ground server test battles, 15,508 shots, per battle 91-98 % within 3 degrees in heading and 99-100 % in
+  elevation (`selfCheck.turretsVsShots`).
+- **The view**: a server replay sends every player's aim (`viewYaw`, `viewPitch`; turned into the hull's frame
+  for this check). The turret's yaw lies within 0.14-0.41 degrees (median per battle) of the view's, but not
+  while it turns: over half a second the view swings at up to 294-357 degrees a second (99th percentile 95-130),
+  the turret at most 71-224 (99th percentile 31-73, which includes the hull's own turn of up to 50-85 degrees a
+  second; the vehicles' turret drives in the install turn 24-45 degrees a second before crew skills). A turret
+  that copied the camera would turn as fast as the camera (`selfCheck.turretVsView`).
+
+So `turretYaw` / `gunPitch` are measured, not made up: no simulated turret is needed where they exist, and none is
+added where they do not (a tank whose state carries no turret has empty turret columns; the viewer may fall back to
+`viewYaw`). `gunPitch` lies a little above `viewPitch` at range (median 1.9 degrees apart in the first battle):
+the gun's elevation for the shell's drop, which the view does not have.
+
 Ships' states have another layout after the position; their turrets are not read (the tank layout fits some of
 their states by length, and its "main gun" points 63 degrees away from their shots, so ships get no turret
 columns). Other units' look directions: aircraft send no head or view direction; the AA guns' 0xD020
@@ -508,7 +535,51 @@ simulator (SB). Checked on the 104 replays: the two air simulator battles read 1
 the 100 ground battles 99 read 5 and one 0 - and that one alone names the arcade killstreak aircraft in the
 header's `killStreaks` (`killStreaksAircraftOrHelicopter_1`; the realistic ones leave it empty). The game mode is `ground` when the mission lets tanks
 spawn, else `naval` when it lets ships, else `air` (`allowedUnitTypes`); the mission's own mode comes from its
-key (`missions/_Dom`), named from your install's `lang/missions_versus.csv`.
+key (`missions/_Dom`), named from your install's `lang/missions_versus.csv`. The same key is the `<mode>` part of
+the file names and the match id (`Conq4`, `Dom`), left out where the header has none.
+
+### Objectives
+
+`objectives` in the match document lists what the battle is fought over, from two sources (`source`):
+
+- **The replay** (`replay`): the mission objects 0xD039 names (capture zones `cz_circle_NN`, airfields, helipads,
+  bases), placed where the replicated objects of kind 3 (0xF02D) put them now - a capture zone starts at its
+  template's place and is moved to this mode's zone at the start (`moved`). Kind 3's numbers follow 0xD039's order;
+  every object that is not moved lies exactly where 0xD039 has it, which checks the order. A capture zone gets the
+  shape and radius of the mission area at its place (`area`, within 2 m) and its letter from its own index (kind
+  5 field 69: 0 = A); the letter order is the replay's, not checked against the game's map.
+- **The mission** (`mission`): the mission file `<mission>.blk` in your install's `mis.vromfs.bin` and the
+  templates it imports (read only, at conversion time): its areas, classed by name - spawns (a spawn's numbered
+  points `..._spawnareaNN` as one `points` spawn), battle areas, bombing targets (`bomb_zone`), convoy spawn
+  points (`road_NN_spawn`), exit and kill areas. Areas of another mode of the same map (`conq_`, `dom_`, `bttl_`,
+  ...) are left out, and of `_arcade` / `_realistic` / `_hardcore` variants the battle's own (RB takes
+  `_realistic`, else `_hardcore`, as the mission scripts do); briefing markers, AA gun points and areas wider than
+  5 km (the areas spawns are scattered over) too. Each spawn says how many players' tracks began in it (`used`,
+  `usedByTeam`). A mission may swap its sides at random (`randomSpawnTeams`): when the spawns show the replay's
+  teams the other way round, every `team` is swapped and the name's side kept as `missionTeam`. Convoy routes are
+  not in the missions' waypoints as read; only where convoys appear is given.
+
+The capture zones over time are the sidecar `<match>.objectives.parquet`: the replicated objects of kind 5, one
+per zone - field 2 its owner (0, 1, 2), field 67 its capture progress, a signed byte from -100 to 100 (positive
+towards team 2), field 69 its index. Checked (`selfCheck.objectives`) on the ten ground server test battles
+(Conquest #1, #2, #4 and Domination): all 43 owner changes come with a player of the capturing team gaining a
+`captureZone` in the scoreboard at the same moment (within 1.5 s) and with a living ground unit of that team inside
+the zone; every battle's spawns show the replay's teams one way only (6 of 10 swapped against the mission's
+`t1_` / `t2_`).
+
+### Scene units: trams and rail wagons
+
+A level can place units of its own: the `unit_loader+rail_wagon` entities of a server replay are the trams of the
+level's scene file (`gamedata/scenes/<level>_objects.blk` in `aces.vromfs.bin`: `setting__unit_class`, its
+transform and `setting__isDead`). Their entities carry no readable uid, so a ground track without a unit entity
+whose first sample lies within 2 m of a scene unit is that unit: its class as `Vehicle`, kind `train`, type
+`tram`, `locomotive` or `wagon`, no team; a unit the scene places dead (all of them in the test battles: burnt-out
+trams) is a wreck (`alive` 0) from its first row. The game has no English name for them; `VehicleName` is the id
+read as words ("Railway tram A"). Their positions do not wobble: of the 29 in the first test battle, 28 never move
+(every sample the same to the bit) and one is pushed 0.3 m once. The replay sends them about ten times a second
+regardless, so of their samples only those that move them (0.05 m or 0.1 degrees) are kept, and one every 10 s
+(`selfCheck.sceneUnits`: 114,644 samples dropped in the first battle). Before, they were tracks named `uid 8`
+with no vehicle.
 
 ### Gunfire
 

@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import arsenal, ecs, names as vehicle_names, wrpl
+from . import arsenal, ecs, names as vehicle_names, objectives as mission_objectives, wrpl
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
 AIR_TYPES = {"fighter", "assault", "bomber", "helicopter", "attack_helicopter", "utility_helicopter", "aircraft"}
@@ -82,7 +82,8 @@ HINTS = {
                   "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
-                  "turrets", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty", "gameMode"],
+                  "turrets", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
+                  "gameMode"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -90,6 +91,9 @@ HINTS = {
                             "right side down, checked against their shots)",
                     "turretYaw": "degrees relative to the hull, clockwise seen from above positive, 0 straight ahead",
                     "gunPitch": "degrees relative to the hull, up positive",
+                    "viewYaw": "where the player looks: compass degrees in the world, clockwise from north, as "
+                               "aimHeading (not relative to the hull)",
+                    "viewPitch": "where the player looks: degrees up in the world, as aimPitch",
                     "camera": "kind 'camera' rows: the recording player's replay camera, its own track"},
 }
 
@@ -181,6 +185,8 @@ COLUMNS = [
     ("turretYaw", "f32"),
     ("gunPitch", "f32"),
     ("turrets", "str"),
+    ("viewYaw", "f32"),
+    ("viewPitch", "f32"),
     ("aimHeading", "f32"),
     ("aimPitch", "f32"),
     ("aimDistance", "f32"),
@@ -1700,6 +1706,10 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
                            turrets=";".join(f"{y:.2f} {q:.2f}" for y, q in s.turrets))
             if s.aim is not None and all(math.isfinite(v) for v in s.aim[:3]):
                 row.update(aimHeading=(90.0 - s.aim[0]) % 360, aimPitch=s.aim[1], aimDistance=s.aim[2])
+                # Where the player looks, as a world compass heading and pitch like aimHeading / aimPitch; all four
+                # floats 0: the player aims nowhere (not yet in the vehicle), no view then.
+                if life.figure not in NO_TURRETS and s.aim[2] > 0:
+                    row.update(viewYaw=row["aimHeading"], viewPitch=s.aim[1])
             out.append(row)
         gone = life.gone(end)
         if gone is not None:
@@ -1979,8 +1989,13 @@ UNIT_EVENTS = {
 
 #: Unit kinds whose 0xF0E9 hit point is in their own frame, in cm (checked on aircraft and ships).
 IN_FRAME_KINDS = {"aircraft", "helicopter", "ship", "boat"}
-#: Ground units: their point is in mm, and taken only within GROUND_REACH m of the unit's origin each way.
+#: Ground units: their point is a signed 16-bit fraction of GROUND_RANGE m (a step of 20/32768 m, 0.61 mm), and taken
+#: only within GROUND_REACH m of the unit's origin each way. Fitted on the ten ground test battles (5,000 tank hits
+#: of five tank families): the hits' top (97th percentile up) lies 1,520-1,640 steps above the origin for turret
+#: roofs 2.2-2.7 m high, their sides (97th percentile across) 1,620-1,930 steps out for half-widths of 1.75-1.88 m;
+#: 32768 / 20 = 1,638 steps a metre. Read as mm (a step of 1 mm, as before), the points lay 1.6 times too far out.
 GROUND_KINDS = {"tank", "apc", "spaa", "truck"}
+GROUND_RANGE = 20.0
 GROUND_REACH = 6.0
 
 
@@ -1997,6 +2012,18 @@ def _basis(s: Sample) -> tuple[tuple[float, ...], tuple[float, ...], tuple[float
     right = tuple(right0[k] * c - up0[k] * sn for k in range(3))
     up = tuple(up0[k] * c + right0[k] * sn for k in range(3))
     return fwd, up, right
+
+
+def _in_hull(s: Sample, heading: float, pitch: float) -> tuple[float, float] | None:
+    """A world direction (compass heading, pitch; degrees) in the unit's own frame: its yaw (clockwise seen from
+    above positive, 0 straight ahead) and pitch (up positive) relative to the hull, as `turretYaw` and `gunPitch`."""
+    b = _basis(s)
+    if b is None:
+        return None
+    h, p = math.radians(heading), math.radians(pitch)
+    d = (math.sin(h) * math.cos(p), math.sin(p), math.cos(h) * math.cos(p))
+    f, u, rt = (sum(a[k] * d[k] for k in range(3)) for a in b)
+    return round(math.degrees(math.atan2(rt, f)), 3), round(math.degrees(math.asin(max(-1.0, min(1.0, u)))), 3)
 
 
 def _rotate(s: Sample, local: tuple[float, float, float]) -> tuple[float, float, float] | None:
@@ -2092,13 +2119,13 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
             # An aircraft's and a ship's hit point is in the unit's own frame, whatever the byte read as `aligned`
             # (the high byte of the part number: ships' "unaligned" points lie inside their hulls, 95% within
             # 41 m along, 9 m up, 4.6 m across a destroyer, as many facing the shooter as the "aligned" ones).
-            # A ground unit's comes in millimetres, not centimetres (as read it lay 25-40 m off a 7 m tank; a
-            # tenth of that, 83% of 6,077 tank hits lie on the side facing a shooter 30 m or more away, 83% within
-            # 5 m): taken where it lies on the hull (within 6 m each way), else the unit's centre.
+            # A ground unit's is not in centimetres (as read it lay 25-40 m off a 7 m tank) but a 16-bit fraction of
+            # GROUND_RANGE (see there; 83% of 6,077 tank hits lie on the side facing a shooter 30 m or more away):
+            # taken where it lies on the hull (within 6 m each way), else the unit's centre.
             local = hit["local"]
             kind = victim.figure if victim is not None else ""
             if kind in GROUND_KINDS:
-                local = tuple(c / 10 for c in local)
+                local = tuple(c * 100 * GROUND_RANGE / 32768 for c in local)
             in_frame = kind in IN_FRAME_KINDS or (kind in GROUND_KINDS and max(abs(c) for c in local) <= GROUND_REACH)
             if vs is not None:
                 target = (_rotate(vs, local) if in_frame else None) or (vs.x, vs.y, vs.z)
@@ -2493,7 +2520,7 @@ def fire_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]], d
 #: Figures whose ground states are not read for turrets: ships and boats send another layout after the position
 #: (on the naval battle the tank layout fits some of their states by length, and the "main gun" then points
 #: 63 degrees (median) away from their shots).
-NO_TURRETS = {"ship", "boat", "structure"}
+NO_TURRETS = {"ship", "boat", "structure", "train"}
 #: The camera's rows: one at most this often (s); every message stays in the messages sidecar.
 CAMERA_STEP = 0.1
 
@@ -2849,23 +2876,29 @@ def battle_mode(r: Replay, missions: vehicle_names.Missions | None = None) -> di
     allowed = r.settings.get("allowedUnitTypes") if isinstance(r.settings.get("allowedUnitTypes"), dict) else {}
     game = ("ground" if allowed.get("isTanksAllowed") else "naval" if allowed.get("isShipsAllowed") else
             "air" if allowed else "")
-    key = re.search(r"missions/_([A-Za-z0-9]+)", r.header.get("locName") or "")
-    name = missions.lookup(f"missions/_{key.group(1)}")[0] if key and missions else ""
+    mode = mission_mode(r.header)
+    name = missions.lookup(f"missions/_{mode}")[0] if mode and missions else ""
     diff = difficulty(r.header)
     return {"difficulty": diff, "difficultyName": DIFFICULTY_NAMES.get(diff, ""),
             "difficultyByte": r.header.get("difficulty"), "gameMode": game,
-            "missionMode": key.group(1) if key else "", "missionModeName": name,
+            "missionMode": mode, "missionModeName": name,
             "allowedUnitTypes": allowed}
 
 
+def mission_mode(h: dict[str, Any]) -> str:
+    """The mission's mode from its key (`missions/_Conq4;...` -> `Conq4`, `Dom`, `Bttl`); "" when it names none."""
+    key = re.search(r"missions/_([A-Za-z0-9]+)", h.get("locName") or "")
+    return key.group(1) if key else ""
+
+
 def match_name(h: dict[str, Any]) -> str:
-    """`<map>_<difficulty>_<start, UTC>_<session id>` (`_server` for a server replay); the difficulty is left out
-    where the header names none."""
+    """`<map>_<difficulty>_<mode>_<start, UTC>_<session id>` (`_server` for a server replay); the difficulty and the
+    mode (`mission_mode`: `Conq4`, `Dom`) are left out where the header names none."""
     when = datetime.fromtimestamp(h["startTime"], tz=timezone.utc).strftime("%Y-%m-%d_%H-%M-%S") if h.get(
         "startTime") else "unknown"
-    diff = difficulty(h)
-    return (f"{h['map'] or 'unknown'}{'_' + diff if diff else ''}_{when}_{h['sessionId']}"
-            f"{'_server' if h.get('server') else ''}")
+    diff, mode = difficulty(h), mission_mode(h)
+    return (f"{h['map'] or 'unknown'}{'_' + diff if diff else ''}{'_' + mode if mode else ''}_{when}_"
+            f"{h['sessionId']}{'_server' if h.get('server') else ''}")
 
 
 def _rate(all_lives: list[Life], kind: str) -> float | None:
@@ -2996,6 +3029,200 @@ def _turret_check(table_rows: list[dict[str, Any]], all_lives: list[Life]) -> di
             "headingWithin3Deg": round(sum(x <= 3 for x in dh) / len(dh), 3),
             "elevationMedianDeg": round(de[len(de) // 2], 2),
             "elevationWithin3Deg": round(sum(x <= 3 for x in de) / len(de), 3)}
+
+
+def _turret_view_check(all_lives: list[Life], window: float = 0.5) -> dict[str, Any]:
+    """
+    The turret against where its player looks (a server replay sends both for every player's tank): how far the
+    turret's yaw lies from the view's (`viewYaw`, both relative to the hull), and how fast each turns over `window`
+    seconds (deg/s; 99th percentile and highest). A turret read from the replay turns no faster than its drive
+    (plus the hull's turn where the gun is stabilised); a camera can swing at any speed. Samples while the unit is
+    alive only.
+    """
+    diffs: list[float] = []
+    rates: dict[str, list[float]] = {"turret": [], "view": []}
+    for life in all_lives:
+        if life.kind != "ground" or life.figure in NO_TURRETS:
+            continue
+        both = []
+        for s in life.samples:
+            if not s.turrets or s.aim is None or (life.died is not None and s.t >= life.died):
+                continue
+            if not all(math.isfinite(v) for v in s.aim[:3]) or s.aim[2] <= 0:
+                continue
+            view = _in_hull(s, (90.0 - s.aim[0]) % 360, s.aim[1])
+            if view is not None:
+                both.append((s.t, s.turrets[0][0], view[0]))
+                diffs.append(abs((s.turrets[0][0] - view[0] + 180) % 360 - 180))
+        ts = [b[0] for b in both]
+        for i, (t, ty, vy) in enumerate(both):
+            j = bisect.bisect_left(ts, t + window)
+            if j >= len(both) or ts[j] - t > window + 0.1:
+                continue
+            dt = ts[j] - t
+            rates["turret"].append(abs((both[j][1] - ty + 180) % 360 - 180) / dt)
+            rates["view"].append(abs((both[j][2] - vy + 180) % 360 - 180) / dt)
+    if not diffs:
+        return {}
+    diffs.sort()
+    out: dict[str, Any] = {"samples": len(diffs), "yawApartMedianDeg": round(diffs[len(diffs) // 2], 2),
+                           "yawApartP90Deg": round(diffs[int(len(diffs) * 0.9)], 1),
+                           "yawWithin3Deg": round(sum(x <= 3 for x in diffs) / len(diffs), 3)}
+    for k, v in rates.items():
+        if v:
+            v.sort()
+            out[f"{k}RateP99DegS"] = round(v[int(len(v) * 0.99)], 1)
+            out[f"{k}RateMaxDegS"] = round(v[-1], 1)
+    return out
+
+
+def objectives(r: Replay, all_lives: list[Life], doc: dict[str, Any], game: str | None = None
+               ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    """
+    The battle's objectives (see objectives.py): the mission objects the replay sends, the mission file's areas of
+    this mode and difficulty from the install (not read when `HEAT3D_WT_NO_NAMES` is set, as in the tests), the
+    capture zones' states over time as rows for the sidecar, and the check of the captures: each owner change
+    against the scoreboard (a player of that team gaining a `captureZone` within 1.5 s) and against the tracks (a
+    living ground unit of that team within the zone's radius and 15 m).
+    """
+    import os
+
+    from .install import find_game
+
+    mode, battle = doc["battle"]["missionMode"], doc["battle"]
+    root = None if os.environ.get("HEAT3D_WT_NO_NAMES") else find_game(game)
+    areas, mfile = mission_objectives.mission_areas(root, str(r.header.get("battleType") or ""), battle["gameMode"])
+    objs, rows = mission_objectives.replay_objectives(r.reflection, list(r.objects.values()))
+    mission_objectives.match_zones(objs, areas)
+    from_mission = mission_objectives.mission_objectives(areas, mode, battle["difficulty"])
+    if any(o["type"] == "capture_zone" for o in objs):
+        from_mission = [o for o in from_mission if o["type"] != "capture_zone"]
+    have = {o["name"] for o in objs}
+    objs += [o for o in from_mission if o["name"] not in have]
+    starts = [(life.team, life.samples[0].x, life.samples[0].y, life.samples[0].z) for life in all_lives
+              if life.samples and life.is_player and life.figure not in NO_TURRETS]
+    mission_objectives.spawn_use(objs, starts)
+    teams = mission_objectives.replay_teams(objs)
+    # The scoreboard's capture moments: a player's captureZone count rising.
+    gains: list[tuple[float, str]] = []
+    slot_team = {int(k): str(v.get("team") or "") for k, v in r.slots.items() if isinstance(v, dict)}
+    for p in (doc.get("scoreboard") or {}).get("players") or []:
+        prev = 0
+        for s in p.get("series") or []:
+            c = s.get("captureZone") or 0
+            if c > prev:
+                gains.append((s["time"], slot_team.get(p.get("slot"), "")))
+            prev = c
+    zones = {o["name"]: o for o in objs if o["type"] == "capture_zone" and o["source"] == "replay"}
+    caps = [row for row in rows if row["event"] == "captured"]
+    by_score = inside = 0
+    for row in caps:
+        team = str(row["owner"])
+        if any(abs(t - row["time"]) <= 1.5 and (not tm or tm == team) for t, tm in gains):
+            by_score += 1
+        z = zones.get(row["zone"])
+        reach = (z.get("radius") or 0.0) + 15.0 if z else 15.0
+        for life in all_lives:
+            if life.kind != "ground" or life.team != team or (life.died is not None and life.died <= row["time"]):
+                continue
+            s = _at_time(life, row["time"], 3.0)
+            if s is not None and math.hypot(s.x - row["x"], s.z - row["z"]) <= reach:
+                inside += 1
+                break
+    check = {"mode": mode, "missionFile": mfile, "missionAreas": len(areas), "objectives": len(objs),
+             "byType": dict(Counter(o["type"] for o in objs)), "zoneRows": len(rows), "captures": len(caps),
+             "capturesInScoreboard": by_score, "scoreboardCaptureMoments": len({round(t, 1) for t, _ in gains}),
+             "capturesWithTeamInZone": inside,
+             "spawnsUsed": sum(1 for o in objs if o.get("used")),
+             "spawnsUsedByOtherTeam": sum(1 for o in objs if o.get("team") and any(
+                 k != str(o["team"]) for k in (o.get("usedByTeam") or {}))), "teams": teams}
+    return objs, rows, check
+
+
+def objectives_table(rows: list[dict[str, Any]]):
+    """The capture zones' states over time (see objectives.py): one row per replicated change."""
+    import pyarrow as pa
+
+    def col(k: str) -> list[Any]:
+        return [row.get(k) for row in rows]
+
+    return pa.table({
+        "time": pa.array(col("time"), pa.float64()),
+        "event": pa.array(col("event"), pa.string()),
+        "zone": pa.array(col("zone"), pa.string()),
+        "zoneId": pa.array(col("zoneId"), pa.int32()),
+        "object": pa.array(col("object"), pa.string()),
+        "owner": pa.array(col("owner"), pa.int32()),
+        "progress": pa.array(col("progress"), pa.int32()),
+        "x": pa.array(col("x"), pa.float32()),
+        "y": pa.array(col("y"), pa.float32()),
+        "z": pa.array(col("z"), pa.float32()),
+        "fields": pa.array([json.dumps(f) if f is not None else None for f in col("fields")], pa.string()),
+    })
+
+
+def _scene(game: str | None, level: str) -> list[tuple[str, str, bool, list[float]]]:
+    """The level's scene units (`gamedata/scenes/<level>_objects.blk` in `aces.vromfs.bin`): (unit class, unit type,
+    placed dead, transform) of every `unit_loader` entity - the trams and rail wagons a level places."""
+    import os
+
+    from .install import find_game
+
+    root = None if os.environ.get("HEAT3D_WT_NO_NAMES") else find_game(game)
+    if root is None or not level:
+        return []
+    try:
+        from .vromfs import Vromfs
+
+        blk = Vromfs(Path(root) / "aces.vromfs.bin").blk(f"gamedata/scenes/{level.lower()}_objects.blk")
+    except Exception:  # no scene file, or an unreadable one: the units keep their uid names
+        return []
+    out = []
+    for e in blk.blocks:
+        tm, cls = e.get("setting__tm"), e.get("setting__unit_class")
+        if isinstance(tm, list) and len(tm) == 12 and cls:
+            out.append((str(cls), str(e.get("setting__unitType") or ""), bool(e.get("setting__isDead")), tm))
+    return out
+
+
+def scene_units(r: Replay, all_lives: list[Life], game: str | None = None, near: float = 2.0,
+                keep_every: float = 10.0) -> dict[str, Any]:
+    """
+    The level's own units (trams, rail wagons): a ground track without a unit entity of its own whose first sample
+    lies within `near` m of a scene unit (see `_scene`) is that unit - its class as the vehicle, kind `train`, type
+    `tram`, `locomotive` or `wagon`, no team; one placed dead is a wreck from its first sample. The replay's
+    `unit_loader+rail_wagon` entities carry no uid that could be read, so the place decides. Such a unit stands
+    still unless pushed: of its samples only those that move it (0.05 m, 0.1 degrees) are kept, and one every
+    `keep_every` seconds, so that thousands of equal samples do not stand for motion.
+    """
+    level = re.sub(r"\.bin$", "", Path(str(r.header.get("level") or "")).name)
+    scene = _scene(game, level)
+    matched = thinned = 0
+    for life in all_lives:
+        if not scene or life.kind != "ground" or life.unit is not None or life.user_id or not life.samples:
+            continue
+        s0 = life.samples[0]
+        best = min(scene, key=lambda u: math.hypot(u[3][9] - s0.x, u[3][11] - s0.z))
+        if math.hypot(best[3][9] - s0.x, best[3][11] - s0.z) > near:
+            continue
+        cls = best[0]
+        life.vehicle, life.figure, life.team = cls, "train", ""
+        life.type = "tram" if "tram" in cls else "locomotive" if "locomotive" in cls else "wagon"
+        if best[2] and life.died is None:
+            life.died = s0.t - 0.001
+        matched += 1
+        kept = [s0]
+        for s in life.samples[1:-1]:
+            a, b = _angles(kept[-1]) or (0, 0, 0), _angles(s) or (0, 0, 0)
+            moved = math.dist((s.x, s.y, s.z), (kept[-1].x, kept[-1].y, kept[-1].z)) > 0.05 or any(
+                abs((p - q + 180) % 360 - 180) > 0.1 for p, q in zip(a, b) if p is not None and q is not None)
+            if moved or s.t - kept[-1].t >= keep_every:
+                kept.append(s)
+        if len(life.samples) > 1:
+            kept.append(life.samples[-1])
+        thinned += len(life.samples) - len(kept)
+        life.samples = kept
+    return {"level": level, "sceneUnits": len(scene), "matched": matched, "samplesDropped": thinned}
 
 
 def _wreck_check(all_lives: list[Life]) -> dict[str, Any]:
@@ -3304,7 +3531,7 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
                         "install's weapon files (README: Hit outcomes)",
             "hitLocalX": "shot rows: the hit point on the unit hit, in its own frame as the replay sends it (m; "
                          "hitLocalX forward, hitLocalY up, hitLocalZ right): aircraft and ships as sent (cm), "
-                         "ground units' read in mm and kept only within 6 m of the unit (about one in six lies "
+                         "ground units' read as a 16-bit fraction of 20 m and kept only within 6 m of the unit (about one in six lies "
                          "farther, what it is is not known; those rows have none); hitDirX/Y/Z the way "
                          "the shot travelled (shooter to hit point, a unit vector) "
                          "in the same frame, by the unit's attitude at the hit; otherVehicle and otherLife the unit "
@@ -3608,7 +3835,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
             missions: vehicle_names.Missions | None = None) -> tuple[Path, Path]:
     """
     One battle's replay file(s) into `<out>/<map>/<match>.parquet` (`<match>` is
-    `<map>_<difficulty>_<start>_<session>`, see `match_name`) and
+    `<map>_<difficulty>_<mode>_<start>_<session>`, see `match_name`) and
     `.match.json`. `game`: the War Thunder folder whose localisation names the
     vehicles (found by itself when not given); `smoothing`: re-place other
     units' dead-reckoned samples and smooth their received ones (see `_smooth`).
@@ -3620,8 +3847,16 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     all_lives = lives(r, all_units)
     roster = players(r)
     check = identify(r, all_lives, roster)
+    scenery = scene_units(r, all_lives, game)
     names = names if names is not None else vehicle_names.load(game)
-    more: dict[str, Any] = {"vehicleNames": name_vehicles(all_lives, names), "vehicleSwitch": end_abandoned(all_lives)}
+    more: dict[str, Any] = {"vehicleNames": name_vehicles(all_lives, names), "vehicleSwitch": end_abandoned(all_lives),
+                            "sceneUnits": scenery}
+    for life in all_lives:
+        if life.figure == "train" and not life.vehicle_name:
+            # No English name in the install: the id read as words (`germ_railway_tram_a` -> "Railway tram A").
+            words = re.sub(r"^[a-z]{2,5}_", "", life.vehicle).split("_")
+            words = [w.upper() if len(w) == 1 and i else w for i, w in enumerate(words)]
+            life.vehicle_name = " ".join(words)[:1].upper() + " ".join(words)[1:]
     author = str(r.results.get("authorUserId") or "")
     more["deadReckoning"] = smooth(all_lives, author, smoothing)
     server = bool(r.header.get("server"))
@@ -3645,6 +3880,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     cam, more["camera"] = camera_rows(r, all_lives)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
     more["turretsVsShots"] = _turret_check(data, all_lives)
+    more["turretVsView"] = _turret_view_check(all_lives)
     more["wrecks"] = _wreck_check(all_lives)
     arms = weapon_names if weapon_names is not None else vehicle_names.load_weapons(game)
     more["weaponNames"] = name_weapons(data, arms)
@@ -3666,5 +3902,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     doc["selfCheck"]["scoreboardVsResults"] = doc["scoreboard"].pop("check")
     for k in doc["kills"]:
         k["weaponName"] = arms.lookup(k.get("weapon") or "")[0]
+    doc["objectives"], zone_rows, doc["selfCheck"]["objectives"] = objectives(r, all_lives, doc, game)
+    pq.write_table(objectives_table(zone_rows), folder / f"{name}.objectives.parquet", compression="zstd")
     jpath.write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
     return tpath, jpath

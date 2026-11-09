@@ -939,7 +939,7 @@ TURRET_BITS = 62
 TURRET_TAIL = (8, 208)
 
 
-def _ground_turrets(body: bytes, count: int) -> list[tuple[float, float]]:
+def _ground_turrets(body: bytes, count: int, server: bool = False) -> list[tuple[float, float]]:
     """
     A tank's turrets from its ground state (attitude in 16 bits, not a quaternion): per turret its yaw
     relative to the hull and its gun's pitch, in degrees. After the position come 141 bits (not read),
@@ -950,6 +950,10 @@ def _ground_turrets(body: bytes, count: int) -> list[tuple[float, float]]:
     recording player's own tank sends its aim as floats (`_aim`), and its turret's world heading (the
     hull's compass heading plus the turret's yaw) lies within 0.44 degrees (median) of it; an unused
     weapon's slot reads 0 and 0 exactly; see the README for the check against the shots.
+
+    A server replay (0xF074) sends the same layout followed by more data of its own, so its length says nothing:
+    there every turret whose yaw and pitch lie inside the body is read (`server`). Checked against the shots and
+    against the player's aim, whose rate it does not follow (see the README's Turrets).
     """
     r = Bits(body)
     r.byte()
@@ -960,7 +964,9 @@ def _ground_turrets(body: bytes, count: int) -> list[tuple[float, float]]:
     r.skip(64 if not r.flag() else 96)
     at = r.pos + TURRET_AT
     left = len(body) * 8 - at - TURRET_BITS * count
-    if count <= 0 or not any(0 <= left - tail < 8 for tail in TURRET_TAIL):
+    if server and count > 0:
+        count = min(count, max(0, (len(body) * 8 - at - 32) // TURRET_BITS + 1))
+    elif count <= 0 or not any(0 <= left - tail < 8 for tail in TURRET_TAIL):
         return []
     out = []
     for i in range(count):
@@ -991,6 +997,7 @@ class GroundReader:
         anticlockwise from east, so the compass heading is 90 minus it, its pitch in degrees and the
         aim's distance twice; see the README).
         """
+        server = len(payload) >= 4 and (payload[2] | payload[3] << 8) == GROUND_SERVER
         r = Bits(payload[4:])
         length = r.uleb()
         r.align()
@@ -1042,7 +1049,7 @@ class GroundReader:
             if g.flag():
                 aim = struct.unpack("<4f", g.raw(16))
             if pos is not None:
-                out.append((uid, *pos, [] if directions else _ground_turrets(body, turrets), aim))
+                out.append((uid, *pos, [] if directions else _ground_turrets(body, turrets, server), aim))
             if g.flag():
                 for _ in range(turrets):
                     if not g.flag():

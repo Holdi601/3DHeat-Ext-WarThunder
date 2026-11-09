@@ -387,9 +387,9 @@ def test_messages_to_units_name_their_entity(tmp_path):
     assert {(r["message"], r["uid"]) for r in side if r["packet"] == 4} >= {("0xf0e9", 345), ("0xd047", 344)}
 
 
-@pytest.mark.parametrize("sent, local", [((1500, 500, -300), (1.5, 0.5, 0.3)), ((15000, 500, -300), None)])
-def test_a_ground_units_hit_point_is_in_millimetres_and_on_its_hull(tmp_path, sent, local):
-    """On the tank (177), the point's int16 are mm: 1.5 m ahead is kept; 15 m off the hull is no point on it."""
+@pytest.mark.parametrize("sent, local", [((2458, 819, -492), (1.5, 0.5, 0.3)), ((15000, 500, -300), None)])
+def test_a_ground_units_hit_point_is_a_fraction_of_20_m_and_on_its_hull(tmp_path, sent, local):
+    """On the tank (177), the point's int16 are steps of 20/32768 m: 1.5 m ahead is kept; 9 m off the hull is not."""
     more = [synth.packet(4, 10900, synth.unit_message(3, 0xF0E9, synth.hit_effect(344, 7, sent)))]
     f = tmp_path / "u.wrpl"
     f.write_bytes(battle_with_entities(more))
