@@ -1620,6 +1620,43 @@ class Weapon:
     launcher: Life | None = None
     distance: float | None = None
     track: list[tuple] = field(default_factory=list)
+    #: The flight worked out from the release and the removal (`ballistic_fall`): no record of it in the replay.
+    ballistic: bool = False
+
+
+#: A falling bomb's drag, 1/m (acceleration -k |v| v): a terminal speed near 500 m/s. With it the bombs of the
+#: naval replay dropped from the air, released over the sea, end 6 m below to 14 m above it where the replay removes them.
+BOMB_DRAG = 4e-5
+#: Seconds between the samples of a worked-out fall, and the longest fall worked out.
+BOMB_STEP = 0.1
+BOMB_LONGEST = 90.0
+
+
+def ballistic_fall(rel: dict[str, Any] | None, t0: float, t1: float | None) -> list[tuple]:
+    """
+    A bomb's fall from its release (position and velocity) to its removal at `t1`, where the replay records
+    no flight (arcade battles send no weapons-in-flight messages, and the simulator ones none for some bombs):
+    gravity and drag, integrated in steps of 10 ms. Samples as the flight records' (t, x, y, z, group 1, not
+    guided). None where it cannot be a free fall: no velocity or removal, longer than `BOMB_LONGEST`, or
+    ending more than 150 m below the sea (a glide bomb's minutes, which the release alone does not tell).
+    """
+    if not rel or "vel" not in rel or t1 is None or not 0 < t1 - t0 <= BOMB_LONGEST:
+        return []
+    (x, y, z), (vx, vy, vz) = rel["pos"], rel["vel"]
+    out = [(t0, x, y, z, 1, False)]
+    h = 0.01
+    n = max(1, round((t1 - t0) / h))
+    h = (t1 - t0) / n
+    every = max(1, round(BOMB_STEP / h))
+    for i in range(1, n + 1):
+        v = math.sqrt(vx * vx + vy * vy + vz * vz)
+        vx -= BOMB_DRAG * v * vx * h
+        vy -= (9.81 + BOMB_DRAG * v * vy) * h
+        vz -= BOMB_DRAG * v * vz * h
+        x, y, z = x + vx * h, y + vy * h, z + vz * h
+        if i % every == 0 or i == n:
+            out.append((t0 + i * h, x, y, z, 1, False))
+    return out if out[-1][2] > -150 else []
 
 
 def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
@@ -1657,6 +1694,10 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
         kind = {"rocket+arh_shell": "missile", "bomb": "bomb", "torpedo": "torpedo", "payload": "payload",
                 "jettisoned": "jettisoned"}.get(e.template, "missile" if guided else "rocket")
         w = Weapon(e, kind, rel, track=track)
+        if kind == "bomb" and len(track) < 2:
+            fall = ballistic_fall(rel, e.t, e.destroyed)
+            if fall:
+                w.track, w.ballistic = fall, True
         if rel is not None:
             best = None
             for b in range(int(e.t) - 2, int(e.t) + 3):
@@ -1796,6 +1837,8 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
                        "z": p.z, "xRaw": p.x, "yRaw": p.y, "zRaw": p.z, "speed": v, "alive": 1.0, "other": owner,
                        "ai": (not w.launcher.is_player) if w.launcher else None,
                        "isPlayer": w.launcher.is_player if w.launcher else None}
+                if w.ballistic:
+                    row["extrapolated"] = True
                 nxt = pts[i + 1] if i + 1 < len(pts) else pts[i - 1]
                 d = (nxt.x - p.x, nxt.y - p.y, nxt.z - p.z) if i + 1 < len(pts) else (p.x - nxt.x, p.y - nxt.y, p.z - nxt.z)
                 n = math.sqrt(sum(c * c for c in d))
@@ -3496,8 +3539,9 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
                             "removed": round(e.destroyed, 3) if e.destroyed is not None else None,
                             "release": w.release, "launcher": _label(w.launcher) if w.launcher else None,
                             "launcherUid": w.launcher.uid if w.launcher else None, "launcherDistance": w.distance,
-                            "flightSamples": len(w.track),
-                            "lastSeen": [round(v, 2) for v in w.track[-1][1:4]] if w.track else None})
+                            "flightSamples": 0 if w.ballistic else len(w.track),
+                            "lastSeen": [round(v, 2) for v in w.track[-1][1:4]] if w.track and not w.ballistic else None,
+                            **({"ballisticImpact": [round(v, 2) for v in w.track[-1][1:4]]} if w.ballistic else {})})
     dists = sorted(w.distance for w in all_weapons if w.distance is not None)
     instruments: dict[str, list] = defaultdict(list)
     last: dict[int, float] = {}
@@ -3583,7 +3627,8 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
             "replicatedNotRead": sum(1 for x in r.stream.replications if x[4] is None),
             "entityMessages": len(r.stream.messages),
             "weapons": len(all_weapons),
-            "weaponsWithFlight": sum(1 for w in all_weapons if len(w.track) >= 2),
+            "weaponsWithFlight": sum(1 for w in all_weapons if len(w.track) >= 2 and not w.ballistic),
+            "bombsBallistic": sum(1 for w in all_weapons if w.ballistic),
             "packets": dict(r.packets),
             "unreadPackets": dict(r.problems),
             "droppedSamples": dict(r.dropped),

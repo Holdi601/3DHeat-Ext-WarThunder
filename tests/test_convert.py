@@ -397,3 +397,23 @@ def test_cli_reads_a_server_replay_zip(tmp_path, capsys):
     doc = json.loads(next((tmp_path / "out" / "avg_test_land").glob("*.match.json")).read_text(encoding="utf-8"))
     assert doc["files"] == ["0000.wrpl", "0001.wrpl", "escape.wrpl"]
     assert not (tmp_path / "escape.wrpl").exists()
+
+
+def test_bomb_without_flight_records_falls_from_its_release_to_its_removal():
+    from heat3d_ext_warthunder.convert import ballistic_fall
+
+    rel = {"pos": [100.0, 3000.0, -50.0], "vel": [65.0, -1.0, 65.0]}
+    fall = ballistic_fall(rel, 10.0, 35.0)
+    assert fall[0][:4] == (10.0, 100.0, 3000.0, -50.0)
+    assert abs(fall[-1][0] - 35.0) < 1e-9
+    # Falling all the way, slowed by drag but not stopped: 25 s from 3 km ends low but above the sea.
+    ys = [p[2] for p in fall]
+    assert all(b < a for a, b in zip(ys, ys[1:]))
+    assert 0 < ys[-1] < 3000 - 0.5 * 9.81 * 25 ** 2 + 400
+    xs = [p[1] for p in fall]
+    assert 100 + 65 * 20 < xs[-1] < 100 + 65 * 25
+    assert all(abs(b[0] - a[0] - 0.1) < 1e-6 for a, b in zip(fall, fall[1:]))
+    # A glide bomb's minutes, no velocity, no removal: no fall.
+    assert ballistic_fall(rel, 10.0, 200.0) == []
+    assert ballistic_fall({"pos": [0, 3000, 0]}, 10.0, 30.0) == []
+    assert ballistic_fall(rel, 10.0, None) == []
