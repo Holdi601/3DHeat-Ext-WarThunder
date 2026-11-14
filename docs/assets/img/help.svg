@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="428" viewBox="0 0 640 428" role="img" aria-label="heat3d-wt-replay --help">
+<rect width="640" height="428" rx="8" fill="#1e1f24"/>
+<rect width="640" height="26" rx="8" fill="#2c2e35"/><rect y="18" width="640" height="8" fill="#2c2e35"/>
+<circle cx="16" cy="13" r="5" fill="#ff5f57"/><circle cx="32" cy="13" r="5" fill="#febc2e"/><circle cx="48" cy="13" r="5" fill="#28c840"/>
+<text x="320.0" y="17" fill="#9aa0aa" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle">heat3d-wt-replay --help</text>
+<g font-family="Consolas,Menlo,DejaVu Sans Mono,monospace" font-size="13" xml:space="preserve" style="white-space:pre">
+<text x="16" y="46" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;--help</text>
+<text x="16" y="64" fill="#d6d9df" xml:space="preserve" style="white-space:pre">usage:&#160;heat3d-wt-replay&#160;[-h]&#160;-o&#160;OUT&#160;[--game&#160;GAME]&#160;[--no-smoothing]</text>
+<text x="16" y="82" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[--container]&#160;[--loose]&#160;[--version]</text>
+<text x="16" y="100" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;replays&#160;[replays&#160;...]</text>
+<text x="16" y="118" fill="#d6d9df" xml:space="preserve" style="white-space:pre"></text>
+<text x="16" y="136" fill="#d6d9df" xml:space="preserve" style="white-space:pre">War&#160;Thunder&#160;replays&#160;(.wrpl)&#160;into&#160;3DHeat&#160;tables</text>
+<text x="16" y="154" fill="#d6d9df" xml:space="preserve" style="white-space:pre"></text>
+<text x="16" y="172" fill="#d6d9df" xml:space="preserve" style="white-space:pre">positional&#160;arguments:</text>
+<text x="16" y="190" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;replays&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.wrpl&#160;files,&#160;folders&#160;of&#160;them,&#160;or&#160;zips&#160;of&#160;them</text>
+<text x="16" y="208" fill="#d6d9df" xml:space="preserve" style="white-space:pre"></text>
+<text x="16" y="226" fill="#d6d9df" xml:space="preserve" style="white-space:pre">options:</text>
+<text x="16" y="244" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;-h,&#160;--help&#160;&#160;&#160;&#160;&#160;&#160;show&#160;this&#160;help&#160;message&#160;and&#160;exit</text>
+<text x="16" y="262" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;-o,&#160;--out&#160;OUT&#160;&#160;&#160;where&#160;to&#160;write&#160;&lt;map&gt;/&lt;match&gt;.parquet&#160;and&#160;.match.json</text>
+<text x="16" y="280" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;--game&#160;GAME&#160;&#160;&#160;&#160;&#160;the&#160;War&#160;Thunder&#160;folder&#160;whose&#160;localisation&#160;names&#160;the&#160;vehicles</text>
+<text x="16" y="298" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;(found&#160;if&#160;not&#160;given)</text>
+<text x="16" y="316" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;--no-smoothing&#160;&#160;keep&#160;other&#160;units&#x27;&#160;dead-reckoned&#160;and&#160;received&#160;samples&#160;where</text>
+<text x="16" y="334" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;the&#160;replay&#160;has&#160;them</text>
+<text x="16" y="352" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;--container&#160;&#160;&#160;&#160;&#160;pack&#160;each&#160;battle&#160;into&#160;one&#160;.3dheat&#160;file&#160;(the&#160;default)</text>
+<text x="16" y="370" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;--loose&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;keep&#160;each&#160;battle&#160;as&#160;separate&#160;files&#160;(table,&#160;match.json,</text>
+<text x="16" y="388" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;sidecars),&#160;not&#160;one&#160;.3dheat&#160;container</text>
+<text x="16" y="406" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;--version&#160;&#160;&#160;&#160;&#160;&#160;&#160;show&#160;program&#x27;s&#160;version&#160;number&#160;and&#160;exit</text>
+</g></svg>

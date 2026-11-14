@@ -9,13 +9,21 @@ sky, every unit and weapon the replay created, the mission's zones and
 airfields, explosions, awards, the recording player's instruments, the scoreboard over time, the chat
 and the whole results block.
 
+Part of [3DHeat](https://github.com/Holdi601/3DHeat), the realtime 3D telemetry and replay viewer
+([documentation](https://holdi601.github.io/3DHeat/)). **Documentation of this converter, step by step
+with pictures: <https://holdi601.github.io/3DHeat-Ext-WarThunder/>.** Each battle is one [`.3dheat` file](https://holdi601.github.io/3DHeat/container.html) the viewer opens as it is.
+
+![From a replay to the viewer](docs/assets/img/pipeline.svg)
+
 ```bash
-pip install -e .                        # installs the `heat3d-wt-replay` command
+pip install -e .                        # installs the `heat3d-wt-replay` and `heat3d-wt-level` commands
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 heat3d-wt-replay a.wrpl b.wrpl -o out   # files, folders, or both
 heat3d-wt-replay battle.zip -o out      # a server replay's zip as downloaded (its .wrpl parts, unpacked to a temporary folder)
 heat3d-wt-replay ... --game "D:/Games/War Thunder"   # where the install is, if it is not found
 heat3d-wt-replay ... --no-smoothing     # other units' tracks exactly as the replay has them
+heat3d-wt-replay ... --loose            # separate files (table, match document, sidecars), not one .3dheat
+heat3d-wt-replay --version              # the version; --help lists every option
 python -m heat3d_ext_warthunder ...     # the same, without installing
 ```
 
@@ -26,14 +34,17 @@ time: the install is found through Steam or the launcher's default folders, or
 `--game` / `HEAT3D_WT_GAME`. Nothing of the game's text is in this repository;
 without an install the names are the vehicle ids.
 
-Each battle becomes `out/<map>/<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>.parquet` and
-`.match.json` (and the three sidecars named alike): AB, RB and SB are the game's own short forms of arcade,
+Each battle becomes one file, `out/<map>/<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>.3dheat`, holding
+the table `.parquet`, the `.match.json` and the three sidecars named alike ([One file a match](https://holdi601.github.io/3DHeat/container.html));
+with `--loose` they are written as those separate files: AB, RB and SB are the game's own short forms of arcade,
 realistic and simulator battles, `<mode>` the mission's mode as the game keys it (`Conq4` Conquest #4, `Dom`
 Domination, `Bttl` Battle; see [Battle mode](#battle-mode)); either part is left out where the header
 names none. A server replay's parts (`0000.wrpl`, `0001.wrpl`, ...) are read
 together as one battle; a client replay and the server's parts of the same
-battle are two recordings and stay two. The command prints `ok <table> <summary>`
-or `failed <file>: <why>` per battle and exits 1 when any failed.
+battle are two recordings and stay two. The command prints `ok <file>` (with `--loose`, `ok <table> <summary>`)
+or `failed <file>: <why>` per battle, and exits 1 when any failed, 2 when no replay was given.
+Every start first checks the project's GitHub releases for a newer version and asks before installing it;
+`HEAT3D_NO_UPDATE=1` switches that off.
 
 A second command turns the game's own levels into 3D levels for the viewer,
 read from your install (see [Levels](#levels-heat3d-wt-level)):
@@ -71,7 +82,7 @@ reading instructions, so the viewer needs no form filled in.
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop` (a gun's burst, not a vehicle on fire), `fire_on`, `fire_off` (a vehicle on fire, see [Vehicle fires](#vehicle-fires)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](#end-of-a-track)) |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop` (a gun's burst, not a vehicle on fire), `fire_on`, `fire_off` (a vehicle on fire, see [Vehicle fires](#vehicle-fires)), `reward` (Silver Lions and research points earned, see [Economy](#economy-silver-lions-and-research-points)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](#end-of-a-track)) |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
 | `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
@@ -107,6 +118,10 @@ reading instructions, so the viewer needs no form filled in.
 | `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` | the recording player's aircraft only, from its cockpit: indicated airspeed and climb rate (m/s), fuel, manifold pressure (atm), gear (0-1, 1 down), oil and cylinder head temperature, where its cockpit has the gauge |
 | `speed` | m/s over about two seconds of the track (worked out here; the replay sends no speed for other units) |
 | `alive` | 0 for a unit's samples after its death (its wreck): a ground unit's or ship's until the game removes it or its samples end, an aircraft's for at most 60 s |
+| `otherVehicle`, `otherLife` | a `shot`'s victim: its vehicle and its `life` |
+| `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | a `shot`'s hit point in the victim's own frame (m; x forward, y up, z left; see [Messages to units](#messages-to-units)) and the way the shot came, turned into that frame by the victim's attitude then |
+| `hitPart`, `hitFlag` | a `shot`'s hit message: its part word as sent, and its high byte |
+| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won` | what the battle cost and earned, and who won: see [Economy](#economy-silver-lions-and-research-points) |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
 
 The match document (`format: heat3d-wt-replay-match`, version 2) has the map,
