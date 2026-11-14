@@ -40,11 +40,14 @@ def ammo_type(bullet_type: str) -> str:
 
 @dataclass
 class Gun:
-    """One weapon of a vehicle: its blk's file name, calibre (mm) and shells by name: (type, calibre mm)."""
+    """One weapon of a vehicle: its blk's file name, calibre (mm), shells by name: (type, calibre mm), and each
+    shell's modification (the block of the weapon blk it is in, which the vehicle buys and prices by that name; ''
+    for the weapon's own, stock shell)."""
 
     blk: str
     calibre: float | None = None
     shells: dict[str, tuple[str, float | None]] = field(default_factory=dict)
+    mods: dict[str, str] = field(default_factory=dict)
 
     @property
     def machine_gun(self) -> bool:
@@ -101,16 +104,18 @@ class Arsenal:
         except (KeyError, ValueError, IndexError):
             b = None
 
-        def walk(blk) -> None:
+        def walk(blk, mod: str = "") -> None:
             for c in blk.blocks:
                 if c.name == "bullet" and c.get("bulletName"):
                     cal = c.get("caliber")
                     cal = round(cal * 1000, 1) if isinstance(cal, float) else None
-                    gun.shells.setdefault(str(c.get("bulletName")).lower(), (ammo_type(c.get("bulletType") or ""), cal))
+                    name = str(c.get("bulletName")).lower()
+                    gun.shells.setdefault(name, (ammo_type(c.get("bulletType") or ""), cal))
+                    gun.mods.setdefault(name, mod)
                     if gun.calibre is None and cal:
                         gun.calibre = cal
                 if c.name not in ("sabot", "rocket"):
-                    walk(c)
+                    walk(c, mod if c.name == "bullet" or blk is not b else c.name)
 
         if b is not None:
             walk(b)

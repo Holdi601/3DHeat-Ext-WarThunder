@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import arsenal, ecs, names as vehicle_names, objectives as mission_objectives, wrpl
+from . import arsenal, ecs, economy, names as vehicle_names, objectives as mission_objectives, wrpl
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
 AIR_TYPES = {"fighter", "assault", "bomber", "helicopter", "attack_helicopter", "utility_helicopter", "aircraft"}
@@ -83,7 +83,8 @@ HINTS = {
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
                   "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
-                  "gameMode"],
+                  "gameMode", "cost_fired_sl", "cost_lost_sl", "earn_sl", "earn_rp", "currency", "econ_basis",
+                  "rewardType"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -195,6 +196,13 @@ COLUMNS = [
     ("zoom", "f32"),
     ("difficulty", "str"),
     ("gameMode", "str"),
+    ("cost_fired_sl", "f32"),
+    ("cost_lost_sl", "f32"),
+    ("earn_sl", "f32"),
+    ("earn_rp", "f32"),
+    ("currency", "str"),
+    ("econ_basis", "str"),
+    ("rewardType", "str"),
 ]
 
 
@@ -4043,6 +4051,11 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     fires, more["fires"] = fire_rows(r, all_lives)
     cam, more["camera"] = camera_rows(r, all_lives)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
+    board = scoreboard(r)
+    eco = economy.Economy.from_game(game, arms_install)
+    econ = economy.annotate(data, eco, difficulty(r.header), lives=all_lives, kills=r.kills, hits=r.hits,
+                             detections=r.detections, board=board, fired=shots_fired(msgs), where=_at_time,
+                             label=_label)
     more["turretsVsShots"] = _turret_check(data, all_lives)
     more["turretsVsShotsRaw"] = _turret_check(data, all_lives, raw=True)
     more["turretVsView"] = _turret_view_check(all_lives)
@@ -4062,7 +4075,8 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     doc["battle"] = battle_mode(r, missions if missions is not None else vehicle_names.load_missions(game))
     doc["difficulty"], doc["gameMode"] = doc["battle"]["difficulty"], doc["battle"]["gameMode"]
     doc["projectileHitReplays"] = [_hit_replay(m, arms) for m in msgs if m.mid == 0xD0FE]
-    doc["scoreboard"] = scoreboard(r)
+    doc["scoreboard"] = board
+    doc["economy"] = econ
     doc["entityMessages"] = entity_message_classes(r)
     doc["selfCheck"]["scoreboardVsResults"] = doc["scoreboard"].pop("check")
     for k in doc["kills"]:

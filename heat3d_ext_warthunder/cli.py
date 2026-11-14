@@ -99,7 +99,10 @@ def _info(doc: Path) -> dict:
     return {"game": "warthunder", "source": "server replay" if d.get("server") else "client replay",
             "converter": {"name": "heat3d-wt-replay", "version": __version__}, "match": d.get("match"),
             "map": d.get("map"), "mode": " ".join(x for x in (d.get("difficulty"), d.get("gameMode")) if x) or None,
-            "started": d.get("started")}
+            "started": d.get("started"),
+            # The battle's Silver Lions and research points (economy.py), when the install had its tables.
+            **({"extensions": {"heat3d/economy": {k: v for k, v in d["economy"].items() if k != "columns"}}}
+               if (d.get("economy") or {}).get("available") else {})}
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -128,6 +128,7 @@ mission, battle class, session id, start time and author, and:
 | `detections`, `unitStates` | `UnitDetected` pairs of units; a message (0xF093) with a unit's position, attitude and velocity whose meaning is not known |
 | `authorInstruments` | the recording player's cockpit values (`ReplayCockpitParams`) by instrument number, at most one per second; `known` names each number this replay sent (name, unit, how it was checked), `notNamed` the rest |
 | `scoreboard` | every player's statistics each time they changed (kills, deaths, assists, score, ai kills, naval kills, zones, damage, missile evades, squad), and each team's score and likely tickets over time (see Reflection data) |
+| `economy` | the battle's Silver Lions and research points (see [Economy](#economy-silver-lions-and-research-points)): totals, per player, per vehicle, the multipliers, the winner, the checks |
 | `entityMessages` | the entity messages (0x20) by class number: count, target templates, sizes |
 | `chat` | every chat line |
 | `triggers`, `hints`, `missionProgress` | the mission script's actions (RunTriggerAction), its hints, its progress messages |
@@ -558,6 +559,55 @@ header's `killStreaks` (`killStreaksAircraftOrHelicopter_1`; the realistic ones 
 spawn, else `naval` when it lets ships, else `air` (`allowedUnitTypes`); the mission's own mode comes from its
 key (`missions/_Dom`), named from your install's `lang/missions_versus.csv`. The same key is the `<mode>` part of
 the file names and the match id (`Conq4`, `Dom`), left out where the header has none.
+
+### Economy: Silver Lions and research points
+
+What the battle cost and earned, as columns on its event rows, read from **your install at conversion time**
+(`char.vromfs.bin`: `config/wpcost.blk` per vehicle, `config/warpoints.blk` and `config/rank.blk`; the weapon blks
+of `aces.vromfs.bin` say which modification each shell is). No number of the game's is in this repository: the
+values go into your own output only. Without the install's `char.vromfs.bin` no economy is written
+(`economy.available` false). The prices are those of the battle's difficulty (`repairCostHistorical` for RB,
+`...Arcade` AB, `...Simulation` SB).
+
+| Column | Rows | What |
+|---|---|---|
+| `cost_fired_sl` | `bullet_rearm` (a round taken after a shot, ground vehicles), `launch` (aircraft, helicopters) | SL the round, rocket, missile or bomb cost |
+| `cost_lost_sl` | `death` of a player's vehicle | the vehicle's repair cost (stock; the fully upgraded one in the block) |
+| `earn_sl`, `earn_rp` | `reward` (new event, at the earner's place and time) | SL and RP earned |
+| `rewardType` | `reward` | `kill`, `assist`, `capture`, `base_damage`, `damage`, `missile_evade`, `critical_hit`, `severe_damage`, `scouting`, `other`, `battle_end` |
+| `currency` | every row with a `cost_*` or `earn_sl` | `SL` (`earn_rp` is research points) |
+| `econ_basis` | the same | `install` (a price read from the install) or `inferred` (worked out, below) |
+
+The viewer's cost model reads the columns `cost_*` (and `earn_*`) with `currency`; summing `cost_fired_sl +
+cost_lost_sl` gives where Silver Lions were spent and lost, `earn_sl` where they were earned (a kill's reward is
+on its `reward` row, not on the `kill` row, so nothing counts twice).
+
+- **Rounds** (`install` where the slot's shell is known - a kill named it, see [Hit outcomes](#hit-outcomes) -
+  else `inferred`: the mean price of the shells that gun can fire on that vehicle; a stock shell is free; machine
+  guns are not counted by the replay and cost nothing).
+- **Launches** (`inferred`): the game prices an aircraft's weapon preset per sortie, not per item; one item is the
+  median over the vehicle's priced presets of price / items (`sum_weapons`, countermeasures and drop tanks left
+  out); 0 where its presets are free.
+- **Rewards** (all `inferred`): the replay holds no reward record - the results block has scores and counts only,
+  no message carries Silver Lions (checked on client and server replays). A `kill` earns `aKill` x the killer's
+  `rewardMul<mode>` x the victim class's weight (`units` in warpoints.blk, by its `unitClass`; AI units by their
+  kind) x `aiKillK` for an AI victim x `groundKillMul` for an aircraft killing a ground unit; RP the same with
+  `expMul` and rank.blk's weights. Every other step of a player's score in the replicated scoreboard is a reward
+  worth its points at the battle's SL a point (a kill's SL over the median points of the kills' steps, the
+  `pointsPerKill` of the block); its type is the counter that rose with it (assists, zones captured, zone damage,
+  damage award, missile evades), else that player's critical / severe hit within 3 s, else a detection of the
+  player's unit within 2 s (`scouting`), else `other`. `battle_end` is `winK` (won) or `defeatK` (lost) of the
+  player's in-battle earnings, the winner by the teams' tickets left, then their score. Premium time, boosters,
+  crew and modifications are not known and not applied; the ground battles' kill budgets
+  (`def_ground_kill_wp_budget*`) are not modelled.
+
+The match document's `economy` (and, in a `.3dheat` container, the manifest's `extensions["heat3d/economy"]`)
+holds `currency` `SL`, `researchCurrency` `RP`, `difficulty`, `totals` (`firedSl`, `lostSl`, `earnedSl`,
+`earnedRp`), `players` (the same per player, with `netSl`), `vehicles` (per player vehicle: `repairSl`,
+`repairFullUpgradedSl`, `purchaseSl`, `researchRp`, `crewSl`, `crewExpertSl`, `rewardMul`, `expMul`,
+`groundKillMul`, `battleTimeAwardSl`, `rank`, `economicRank`, `unitClass`), `multipliers` (`aKill`, `aiKillK`,
+`winK`, `defeatK`, `wpMultiplier`), `winnerTeam`, `pointsPerKill` and `check` (how many rows of each kind were
+priced, estimated or not priced).
 
 ### Objectives
 
