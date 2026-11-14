@@ -417,3 +417,15 @@ def test_bomb_without_flight_records_falls_from_its_release_to_its_removal():
     assert ballistic_fall(rel, 10.0, 200.0) == []
     assert ballistic_fall({"pos": [0, 3000, 0]}, 10.0, 30.0) == []
     assert ballistic_fall(rel, 10.0, None) == []
+
+
+def test_battle_result_from_the_authors_status():
+    from types import SimpleNamespace
+    roster = {"7": {"team": 1}, "8": {"team": 2}}
+    lost = SimpleNamespace(results={"status": "fail", "authorUserId": "7"})
+    assert convert.battle_result(lost, roster)["winner"] == "2"
+    won = SimpleNamespace(results={"status": "success", "authorUserId": "8"})
+    assert convert.battle_result(won, roster)["winner"] == "2"
+    # A server replay: always `success`, no author - no winner.
+    server = SimpleNamespace(results={"status": "success"})
+    assert convert.battle_result(server, roster)["winner"] is None

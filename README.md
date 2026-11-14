@@ -578,6 +578,14 @@ values go into your own output only. Without the install's `char.vromfs.bin` no 
 | `currency` | every row with a `cost_*` or `earn_sl` | `SL` (`earn_rp` is research points) |
 | `econ_basis` | the same | `install` (a price read from the install) or `inferred` (worked out, below) |
 
+**Who won.** `won` (0/1) on every row of a team's, where the replay says: a client
+replay's results carry the author's own outcome (`status`: `success` or `fail`), so the
+author's team won or lost and the other team the reverse; `result` in the match document
+says which (`winner`, `status`, `authorTeam`). Server replays and replays left before the
+end carry no outcome (a server replay's `status` is always `success` and names no author),
+and neither kind holds installed modifications: the results list each player's vehicles by
+name and type only. There `won` stays empty.
+
 The viewer's cost model reads the columns `cost_*` (and `earn_*`) with `currency`; summing `cost_fired_sl +
 cost_lost_sl` gives where Silver Lions were spent and lost, `earn_sl` where they were earned (a kill's reward is
 on its `reward` row, not on the `kill` row, so nothing counts twice).

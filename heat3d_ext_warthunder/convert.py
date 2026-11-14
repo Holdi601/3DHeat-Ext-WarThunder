@@ -84,7 +84,7 @@ HINTS = {
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
                   "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
                   "gameMode", "cost_fired_sl", "cost_lost_sl", "earn_sl", "earn_rp", "currency", "econ_basis",
-                  "rewardType"],
+                  "rewardType", "won"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -203,6 +203,7 @@ COLUMNS = [
     ("currency", "str"),
     ("econ_basis", "str"),
     ("rewardType", "str"),
+    ("won", "i16"),
 ]
 
 
@@ -3754,6 +3755,26 @@ def entity_message_classes(r: Replay) -> dict[str, Any]:
             "classes": dict(sorted(out.items(), key=lambda kv: -kv[1]["count"]))}
 
 
+def battle_result(r: Replay, roster: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """
+    Who won, where the replay says: the results' `status` (`success` or
+    `fail`) is the author's own outcome, so the author's team won or lost and
+    the other of the two teams the reverse. Server replays and client replays
+    left before the end carry no status; then `winner` is None. The replay
+    holds no installed modifications either: the results list each player's
+    vehicles by name and type only.
+    """
+    status = str(r.results.get("status") or "")
+    author = str(r.results.get("authorUserId") or "")
+    team = str((roster.get(author) or {}).get("team") or "")
+    teams = sorted({str(p.get("team")) for p in roster.values() if p.get("team") not in (None, "", 0, "0")})
+    winner = None
+    if status in ("success", "fail") and team and len(teams) == 2 and team in teams:
+        winner = team if status == "success" else next(t for t in teams if t != team)
+    return {"winner": winner, "status": status or None, "authorTeam": team or None, "teams": teams,
+            "source": "results.status" if winner else None}
+
+
 def scoreboard(r: Replay) -> dict[str, Any]:
     """
     The battle's scoreboard over time from the replicated objects (0xF02D,
@@ -4052,6 +4073,11 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     cam, more["camera"] = camera_rows(r, all_lives)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
     board = scoreboard(r)
+    result = battle_result(r, roster)
+    if result["winner"]:
+        for row in data:
+            t = str(row.get("team") or "")
+            row["won"] = (1 if t == result["winner"] else 0) if t in result["teams"] else None
     eco = economy.Economy.from_game(game, arms_install)
     econ = economy.annotate(data, eco, difficulty(r.header), lives=all_lives, kills=r.kills, hits=r.hits,
                              detections=r.detections, board=board, fired=shots_fired(msgs), where=_at_time,
@@ -4076,6 +4102,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     doc["difficulty"], doc["gameMode"] = doc["battle"]["difficulty"], doc["battle"]["gameMode"]
     doc["projectileHitReplays"] = [_hit_replay(m, arms) for m in msgs if m.mid == 0xD0FE]
     doc["scoreboard"] = board
+    doc["result"] = result
     doc["economy"] = econ
     doc["entityMessages"] = entity_message_classes(r)
     doc["selfCheck"]["scoreboardVsResults"] = doc["scoreboard"].pop("check")
