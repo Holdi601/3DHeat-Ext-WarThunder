@@ -20,7 +20,7 @@ heat3d-wt-replay = "heat3d_ext_warthunder.cli:main"
 heat3d-wt-level = "heat3d_ext_warthunder.levelcli:main"
 
 [tool.setuptools]
-packages = ["heat3d_ext_warthunder", "heat3d_update"]
+packages = ["heat3d_ext_warthunder"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

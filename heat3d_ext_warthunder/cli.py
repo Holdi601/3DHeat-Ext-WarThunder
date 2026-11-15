@@ -108,9 +108,9 @@ def _info(doc: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     # A newer release is offered, and installed only if the user says yes (notified only when nobody can be asked).
     try:
-        import heat3d_update
+        from . import update
 
-        heat3d_update.startup("heat3d_ext_warthunder")
+        update.startup("heat3d_ext_warthunder")
     except Exception:  # an update check never stops a conversion
         pass
     ap = argparse.ArgumentParser(prog="heat3d-wt-replay", description="War Thunder replays (.wrpl) into 3DHeat tables")

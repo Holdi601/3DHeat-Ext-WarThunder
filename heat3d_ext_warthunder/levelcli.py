@@ -33,9 +33,9 @@ def _game(args) -> Game | None:
 
 def main(argv: list[str] | None = None) -> int:
     try:
-        import heat3d_update
+        from . import update
 
-        heat3d_update.startup("heat3d_ext_warthunder")
+        update.startup("heat3d_ext_warthunder")
     except Exception:  # an update check never stops a conversion
         pass
     ap = argparse.ArgumentParser(prog="heat3d-wt-level", description="War Thunder levels into 3DHeat .glb levels")
