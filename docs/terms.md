@@ -1,9 +1,9 @@
 ---
-title: Terms and sources
-nav_order: 15
+title: Terms and licence
+nav_order: 16
 ---
 
-# Terms and sources
+# Terms and licence
 
 ## The terms
 
@@ -18,7 +18,7 @@ machine: **never publish them**, and nothing here ships any game data.
 
 ## Sources
 
-All code here is written for it; no code was copied from another parser. What
+All code here is written for this project; no code was copied from another parser. What
 it knows of the format comes from:
 
 - Gaijin's Dagor Engine source (github.com/GaijinEntertainment/DagorEngine,
@@ -38,8 +38,7 @@ it knows of the format comes from:
   values and the binary blk. WTACRP names maxsupermanhd/wrpl-inspector,
   wt_blk and wrpl-acmi (AGPL-3.0) as its own references; their code was not
   read here.
-- SMOKE-19/WarThunderReplayDownloader's README: how server replays are fetched.
-- The replays above, as files: the 2025 differences (the flight model's older
+- The author's own replays, read as files: the 2025 differences (the flight model's older
   layout, chat without a flag byte, zlib), the ground attitude, the packed
   height offset, the weapons' release points and the cockpit instruments were
   worked out on them here.
@@ -48,7 +47,7 @@ it knows of the format comes from:
 
 ```bash
 python -m pytest -q
-HEAT3D_WT_SAMPLES=<folder with the sample replays> python -m pytest -q   # also checks the real 2025 air battle
+HEAT3D_WT_SAMPLES=<folder with the sample replays> python -m pytest -q   # also checks the public 2025 sample replays
 HEAT3D_WT_REPLAYS=<folder of your own replays> python -m pytest -q        # steps, identities, AI flags, roll sign, the smoother, names
 ```
 

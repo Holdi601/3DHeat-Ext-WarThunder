@@ -1,34 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="840" height="270" viewBox="0 0 840 270" role="img" aria-label=".3dheat container">
-<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs>
-<rect width="840" height="270" rx="10" fill="#f7f8fa"/>
-<rect x="20" y="20" width="300" height="230" rx="8" fill="#e6efff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="170.0" y="42" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.3dheat</text>
-<text x="170.0" y="62" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">one file a battle</text>
-<text x="170.0" y="79" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150"></text>
-<text x="170.0" y="96" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">manifest: game, map, match, mode,</text>
-<text x="170.0" y="113" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">started, converter, extensions</text>
-<text x="170.0" y="130" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">(heat3d/economy)</text>
-<text x="170.0" y="147" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150"></text>
-<text x="170.0" y="164" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">read by the viewer like the loose</text>
-<text x="170.0" y="181" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle" fill="#394150">files, a thousand at a time</text>
-<line x1="322" y1="135" x2="398" y2="39" stroke="#5b6270" stroke-width="1.6" marker-end="url(#a)"/>
-<rect x="400" y="20" width="420" height="38" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="610.0" y="42" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330"></text>
-<text x="414" y="44" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#1d2330"><tspan font-weight="600">&lt;match&gt;.parquet</tspan>  the table</text>
-<line x1="322" y1="135" x2="398" y2="85" stroke="#5b6270" stroke-width="1.6" marker-end="url(#a)"/>
-<rect x="400" y="66" width="420" height="38" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="610.0" y="88" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330"></text>
-<text x="414" y="90" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#1d2330"><tspan font-weight="600">&lt;match&gt;.match.json</tspan>  the match document</text>
-<line x1="322" y1="135" x2="398" y2="131" stroke="#5b6270" stroke-width="1.6" marker-end="url(#a)"/>
-<rect x="400" y="112" width="420" height="38" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="610.0" y="134" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330"></text>
-<text x="414" y="136" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#1d2330"><tspan font-weight="600">&lt;match&gt;.messages.parquet</tspan>  every message, kept whole</text>
-<line x1="322" y1="135" x2="398" y2="177" stroke="#5b6270" stroke-width="1.6" marker-end="url(#a)"/>
-<rect x="400" y="158" width="420" height="38" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="610.0" y="180" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330"></text>
-<text x="414" y="182" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#1d2330"><tspan font-weight="600">&lt;match&gt;.objectives.parquet</tspan>  capture zones over time</text>
-<line x1="322" y1="135" x2="398" y2="223" stroke="#5b6270" stroke-width="1.6" marker-end="url(#a)"/>
-<rect x="400" y="204" width="420" height="38" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="610.0" y="226" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#1d2330"></text>
-<text x="414" y="228" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="13" fill="#1d2330"><tspan font-weight="600">&lt;match&gt;.flight.parquet</tspan>  every flight-model entry</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="454" viewBox="0 0 880 454" role="img" aria-label="What one .3dheat file holds"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect width="880" height="454" rx="10" fill="#f7f8fa"/>
+<text x="440" y="30" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle" fill="#1d2330">What one .3dheat file holds</text>
+<rect x="20" y="48" width="840" height="356" rx="8" fill="#eef4ff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="440" y="72" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.3dheat</text>
+<text x="440" y="92" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">one file a battle; its manifest names the game, map, match, mode and start</text>
+<rect x="40" y="108" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="132" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.parquet</text>
+<text x="235" y="154" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">the table: tracks and events</text>
+<rect x="450" y="108" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="132" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.match.json</text>
+<text x="645" y="154" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">the match document</text>
+<rect x="40" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.messages.parquet</text>
+<text x="235" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">sidecar: every message, whole</text>
+<rect x="450" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.objectives.parquet</text>
+<text x="645" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">sidecar: capture zones over time</text>
+<rect x="40" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.flight.parquet</text>
+<text x="235" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">sidecar: flight-model entries</text>
+<rect x="450" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">manifest</text>
+<text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">game, map, match, converter,</text>
+<text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">the battle&#x27;s economy</text>
+<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">The viewer opens it like the loose files. With --loose you get these files one by one instead.</text>
 </svg>

@@ -1,36 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="796" height="572" viewBox="0 0 796 572" role="img" aria-label="the match document">
-<rect width="796" height="572" rx="8" fill="#1e1f24"/>
-<rect width="796" height="26" rx="8" fill="#2c2e35"/><rect y="18" width="796" height="8" fill="#2c2e35"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="872" height="506" viewBox="0 0 872 506" role="img" aria-label="heat3d-wt-replay: match-document">
+<rect width="872" height="506" rx="8" fill="#1e1f24"/>
+<rect width="872" height="26" rx="8" fill="#2c2e35"/><rect y="18" width="872" height="8" fill="#2c2e35"/>
 <circle cx="16" cy="13" r="5" fill="#ff5f57"/><circle cx="32" cy="13" r="5" fill="#febc2e"/><circle cx="48" cy="13" r="5" fill="#28c840"/>
-<text x="398.0" y="17" fill="#9aa0aa" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle">the match document</text>
-<g font-family="Consolas,Menlo,DejaVu Sans Mono,monospace" font-size="13" xml:space="preserve" style="white-space:pre">
-<text x="16" y="46" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;head&#160;avg_test_land_RB_2026-10-26_07-33-20_000000001234abcd.match.json</text>
-<text x="16" y="64" fill="#d6d9df" xml:space="preserve" style="white-space:pre">{</text>
-<text x="16" y="82" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;format&quot;:&#160;&quot;heat3d-wt-replay-match&quot;,</text>
-<text x="16" y="100" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;version&quot;:&#160;2,</text>
-<text x="16" y="118" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;match&quot;:&#160;&quot;avg_test_land_RB_2026-10-26_07-33-20_000000001234abcd&quot;,</text>
-<text x="16" y="136" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;map&quot;:&#160;&quot;avg_test_land&quot;,</text>
-<text x="16" y="154" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;difficulty&quot;:&#160;&quot;RB&quot;,</text>
-<text x="16" y="172" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;gameMode&quot;:&#160;&quot;&quot;,</text>
-<text x="16" y="190" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;started&quot;:&#160;&quot;2026-10-26T07:33:20+00:00&quot;,</text>
-<text x="16" y="208" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&quot;result&quot;:&#160;{</text>
-<text x="16" y="226" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&quot;winner&quot;:&#160;&quot;1&quot;,</text>
-<text x="16" y="244" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&quot;status&quot;:&#160;&quot;success&quot;,</text>
-<text x="16" y="262" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&quot;authorTeam&quot;:&#160;&quot;1&quot;,</text>
-<text x="16" y="280" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&quot;teams&quot;:&#160;[</text>
-<text x="16" y="298" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&quot;1&quot;,</text>
-<text x="16" y="316" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;&quot;2&quot;</text>
-<text x="16" y="334" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;],</text>
-<text x="16" y="352" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&quot;source&quot;:&#160;&quot;results.status&quot;</text>
-<text x="16" y="370" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;},</text>
-<text x="16" y="388" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;...</text>
-<text x="16" y="406" fill="#d6d9df" xml:space="preserve" style="white-space:pre">}</text>
-<text x="16" y="424" fill="#d6d9df" xml:space="preserve" style="white-space:pre"></text>
-<text x="16" y="442" fill="#d6d9df" xml:space="preserve" style="white-space:pre">keys:&#160;format,&#160;version,&#160;match,&#160;map,&#160;level,&#160;mission,&#160;missionKey,&#160;battleClass,&#160;environment,&#160;weather,&#160;</text>
-<text x="16" y="460" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;sessionId,&#160;server,&#160;replayVersion,&#160;flightLayout,&#160;files,&#160;started,&#160;timePlayed,&#160;replayEnd,&#160;</text>
-<text x="16" y="478" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;author,&#160;authorUserId,&#160;teams,&#160;settings,&#160;sky,&#160;players,&#160;slots,&#160;units,&#160;objects,&#160;kills,&#160;hits,&#160;</text>
-<text x="16" y="496" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;modulesDestroyed,&#160;weapons,&#160;explosions,&#160;flak,&#160;awards,&#160;detections,&#160;unitStates,&#160;</text>
-<text x="16" y="514" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;authorInstruments,&#160;triggers,&#160;hints,&#160;missionProgress,&#160;camera,&#160;trackBreaks,&#160;chat,&#160;results,&#160;</text>
-<text x="16" y="532" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;counts,&#160;vehicleNames,&#160;selfCheck,&#160;conventions,&#160;battle,&#160;difficulty,&#160;gameMode,&#160;</text>
-<text x="16" y="550" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#160;&#160;projectileHitReplays,&#160;scoreboard,&#160;result,&#160;economy,&#160;entityMessages,&#160;objectives&#160;</text>
+<text x="436.0" y="17" fill="#9aa0aa" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle">heat3d-wt-replay: match-document</text>
+<g font-family="Consolas,Menlo,DejaVu Sans Mono,monospace" font-size="14" xml:space="preserve" style="white-space:pre">
+<text x="16" y="46" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;python&#160;-c&#160;&quot;import&#160;json;&#160;d&#160;=</text>
+<text x="16" y="65" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;json.load(open(&#x27;loose/99_testmap/99_testmap_RB_2026-10-26_07-33-20_000000001234abcd.match.json&#x27;)</text>
+<text x="16" y="84" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;);&#160;[print(k,&#160;&#x27;=&#x27;,&#160;d.get(k))&#160;for&#160;k&#160;in&#160;(&#x27;format&#x27;,&#160;&#x27;version&#x27;,&#160;&#x27;map&#x27;,&#160;&#x27;mission&#x27;,&#160;&#x27;difficulty&#x27;,</text>
+<text x="16" y="103" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#x27;gameMode&#x27;,&#160;&#x27;started&#x27;,&#160;&#x27;timePlayed&#x27;,&#160;&#x27;replayEnd&#x27;,&#160;&#x27;teams&#x27;)]&quot;</text>
+<text x="16" y="122" fill="#d6d9df" xml:space="preserve" style="white-space:pre">format&#160;=&#160;heat3d-wt-replay-match</text>
+<text x="16" y="141" fill="#d6d9df" xml:space="preserve" style="white-space:pre">version&#160;=&#160;2</text>
+<text x="16" y="160" fill="#d6d9df" xml:space="preserve" style="white-space:pre">map&#160;=&#160;99_testmap</text>
+<text x="16" y="179" fill="#d6d9df" xml:space="preserve" style="white-space:pre">mission&#160;=&#160;test_Dom</text>
+<text x="16" y="198" fill="#d6d9df" xml:space="preserve" style="white-space:pre">difficulty&#160;=&#160;RB</text>
+<text x="16" y="217" fill="#d6d9df" xml:space="preserve" style="white-space:pre">gameMode&#160;=&#160;</text>
+<text x="16" y="236" fill="#d6d9df" xml:space="preserve" style="white-space:pre">started&#160;=&#160;2026-10-26T07:33:20+00:00</text>
+<text x="16" y="255" fill="#d6d9df" xml:space="preserve" style="white-space:pre">timePlayed&#160;=&#160;30.0</text>
+<text x="16" y="274" fill="#d6d9df" xml:space="preserve" style="white-space:pre">replayEnd&#160;=&#160;21.0</text>
+<text x="16" y="293" fill="#d6d9df" xml:space="preserve" style="white-space:pre">teams&#160;=&#160;[&#x27;1&#x27;,&#160;&#x27;2&#x27;]</text>
+<text x="16" y="312" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;python&#160;-c&#160;&quot;import&#160;json;&#160;print(&#x27;,</text>
+<text x="16" y="331" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;&#x27;.join(json.load(open(&#x27;loose/99_testmap/99_testmap_RB_2026-10-26_07-33-20_000000001234abcd.match</text>
+<text x="16" y="350" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;.json&#x27;))))&quot;</text>
+<text x="16" y="369" fill="#d6d9df" xml:space="preserve" style="white-space:pre">format,&#160;version,&#160;match,&#160;map,&#160;level,&#160;mission,&#160;missionKey,&#160;battleClass,&#160;environment,&#160;weather,</text>
+<text x="16" y="388" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;sessionId,&#160;server,&#160;replayVersion,&#160;flightLayout,&#160;files,&#160;started,&#160;timePlayed,&#160;replayEnd,&#160;author,</text>
+<text x="16" y="407" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;authorUserId,&#160;teams,&#160;settings,&#160;sky,&#160;players,&#160;slots,&#160;units,&#160;objects,&#160;kills,&#160;hits,</text>
+<text x="16" y="426" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;modulesDestroyed,&#160;weapons,&#160;explosions,&#160;flak,&#160;awards,&#160;detections,&#160;unitStates,&#160;authorInstruments,</text>
+<text x="16" y="445" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;triggers,&#160;hints,&#160;missionProgress,&#160;camera,&#160;trackBreaks,&#160;chat,&#160;results,&#160;counts,&#160;vehicleNames,</text>
+<text x="16" y="464" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;selfCheck,&#160;conventions,&#160;battle,&#160;difficulty,&#160;gameMode,&#160;projectileHitReplays,&#160;scoreboard,&#160;result,</text>
+<text x="16" y="483" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;economy,&#160;entityMessages,&#160;objectives</text>
 </g></svg>

@@ -1,6 +1,6 @@
 ---
 title: Output files
-nav_order: 4
+nav_order: 5
 ---
 
 # Output files
@@ -31,10 +31,15 @@ If packing fails, the loose files are kept and the line says so.
 
 `<match>` is `<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>`, as in the
 picture: see [Which files are one battle](converting.md#which-files-are-one-battle).
+`<map>` is the game's own id of the map (`99_testmap` in the pictures).
 
 ## Coordinates
 
-![The coordinate frame](assets/img/frame.svg)
+![Where x, y and z point](assets/img/frame.svg)
+
+Metres, in the game's own world: x east, y up, z north. The table's footer
+tells the viewer to mirror z, and levels from `heat3d-wt-level` are written
+the same way, so a replay and its level lie on each other.
 
 ---
 

@@ -67,7 +67,7 @@ def converted(tmp_path):
 
 def test_writes_map_folder_and_hints(converted):
     t, doc, path = converted
-    assert path.parent.name == "avg_test_land"
+    assert path.parent.name == "99_testmap"
     hints = json.loads(t.schema.metadata[b"heat3d"])
     assert hints["axes"] == {"up": "y", "flipX": False, "flipY": False, "flipZ": True, "scale": 1}
     assert hints["columns"]["personId"] == "track" and hints["columns"]["lookMode"] == "vector"
@@ -112,7 +112,7 @@ def test_kill_rows_where_it_happened(converted):
 
 def test_match_document(converted):
     _, doc, _ = converted
-    assert doc["format"] == "heat3d-wt-replay-match" and doc["map"] == "avg_test_land"
+    assert doc["format"] == "heat3d-wt-replay-match" and doc["map"] == "99_testmap"
     assert doc["kills"][0]["killer"] == "Pilot One" and doc["kills"][0]["victim"] == "uid 345"
     assert doc["chat"] == [{"time": 15.0, "sender": "Pilot One", "text": "gg"}]
     c = doc["counts"]
@@ -144,12 +144,12 @@ def test_cli(tmp_path, capsys):
     assert code == 1  # the bad one
     assert "failed" in out and out.count("ok ") == 1
     # One file a battle by default; --loose keeps the table, the document and the sidecars apart.
-    packed = list((tmp_path / "out" / "avg_test_land").iterdir())
+    packed = list((tmp_path / "out" / "99_testmap").iterdir())
     assert [p.suffix for p in packed] == [".3dheat"]
     with zipfile.ZipFile(packed[0]) as z:
         assert any(n.endswith(".match.json") for n in z.namelist())
     assert cli.main([str(tmp_path / "in" / "a.wrpl"), "-o", str(tmp_path / "loose"), "--loose"]) == 0
-    assert list((tmp_path / "loose" / "avg_test_land").glob("*.match.json"))
+    assert list((tmp_path / "loose" / "99_testmap").glob("*.match.json"))
     assert cli.main([str(tmp_path / "empty-folder-that-is-missing"), "-o", str(tmp_path / "o2")]) in (1, 2)
 
 
@@ -199,14 +199,14 @@ def test_battle_mode_from_header_and_mission():
            '"missions/_NDom2";"[┚ Domination #2]"\r\n').encode("utf-8")
     m = names.Missions(names.read_table(raw))
     assert m.lookup("missions/_Dom") == ("Domination", "") and m.lookup("missions/_NDom2")[0] == "Domination #2"
-    r = convert.Replay([], {"difficulty": 0xBA, "locName": "missions/_NDom2;aleutian_islands/name"}, {}, {}, {}, [],
+    r = convert.Replay([], {"difficulty": 0xBA, "locName": "missions/_NDom2;test_islands/name"}, {}, {}, {}, [],
                        [], [], 0, "", settings={"allowedUnitTypes": {"isTanksAllowed": False, "isShipsAllowed": True}})
     mode = convert.battle_mode(r, m)
     assert (mode["difficulty"], mode["difficultyName"], mode["gameMode"]) == ("SB", "simulator", "naval")
     assert (mode["missionMode"], mode["missionModeName"]) == ("NDom2", "Domination #2")
-    h = {"map": "avg_poland", "startTime": 1793000000, "sessionId": "01123a9d00049d35", "difficulty": 0x30}
-    assert convert.match_name(h) == "avg_poland_AB_2026-10-26_07-33-20_01123a9d00049d35"
-    assert convert.match_name({**h, "difficulty": 0x77}) == "avg_poland_2026-10-26_07-33-20_01123a9d00049d35"
+    h = {"map": "99_testmap", "startTime": 1793000000, "sessionId": "01123a9d00049d35", "difficulty": 0x30}
+    assert convert.match_name(h) == "99_testmap_AB_2026-10-26_07-33-20_01123a9d00049d35"
+    assert convert.match_name({**h, "difficulty": 0x77}) == "99_testmap_2026-10-26_07-33-20_01123a9d00049d35"
 
 
 def _remote_battle() -> bytes:
@@ -394,7 +394,7 @@ def test_cli_reads_a_server_replay_zip(tmp_path, capsys):
     code = cli.main([str(z), str(empty), "-o", str(tmp_path / "out"), "--loose"])
     out = capsys.readouterr().out
     assert code == 1 and out.count("ok ") == 1 and "no .wrpl file in the zip" in out
-    doc = json.loads(next((tmp_path / "out" / "avg_test_land").glob("*.match.json")).read_text(encoding="utf-8"))
+    doc = json.loads(next((tmp_path / "out" / "99_testmap").glob("*.match.json")).read_text(encoding="utf-8"))
     assert doc["files"] == ["0000.wrpl", "0001.wrpl", "escape.wrpl"]
     assert not (tmp_path / "escape.wrpl").exists()
 

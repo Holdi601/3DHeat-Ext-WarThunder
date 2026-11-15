@@ -1,6 +1,6 @@
 ---
 title: Objectives
-nav_order: 13
+nav_order: 15
 ---
 
 # Objectives
@@ -26,11 +26,10 @@ nav_order: 13
 
 The capture zones over time are the sidecar `<match>.objectives.parquet`: the replicated objects of kind 5, one
 per zone - field 2 its owner (0, 1, 2), field 67 its capture progress, a signed byte from -100 to 100 (positive
-towards team 2), field 69 its index. Checked (`selfCheck.objectives`) on the ten ground server test battles
-(Conquest #1, #2, #4 and Domination): all 43 owner changes come with a player of the capturing team gaining a
-`captureZone` in the scoreboard at the same moment (within 1.5 s) and with a living ground unit of that team inside
-the zone; every battle's spawns show the replay's teams one way only (6 of 10 swapped against the mission's
-`t1_` / `t2_`).
+towards team 2), field 69 its index. Checked (`selfCheck.objectives`) on ground server replays of Conquest and Domination battles: every owner change
+comes with a player of the capturing team gaining a `captureZone` in the scoreboard at the same moment (within
+1.5 s) and with a living ground unit of that team inside the zone; every battle's spawns show the replay's teams
+one way only (often swapped against the mission's `t1_` / `t2_`).
 
 ## Scene units: trams and rail wagons
 
@@ -38,12 +37,11 @@ A level can place units of its own: the `unit_loader+rail_wagon` entities of a s
 level's scene file (`gamedata/scenes/<level>_objects.blk` in `aces.vromfs.bin`: `setting__unit_class`, its
 transform and `setting__isDead`). Their entities carry no readable uid, so a ground track without a unit entity
 whose first sample lies within 2 m of a scene unit is that unit: its class as `Vehicle`, kind `train`, type
-`tram`, `locomotive` or `wagon`, no team; a unit the scene places dead (all of them in the test battles: burnt-out
-trams) is a wreck (`alive` 0) from its first row. The game has no English name for them; `VehicleName` is the id
-read as words ("Railway tram A"). Their positions do not wobble: of the 29 in the first test battle, 28 never move
-(every sample the same to the bit) and one is pushed 0.3 m once. The replay sends them about ten times a second
+`tram`, `locomotive` or `wagon`, no team; a unit the scene places dead (such as burnt-out trams) is a wreck (`alive` 0) from its first row. The game has no English name for them; `VehicleName` is the id
+read as words ("Railway tram A"). Their positions do not wobble: nearly all never move (every
+sample the same to the bit). The replay sends them about ten times a second
 regardless, so of their samples only those that move them (0.05 m or 0.1 degrees) are kept, and one every 10 s
-(`selfCheck.sceneUnits`: 114,644 samples dropped in the first battle). Before, they were tracks named `uid 8`
+(`selfCheck.sceneUnits` counts the samples dropped). Before, they were tracks named `uid 8`
 with no vehicle.
 
 ---

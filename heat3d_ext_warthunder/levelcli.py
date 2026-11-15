@@ -55,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
                     help=f"ground sampling, ground colour and object budget over the tank map (default {DEFAULT_DETAIL}; "
                          + ", ".join(f"{k}: {v['objects']:,} object triangles" for k, v in DETAIL.items()) + ")")
     ex.add_argument("--max-object-triangles", type=int, default=None,
-                    help="budget for objects (default: the --detail's): over it, costly types step down a LOD, then to boxes")
+                    help="budget for objects (default: the --detail's): over it, costly types step down a LOD, then to a crown or their collision shape, then are left out")
     ex.add_argument("--no-generated", action="store_true", help="leave out the objects the land classes generate (forests, towns)")
     ex.add_argument("--no-terrain-colour", action="store_true", help="texture the ground with the tactical map, not the land classes")
     ex.add_argument("--no-texture", action="store_true", help="do not texture the ground with the tactical map")

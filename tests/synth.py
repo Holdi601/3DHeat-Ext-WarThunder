@@ -344,7 +344,7 @@ def camera(quat: tuple[float, ...], offset: tuple[float, float, float], local: t
                                                         7: (16, b"\x01\x00")})
 
 
-def header(level: str = "levels/avg_test_land.bin", session: int = 0x1234ABCD, start: int = 1793000000,
+def header(level: str = "levels/99_testmap.bin", session: int = 0x1234ABCD, start: int = 1793000000,
            server: bool = False, part: int = 0, difficulty: int = 0x75) -> bytearray:
     h = bytearray(wrpl.HEADER_SIZE)
     struct.pack_into("<II", h, 0, wrpl.MAGIC, 101404)

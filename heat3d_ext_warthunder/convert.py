@@ -643,7 +643,7 @@ def _packed_height(r: Replay) -> dict[str, Any]:
     """
     Ground positions come as floats or packed in 64 bits; the packed height
     counts from -100 m on most levels but from higher up on a level whose
-    ground lies high (air_afghan: 1505 m higher, its water level). The offset is measured on
+    ground lies high (by its water level, which can be more than a kilometre). The offset is measured on
     the replay's own data - a unit's float sample and its packed one under
     12 s apart, and a unit's creation point (entity stream) against its first
     packed sample within 15 s - and added to every packed height when at
@@ -2967,52 +2967,51 @@ def _rate(all_lives: list[Life], kind: str) -> float | None:
 
 #: The recording player's instruments (0xD04A) by number: (name, unit, how it was checked). The numbers are one list
 #: for all cockpits (rpm is 93 in a piston fighter and in a jet); a cockpit sends the ones its gauges show. Checked on
-#: the I-185 of the air arcade battle and the Eurofighter of the two air simulator battles against what the replay
-#: says otherwise: the aircraft's own track (speed, climb, height, attitude, turn), the flight entries (velocity,
+#: client replays of a piston fighter and a jet against what the replay says otherwise: the aircraft's own track (speed, climb, height, attitude, turn), the flight entries (velocity,
 #: controls, ammunition), FmwRpm, the weapon preset and the header's start time. "likely": the behaviour fits, nothing
 #: independent to check it against.
 INSTRUMENTS: dict[int, tuple[str, str, str]] = {
     0: ("ias", "m/s", "indicated airspeed: the track's speed corrected by the ISA air density at its height, "
-                      "correlation 0.990, median 1.6 m/s apart (I-185)"),
+                      "correlation 0.99, a few m/s apart"),
     23: ("stickElevator", "-1..1", "the stick as the cockpit moves it (its sign differs between cockpits): with the "
-                                   "flight entry's elevator 0.70 / -0.61, the angle of attack 0.93 / -0.31 (I-185 / Eurofighter)"),
-    31: ("stickAilerons", "-1..1", "with the flight entry's ailerons 0.38 / 0.69, the roll rate 0.65 / 0.66"),
-    39: ("vario", "m/s", "climb rate: the track's, correlation 0.9995, median 0.44 m/s apart"),
-    40: ("altitude", "m", "the track's height, correlation 1.000, median 3.8 m apart"),
+                                   "flight entry's elevator and the angle of attack"),
+    31: ("stickAilerons", "-1..1", "with the flight entry's ailerons and the roll rate"),
+    39: ("vario", "m/s", "climb rate: the track's, correlation above 0.99"),
+    40: ("altitude", "m", "the track's height, a few metres apart"),
     41: ("altitudeHundreds", "m", "altitude modulo 1000, exactly (the altimeter's small hand)"),
-    52: ("horizonRoll", "degrees", "minus the table's roll, median 0.63 degrees apart"),
-    53: ("horizonPitch", "degrees", "minus the table's pitch, median 0.16 degrees apart"),
-    58: ("slipBall", "-8..8", "likely the slip ball (moves with the side force, correlation -0.25 only)"),
-    61: ("turnNeedle", "", "likely the turn needle (with the turn rate 0.44 only)"),
-    64: ("compass", "degrees", "the table's heading, median 0.09 degrees apart"),
-    69: ("clockHour", "h", "the recording computer's local time, 12-hour dial: the header's start (UTC+1) plus the "
+    52: ("horizonRoll", "degrees", "minus the table's roll, under a degree apart"),
+    53: ("horizonPitch", "degrees", "minus the table's pitch, under a degree apart"),
+    58: ("slipBall", "-8..8", "likely the slip ball (moves with the side force, weakly)"),
+    61: ("turnNeedle", "", "likely the turn needle (with the turn rate, weakly)"),
+    64: ("compass", "degrees", "the table's heading, under 0.1 degree apart"),
+    69: ("clockHour", "h", "the recording computer's local time, 12-hour dial: the header's start plus the "
                           "replay time, to the minute"),
     71: ("clockMinute", "min", "as clockHour"),
     73: ("clockSecond", "s", "as clockHour"),
-    75: ("manifoldPressure", "atm", "1.55 at war emergency power, 1.29 at 100 % (median, I-185)"),
-    135: ("oilTemperature", "C", "likely: rises from 60 to 129 over a sortie (I-185)"),
-    159: ("headTemperature", "C", "likely: cylinder heads, rises from 140 to 249 (I-185)"),
-    195: ("fuel", "kg", "falls in 2,077 of 2,080 steps, full again at the respawn (I-185); the unit is the gauge's"),
-    223: ("airbrake", "0..1", "likely: only on approach (127-141 m/s), with flight-entry nibble 5 (correlation 0.82)"),
+    75: ("manifoldPressure", "atm", "higher at war emergency power than at full throttle"),
+    135: ("oilTemperature", "C", "likely: rises over a sortie"),
+    159: ("headTemperature", "C", "likely: cylinder heads, rises over a sortie"),
+    195: ("fuel", "kg", "falls through a sortie, full again at a respawn; the unit is the gauge's"),
+    223: ("airbrake", "0..1", "likely: only on approach, with flight-entry nibble 5"),
 }
 for _i in range(6):
     INSTRUMENTS[15 + _i] = (f"pedals{_i + 1}", "-1..1", "rudder pedals (all alike): with the side force on the "
-                                                        "aircraft 0.84, the flight entry's rudder 0.57 / 0.40")
+                                                        "aircraft and the flight entry's rudder")
     INSTRUMENTS[81 + _i] = (f"rpm{_i + 1}", "rpm", f"engine {_i + 1}: equal to instrument {93 + _i}")
     INSTRUMENTS[87 + _i] = (f"rpm{_i + 1}Hundreds", "rpm", f"engine {_i + 1}'s rpm modulo 1000, exactly")
-    INSTRUMENTS[93 + _i] = (f"rpm{_i + 1}Gauge", "rpm", f"engine {_i + 1}: FmwRpm (0xD047) correlation 0.973 to 0.996")
+    INSTRUMENTS[93 + _i] = (f"rpm{_i + 1}Gauge", "rpm", f"engine {_i + 1}: FmwRpm (0xD047) correlation above 0.97")
 for _i in range(3):
     INSTRUMENTS[228 + _i] = (f"gear{_i + 1}", "0..1", "landing gear leg, 1 down: down only at the airfields' height "
-                                                      "and under 125 m/s (Eurofighter, 9 spawns and 2 landings)")
-    INSTRUMENTS[330 + _i] = (f"ammoCounter{_i + 1}", "rounds", "starts at the weapon preset's count (140, 250, 170 "
-                                                              "on the I-185) and falls with the flight entry's ammunition")
+                                                      "and at landing speed")
+    INSTRUMENTS[330 + _i] = (f"ammoCounter{_i + 1}", "rounds", "starts at the weapon preset's count "
+                                                              "and falls with the flight entry's ammunition")
     INSTRUMENTS[346 + _i] = (f"ammoCounter{_i + 1}b", "rounds", f"equal to instrument {330 + _i}")
 for _i in range(2):
     INSTRUMENTS[240 + _i] = (f"throttle{_i + 1}", "0..1.1", "1.1 war emergency power or afterburner: the flight "
-                                                           "entry's throttle 0.74; manifold pressure higher with it")
+                                                           "entry's throttle; manifold pressure higher with it")
 for _i in list(range(490, 498)) + list(range(500, 506)):
     INSTRUMENTS[_i] = (f"brake{_i - 489}", "0..1", "likely the wheel brakes: set only standing on the airfield "
-                                                    "(0-14 m/s), with flight-entry nibble 4 (correlation 0.93)")
+                                                    "with flight-entry nibble 4")
 
 #: Columns of the table filled on the recording player's own aircraft from its instruments: column -> instrument.
 AUTHOR_COLUMNS = {"ias": 0, "vario": 39, "fuel": 195, "manifoldPressure": 75, "gear": 228, "oilTemperature": 135,
@@ -3102,9 +3101,9 @@ def limit_turrets(all_lives: list[Life], extra: list[dict[str, Any]], arms: arse
                   ) -> dict[str, Any]:
     """
     The main turret held to its drive (`Sample.turret`; the replay's own value stays in `turrets`). The value the
-    server sends follows the drive while the player's aim is far from the gun (BMPT-72: 1.55 degrees every 0.041 s,
-    38 degrees a second) but jumps onto the aim when it is near (5-11 degrees in 0.041 s, up to 270 degrees a
-    second): no turret turns so. Here each turret's yaw and gun pitch, relative to the hull, move towards the
+    server sends follows the drive while the player's aim is far from the gun (at the drive's steady rate,
+    for seconds) but jumps onto the aim when it is near (several degrees in one 0.041 s step, far faster than any
+    drive): no turret turns so. Here each turret's yaw and gun pitch, relative to the hull, move towards the
     replay's value at no more than its drive's speed (`speedYaw`, `speedPitch` from the install, times
     DRIVE_ALLOWANCE for crew and modifications; a stabiliser takes back the hull's turn with the same drive), and
     take the replay's value wherever that is within reach. At every shot of the main gun (a `shot`

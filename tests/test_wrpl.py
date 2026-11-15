@@ -26,8 +26,8 @@ def test_bits_read_most_significant_first_and_numbers_little_endian():
 
 
 def test_header_fields_and_map():
-    h = wrpl.read_header(bytes(synth.header(level="levels/avg_test_land.bin", session=0xABC, server=True, part=3)))
-    assert h["map"] == "avg_test_land"
+    h = wrpl.read_header(bytes(synth.header(level="levels/99_testmap.bin", session=0xABC, server=True, part=3)))
+    assert h["map"] == "99_testmap"
     assert h["sessionId"] == "0000000000000abc"
     assert h["server"] and h["part"] == 3
     assert h["battleClass"] == "base_dom" and h["timeLimit"] == 25

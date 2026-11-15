@@ -896,8 +896,8 @@ def _ground_position(body: bytes, directions: bool) -> tuple[float, ...] | None:
 
     `packed`: the position came in 64 bits (x, z within 36 km in 2^21 steps,
     y in 2^20 steps of 7.6 mm from -100 m). On a level whose ground lies high
-    the packed height is not from -100 m: on air_afghan it reads 1505 m low
-    against the same units' float positions (spread 8 m over 20 pairs) - the
+    the packed height is not from -100 m: it can read more than a kilometre low
+    against the same units' float positions - by the
     level's water level, so the packed height likely counts from it. The
     converter measures the offset on the replay itself (see convert.py).
     """
@@ -1478,13 +1478,12 @@ def read_gunner(body: bytes) -> dict[str, Any] | None:
     """
     0xD041, to an aircraft with defensive guns: field 1 a gun's index (u16),
     field 2 a byte, field 3 three floats. Sent twice a second per gun for the
-    whole flight (median 0.50 s apart). Checked: on the air arcade battle the
-    indices of each vehicle run 0 to n-1 where n is the number of gunner
-    weapons in its flight model (the install's `gamedata/flightmodels/
-    <vehicle>.blk`, Weapon blocks with a `gunner` trigger) for 16 of 17
-    vehicles; the 17th (A-26B-10) has 4 indices and 12 such blocks over its
-    presets. The vector was all zero in the four replays (what it carries
-    is not known).
+    whole flight (median 0.50 s apart). Checked: the indices of each vehicle run 0 to n-1
+    where n is the number of gunner weapons in its flight model (the
+    install's `gamedata/flightmodels/<vehicle>.blk`, Weapon blocks with a
+    `gunner` trigger), but for a vehicle whose presets spread its gunner
+    weapons differently. The vector was all zero in the replays read (what
+    it carries is not known).
     """
     f = id_field_map(body)
     if 1 not in f:
@@ -1596,9 +1595,9 @@ def flight_extras(n: int, raw: bytes, layout: str = "2026", phase: int = 0) -> d
     * `ammo`: the zigzag number list before the position: one item per
       weapon, its first number the rounds left (the nested numbers of the
       2026 layout are kept in `numbers`). Checked on the recording
-      player's I-185: [250, 140, 170] at the start, the counts of the
-      aircraft's three cannon in its weapon preset, and they fall with the
-      cockpit's ammunition counters to within one tick.
+      player's aircraft: at the start, the counts of its cannon in its
+      weapon preset, and they fall with the cockpit's ammunition counters
+      to within one tick.
     * `nibbles`: the 7 bytes after it as 14 four-bit values. For the
       recording player's own aircraft, sent every tick: nibble 1 the
       elevator, 2 the ailerons, 3 the rudder, each 8 at rest
@@ -1606,20 +1605,17 @@ def flight_extras(n: int, raw: bytes, layout: str = "2026", phase: int = 0) -> d
       positive rolling right), nibble 11 the throttle in fifteenths
       (`throttle`; 15 also for war emergency power and afterburner).
       Checked against the cockpit's own stick, pedal and throttle values
-      (correlation 0.70 / 0.61 elevator, 0.38 / 0.69 ailerons, 0.57 / 0.40
-      rudder, 0.74 throttle; I-185 / Eurofighter) and against the aircraft's
-      motion (elevator with the angle of attack 0.46 / 0.28, ailerons with
-      the roll rate 0.56 / 0.42). For other aircraft these bytes change only
+      and against the aircraft's motion (elevator with the angle of attack,
+      ailerons with the roll rate), on a piston fighter and a jet. For other aircraft these bytes change only
       a few times a battle (a full update now and then) and are not
       their controls at that moment; they are not used for them.
     * `engines`: per engine (state byte, afterburner u16 or None, condition
       byte or None, the tail as sent), and `engineStates` the states named
-      (ENGINE_STATES): on the recording player's Eurofighter 0 before the
-      start, 1-6 while the rpm runs up from 0 to 1,600 after a spawn on
-      the airfield, 7 running (rpm 12,700 median), 8 the last seconds
-      before its loss; the u16 is there only with the throttle at 1.1
+      (ENGINE_STATES): on the recording player's jet 0 before the
+      start, 1-6 while the rpm runs up after a spawn on the airfield, 7
+      running, 8 the last seconds before its loss; the u16 is there only with the throttle at 1.1
       (afterburner; 32767 full), the condition byte only after the engine
-      was hit (falling from 121 as the rpm at full throttle fell to 8,000).
+      was hit (falling as the rpm at full throttle fell).
     """
     r = entry_bits(n, raw, phase)
     form = FLIGHT_LAYOUTS[layout]

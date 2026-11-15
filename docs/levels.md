@@ -1,6 +1,6 @@
 ---
 title: Levels
-nav_order: 14
+nav_order: 9
 ---
 
 # Levels (heat3d-wt-level)
@@ -10,8 +10,14 @@ nav_order: 14
 
 ## Step by step
 
-1. List the levels of your install: `heat3d-wt-level list` (each level, its
-   terrain and its maps).
+1. List the levels of your install: `heat3d-wt-level list`. It prints one
+   line per level: its name, its terrain and its maps, then the count. For
+   example (an invented level):
+
+   ```text
+   99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
+   1 levels in C:\Games\War Thunder
+   ```
 2. Extract one, several (wildcards allowed) or all:
 
    ```bash
@@ -24,7 +30,7 @@ nav_order: 14
    battles of that map.
 
 The levels you write stay on your machine: never publish them (see
-[Terms and sources](terms.md)).
+[Terms and licence](terms.md)).
 
 ## Options
 
@@ -100,8 +106,8 @@ buildings last, by the ranges their makers gave each LOD (the JSON's
 `lodDistance`); what that step saves beyond the budget goes back to the largest
 objects. Coarse ground colour (air maps) averages each land class's tiled textures down to the pixel size first, so
 the tiles do not alias into a moire. If even the coarsest LODs do not fit, the trees that save most become
-crowns, and then the smallest types are left out (`leftOut`); no object is ever
-drawn as a box.
+crowns, and then the smallest types are left out (`leftOut`); no object is
+drawn as a box (a collision shape, if any, is the object's own).
 Generated objects are thinned deterministically by kind (`density`), the same
 ones every run. `--max-object-triangles` overrides the budget,
 `--max-grid` (default 1024) caps the heightmap's coarser parts, `--no-objects`
@@ -118,16 +124,16 @@ and ground decals; `trianglesTotal`, `glbBytes` and `secondsBy` the totals.
 
 | Part | Status |
 |---|---|
-| Level binary (`levels/<level>.bin`, `DBLD` 3x64): block table | all 164 levels of this machine's install |
-| Heightmap (`HM2`, versions 0-2; version 2 is 8-bit values in blocks, Oodle or zstd chunks) | 90 of the 164 levels have one, all version 2 with Oodle chunks; checked by eye against their tactical maps (rivers, valleys, coasts and towns line up) |
-| Land mesh collision (`lmap`, its `LTdump` land ray tracer) | 116 levels have one, all Oodle-packed. It is the game's collision surface, not the rendered mesh, so it is coarser where the land is flat |
-| Ground colour (`lmap` land classes and weight map, `LMp2` physics map, `hspl` splines) | the land classes' colour maps and detail textures (their average colours) weighted by the weight map, the 1 m biome index of indexed land classes, the road and ground-decal shapes of the physics map in the colour of their spline's or material's texture, cliffs on steep slopes. Checked on three ground maps against the tank map: roads, towns, lakes, forest belts and rock outcrops line up. The colour formula of War Thunder's own terrain shader is not in the public source; the engine's published one (daNetGame) is used, which comes out more saturated than the tactical map |
+| Level binary (`levels/<level>.bin`, `DBLD` 3x64): block table | every level checked |
+| Heightmap (`HM2`, versions 0-2; version 2 is 8-bit values in blocks, Oodle or zstd chunks) | every level whose heightmap is version 2 with Oodle chunks; checked by eye against their tactical maps (rivers, valleys, coasts and towns line up) |
+| Land mesh collision (`lmap`, its `LTdump` land ray tracer) | read where a level has one (Oodle-packed). It is the game's collision surface, not the rendered mesh, so it is coarser where the land is flat |
+| Ground colour (`lmap` land classes and weight map, `LMp2` physics map, `hspl` splines) | the land classes' colour maps and detail textures (their average colours) weighted by the weight map, the 1 m biome index of indexed land classes, the road and ground-decal shapes of the physics map in the colour of their spline's or material's texture, cliffs on steep slopes. Checked against the tank maps: roads, towns, lakes, forest belts and rock outcrops line up. The colour formula of War Thunder's own terrain shader is not in the public source; the engine's published one (daNetGame) is used, which comes out more saturated than the tactical map |
 | Water level | `water_level` from the level's BLK in `aces.vromfs.bin` (0 where it has none) |
-| Water heightmap (`WHM`: a grid of flat cells and 130x130 pages of 16-bit heights) | the one level of this install that has one; its rivers come out 0 to 15 m, sloping with the ground |
+| Water heightmap (`WHM`: a grid of flat cells and 130x130 pages of 16-bit heights) | read where a level has one; its rivers slope with the ground |
 | Tactical maps | from `content/base/res/locations_maps.dxp.bin`, placed by the BLK's `mapCoord0/1` and `tankMapCoord0/1`; the image's top is north |
-| Placed objects (`RIGz`: the render-instance generator's fixed instances) | every instance, as a 3x4 matrix of 16-bit values or, on some levels, 32-bit ones (the cell's byte count decides); every byte of every cell accounted for on the replay levels |
-| Generated objects (`RIGz` land-class masks and the `LandClass` resources) | the game's generator, ported: the same spots tried in the same order with the same random numbers, the land-class and exclusion masks, the object picked at each spot, its rotation, scale and height offset; tiled (town blocks) and planted (forests, bushes, fields) entities. Generated over the tank map only. Approximated: the ground height and normal (from the heightmap; the game traces a ray), the exclusion boxes the game registers at run time, and trees' yaw (the game snaps it to the impostor's rotation palette). All 174 land classes of the 35 ground maps of the user's replays read |
-| Render meshes (`RendInst` resources in `content/*/res/*.grp`, materials in `riDesc.bin`) | every LOD's vertices and triangles (float positions; 16 or 32-bit indices, plain or meshoptimizer-packed), each element's material; all 1,448 object types of three ground maps read. Decal and impostor-billboard elements are left out; the transparent ones (glass) are kept |
+| Placed objects (`RIGz`: the render-instance generator's fixed instances) | every instance, as a 3x4 matrix of 16-bit values or, on some levels, 32-bit ones (the cell's byte count decides); every byte of every cell accounted for on the levels checked |
+| Generated objects (`RIGz` land-class masks and the `LandClass` resources) | the game's generator, ported: the same spots tried in the same order with the same random numbers, the land-class and exclusion masks, the object picked at each spot, its rotation, scale and height offset; tiled (town blocks) and planted (forests, bushes, fields) entities. Generated over the tank map only. Approximated: the ground height and normal (from the heightmap; the game traces a ray), the exclusion boxes the game registers at run time, and trees' yaw (the game snaps it to the impostor's rotation palette). |
+| Render meshes (`RendInst` resources in `content/*/res/*.grp`, materials in `riDesc.bin`) | every LOD's vertices and triangles (float positions; 16 or 32-bit indices, plain or meshoptimizer-packed), each element's material. Decal and impostor-billboard elements are left out; the transparent ones (glass) are kept |
 | Object colours | per material, the average of its diffuse texture's small mip (alpha-weighted for leaves), from the install's texture packs: t0 for most shaders, the first detail diffuse where t0 is an overlay or a mask. One colour per material: no texture on the objects |
 | Collision shapes (`<object>_collision`) | collision resources of stream version 3, used where an object has no render mesh. Only what the game's rays hit (`TRACEABLE` nodes) is drawn, and boxes, spheres and capsules only when the resource has no mesh: the rest are coarse physics stand-ins that would show as cubes around the object |
 | Navigation mesh (`Lnav`), the rendered land mesh, grass, `spgz`, `stbl`, `d2co` | not read |

@@ -1,14 +1,35 @@
 ---
 title: The match document
-nav_order: 6
+nav_order: 7
 ---
 
 # The match document
 
 ![The start of a synthetic match document, and its keys](assets/img/match-document.svg)
 
-The match document (`format: heat3d-wt-replay-match`, version 2) has the map,
-mission, battle class, session id, start time and author, and:
+`<match>.match.json` holds everything the replay says that is not a row of
+the table. The viewer's Match tab reads it.
+
+## The battle
+
+| Key | What |
+|---|---|
+| `format`, `version` | `heat3d-wt-replay-match`, `2` |
+| `match`, `map`, `level` | the match id (as in the file name); the map's id; the level file it uses |
+| `mission`, `missionKey` | the mission's name and its key in the game's text files |
+| `battleClass`, `environment`, `weather` | as the header gives them |
+| `sessionId`, `server` | the battle's session id; the server |
+| `replayVersion`, `flightLayout` | the replay format's version; the flight-packet layout read (`2025` or `2026`) |
+| `files` | the replay files read (one, or a server replay's parts) |
+| `started`, `timePlayed`, `replayEnd` | start time (ISO, UTC); seconds played, from the results; seconds of the replay's last packet |
+| `author`, `authorUserId` | the recording player and their Gaijin id (client replays) |
+| `teams` | the teams in the battle (`1`, `2`) |
+| `result` | `winner`, `status` (`success` or `fail`, the author's outcome), `authorTeam`, `teams` ([Economy](economy.md)) |
+| `vehicleNames` | where the vehicle names came from (your install) and their language |
+| `conventions` | the units and signs of the table: axes, time, life, track, alive, roll, and more |
+
+## Everything else
+
 
 | Key | What |
 |---|---|
@@ -25,7 +46,7 @@ mission, battle class, session id, start time and author, and:
 | `awards` | the recording player's awards (`TextStreak`: first_blood, streaks, challenge counters) |
 | `detections`, `unitStates` | `UnitDetected` pairs of units; a message (0xF093) with a unit's position, attitude and velocity whose meaning is not known |
 | `authorInstruments` | the recording player's cockpit values (`ReplayCockpitParams`) by instrument number, at most one per second; `known` names each number this replay sent (name, unit, how it was checked), `notNamed` the rest |
-| `scoreboard` | every player's statistics each time they changed (kills, deaths, assists, score, ai kills, naval kills, zones, damage, missile evades, squad), and each team's score and likely tickets over time (see Reflection data) |
+| `scoreboard` | every player's statistics each time they changed (kills, deaths, assists, score, ai kills, naval kills, zones, damage, missile evades, squad), and each team's score and likely tickets over time (see [Reflection data](aircraft.md#reflection-data)) |
 | `economy` | the battle's Silver Lions and research points (see [Economy](economy.md)): totals, per player, per vehicle, the multipliers, the winner, the checks |
 | `entityMessages` | the entity messages (0x20) by class number: count, target templates, sizes |
 | `chat` | every chat line |
@@ -35,7 +56,7 @@ mission, battle class, session id, start time and author, and:
 | `results` | the whole results blk as the game wrote it |
 | `counts` | rows, events, lives, kinds, samples, entities by template, weapons, packets read and not read, every message id seen and those not read, samples dropped |
 | `trackBreaks` | every cut of a track for a step faster than the unit can go: where, how far, how fast, and what it most likely is |
-| `selfCheck` | the checks below, computed on every conversion; `stepSpeed` gives per kind the speed between consecutive rows of a track as the viewer joins them (median, 99th percentile, highest, and steps faster than possible, which must be 0) |
+| `selfCheck` | the checks listed in [How it reads a replay](how-it-reads.md), computed on every conversion; `stepSpeed` gives per kind the speed between consecutive rows of a track as the viewer joins them (median, 99th percentile, highest, and steps faster than possible, which must be 0) |
 
 ---
 

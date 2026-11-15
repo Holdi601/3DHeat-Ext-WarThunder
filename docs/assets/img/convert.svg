@@ -1,15 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="194" viewBox="0 0 1280 194" role="img" aria-label="heat3d-wt-replay: converting">
-<rect width="1280" height="194" rx="8" fill="#1e1f24"/>
-<rect width="1280" height="26" rx="8" fill="#2c2e35"/><rect y="18" width="1280" height="8" fill="#2c2e35"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="297" viewBox="0 0 720 297" role="img" aria-label="heat3d-wt-replay: convert">
+<rect width="720" height="297" rx="8" fill="#1e1f24"/>
+<rect width="720" height="26" rx="8" fill="#2c2e35"/><rect y="18" width="720" height="8" fill="#2c2e35"/>
 <circle cx="16" cy="13" r="5" fill="#ff5f57"/><circle cx="32" cy="13" r="5" fill="#febc2e"/><circle cx="48" cy="13" r="5" fill="#28c840"/>
-<text x="640.0" y="17" fill="#9aa0aa" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle">heat3d-wt-replay: converting</text>
-<g font-family="Consolas,Menlo,DejaVu Sans Mono,monospace" font-size="13" xml:space="preserve" style="white-space:pre">
+<text x="360.0" y="17" fill="#9aa0aa" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12" text-anchor="middle">heat3d-wt-replay: convert</text>
+<g font-family="Consolas,Menlo,DejaVu Sans Mono,monospace" font-size="14" xml:space="preserve" style="white-space:pre">
 <text x="16" y="46" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;replays&#160;-o&#160;out</text>
-<text x="16" y="64" fill="#d6d9df" xml:space="preserve" style="white-space:pre">note:&#160;no&#160;War&#160;Thunder&#160;install&#160;found&#160;to&#160;name&#160;the&#160;vehicles;&#160;the&#160;table&#160;names&#160;them&#160;by&#160;their&#160;ids</text>
-<text x="16" y="82" fill="#d6d9df" xml:space="preserve" style="white-space:pre">ok&#160;out/avg_test_land/avg_test_land_RB_2026-10-26_07-33-20_000000001234abcd.3dheat</text>
-<text x="16" y="100" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;0)</text>
-<text x="16" y="118" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;replays&#160;-o&#160;loose&#160;--loose</text>
-<text x="16" y="136" fill="#d6d9df" xml:space="preserve" style="white-space:pre">note:&#160;no&#160;War&#160;Thunder&#160;install&#160;found&#160;to&#160;name&#160;the&#160;vehicles;&#160;the&#160;table&#160;names&#160;them&#160;by&#160;their&#160;ids</text>
-<text x="16" y="154" fill="#d6d9df" xml:space="preserve" style="white-space:pre">ok&#160;loose/avg_test_land/avg_test_land_RB_2026-10-26_07-33-20_000000001234abcd.parquet&#160;loose/avg_test_land/avg_test_land_RB_2026-10-26_07-33-20_000000001234abcd.…</text>
-<text x="16" y="172" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;0)</text>
+<text x="16" y="65" fill="#d6d9df" xml:space="preserve" style="white-space:pre">ok&#160;out/99_testmap/99_testmap_RB_2026-10-26_07-33-20_000000001234abcd.3dheat</text>
+<text x="16" y="84" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;0)</text>
+<text x="16" y="103" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;replays&#160;-o&#160;loose&#160;--loose</text>
+<text x="16" y="122" fill="#d6d9df" xml:space="preserve" style="white-space:pre">ok&#160;loose/99_testmap/99_testmap_RB_2026-10-26_07-33-20_000000001234abcd.parquet</text>
+<text x="16" y="141" fill="#d6d9df" xml:space="preserve" style="white-space:pre">&#160;&#160;&#160;&#160;loose/99_testmap/99_testmap_RB_2026-10-26_07-33-20_000000001234abcd.match.json</text>
+<text x="16" y="160" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;0)</text>
+<text x="16" y="179" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;bad&#160;-o&#160;out</text>
+<text x="16" y="198" fill="#d6d9df" xml:space="preserve" style="white-space:pre">failed&#160;bad/broken.wrpl:&#160;not&#160;a&#160;War&#160;Thunder&#160;replay&#160;(no&#160;0x1000ACE5&#160;at&#160;the&#160;start)</text>
+<text x="16" y="217" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;1)</text>
+<text x="16" y="236" fill="#7ee787" xml:space="preserve" style="white-space:pre">$&#160;heat3d-wt-replay&#160;empty&#160;-o&#160;out</text>
+<text x="16" y="255" fill="#d6d9df" xml:space="preserve" style="white-space:pre">no&#160;.wrpl&#160;files&#160;given</text>
+<text x="16" y="274" fill="#d6d9df" xml:space="preserve" style="white-space:pre">(exit&#160;2)</text>
 </g></svg>

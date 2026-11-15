@@ -504,7 +504,7 @@ def test_wreck_despawn_vehicle_switch_turrets_camera_and_difficulty(tmp_path):
     f = tmp_path / "g.wrpl"
     f.write_bytes(ground_battle())
     tpath, jpath = convert.convert([f], tmp_path / "out")
-    assert tpath.name.startswith("avg_test_land_RB_") and tpath.parent.name == "avg_test_land"
+    assert tpath.name.startswith("99_testmap_RB_") and tpath.parent.name == "99_testmap"
     rows = pq.read_table(tpath).to_pylist()
     doc = json.loads(jpath.read_text(encoding="utf-8"))
     assert doc["difficulty"] == "RB" and doc["gameMode"] == "" and doc["battle"]["difficultyName"] == "realistic"

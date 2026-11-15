@@ -1,26 +1,26 @@
 ---
 title: The table
-nav_order: 5
+nav_order: 6
 ---
 
 # The table
 
 ![The table of a synthetic replay, summarised](assets/img/table.svg)
 
-One row per sample or event; in the footer, under `heat3d`, the viewer's
+One row per sample or event, 105 columns ([Column list](columns.md), generated from the code); in the footer, under `heat3d`, the viewer's
 reading instructions, so the viewer needs no form filled in.
 
 | Column | What |
 |---|---|
 | `time` | seconds on the replay's own clock |
-| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop` (a gun's burst, not a vehicle on fire), `fire_on`, `fire_off` (a vehicle on fire, see [Vehicle fires](hits.md#vehicle-fires)), `reward` (Silver Lions and research points earned, see [Economy](economy.md)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see Messages to units); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](ground.md#end-of-a-track)) |
+| `event` | `position`; event rows lie on the track at their moment (between two samples, on the line between them); `kill` (at the killer), `death` (at the victim), `hit_critical` / `hit_severe` (at the unit hit), `module_destroyed` (at the unit), `launch` (at the unit that released a weapon), `impact` (a weapon's last sample when it was removed right after); `explosion` and `flak` (0xD08E, 0xD01F) at their position, kind `effect`, no track, with the explosion's direction where it has one; `shot` (a projectile that hit, at the shooter), `gun_shot`, `fire_start`, `fire_stop` (a gun's burst, not a vehicle on fire), `fire_on`, `fire_off` (a vehicle on fire, see [Vehicle fires](hits.md#vehicle-fires)), `reward` (Silver Lions and research points earned, see [Economy](economy.md)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (see [Messages to units](how-it-reads.md#messages-to-units)); `despawn`: the last row of a track whose unit is gone before the replay ends (see [End of a track](ground.md#end-of-a-track)) |
 | `track` | what the viewer draws as one thing: one life of a unit, or one weapon's flight - `<player or vehicle> #<hex>` (the viewer shows the name without the `#` part) |
 | `x`, `y`, `z` | the game's metres: x east, y up, z north (the hints mirror z, so north is not drawn south) |
-| `player` | the player's name; an AI unit `<VehicleName> #<uid>` (`A-26B-10 #204`); `uid <n>` when nothing names it; for a weapon, who released it |
+| `player` | the player's name; an AI unit `<VehicleName> #<uid>` (for example `F-15A #204`); `uid <n>` when nothing names it; for a weapon, who released it |
 | `userId`, `team` | the player's Gaijin id and the team (`1`, `2`) |
 | `ai`, `isPlayer` | `ai` true for every unit no player account drives (mission units, AI aircraft, ground targets, AA guns, ships without a player, placeholders), `isPlayer` the opposite: a player is a unit whose entity names a player slot with a Gaijin id. A weapon has its launcher's; empty when not known |
 | `match` | the match id (the match document's `match`), on every row; the hints map it as the session, so two loaded replays never join tracks |
-| `life` | `uid#n`: one unit's track, cut where the uid passes to another unit, the unit moves faster than it can (a respawn, a rearm, the game moving it, the client correcting a distant unit; see below) or is long unseen; `w<hex>` a weapon's flight (`w<hex>#n` after a cut) |
+| `life` | `uid#n`: one unit's track, cut where the uid passes to another unit, the unit moves faster than it can (a respawn, a rearm, the game moving it, the client correcting a distant unit; see Teleports in [How it reads a replay](how-it-reads.md#what-is-read-and-the-check)) or is long unseen; `w<hex>` a weapon's flight (`w<hex>#n` after a cut) |
 | `uid` | the unit's id in the replay |
 | `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`, `train` (a tram or rail wagon the level places, see [Scene units](objectives.md#scene-units-trams-and-rail-wagons)); weapons `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned`; `camera` the recording player's replay camera (see [The camera](ground.md#the-camera)) |
 | `type` | the game's own type where the results name it (`fighter`, `assault`, `destroyer`, `gun_boat`), else as `kind` |
@@ -28,14 +28,14 @@ reading instructions, so the viewer needs no form filled in.
 | `VehicleName`, `VehicleShortName`, `VehicleNameKey` | the vehicle's English name from your install's localisation (`Pz.Kpfw. III Ausf. J1`, short `Pz.III J1`) and its key (`germ_pzkpfw_III_ausf_J_0`); the game font's country marks are left out. Where the game names nothing, or no install is found, the name is the id and the key empty |
 | `mission` | the unit's name in the mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | where the unit points (the look vector): aircraft from the flight model's attitude, ground units and ships from their own, weapons along their flight |
-| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign; see below; a ground unit's right side down). The hints say so under `conventions` |
+| `heading`, `pitch`, `roll` | the same in degrees; heading is the compass, clockwise from north, pitch nose up positive, roll right wing down positive (the flight model sends the opposite sign, see [Attitude, checked](aircraft.md#attitude-checked); a ground unit's right side down). The hints say so under `conventions` |
 | `turretYaw`, `gunPitch`, `turrets` | a tank's main turret - where the gun points, not where its player looks; the replay's value held to the turret drive's speed and set to each main-gun shot's line (see [Turrets](ground.md#turrets)): its yaw relative to the hull (degrees, clockwise seen from above positive, 0 straight ahead) and its gun's pitch relative to the hull (degrees, up positive); `turrets` every turret of the vehicle as `yaw pitch;yaw pitch;...` in its own order (an unused slot reads `0.00 0.00`). Tanks, SPAA, APCs and trucks, in client and server replays; not ships (see [Turrets](ground.md#turrets)) |
 | `turretYawRaw`, `gunPitchRaw` | the main turret as the replay sends it; `turretYaw` / `gunPitch` are it held to the turret drive's speed and set to each main-gun shot's line (see [Turrets](ground.md#turrets)) |
 | `viewYaw`, `viewPitch` | where the player looks (aims with the camera) in the world: compass degrees (0 north, clockwise) and degrees up, the same convention as `aimHeading` / `aimPitch` (unlike `turretYaw` / `gunPitch`, which stay relative to the hull). Every player's tank in a server replay, the recording player's own in a client replay; empty where the player aims nowhere (all four aim floats 0). The turret follows it at its own traverse speed, so the two differ while it turns (see [Turrets](ground.md#turrets)) |
 | `aimHeading`, `aimPitch`, `aimDistance` | the recording player's own tank: where it aims (compass degrees, degrees up, the distance in m; 2000 when nothing is in the sight); camera rows: where the player aims (heading, pitch) |
 | `zoom` | camera rows: the camera's magnification (see [The camera](ground.md#the-camera)) |
 | `difficulty`, `gameMode` | the battle's `AB`, `RB` or `SB`, and `ground`, `air` or `naval`, on every row (see [Battle mode](ground.md#battle-mode)) |
-| `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see below); a bomb's sample worked out from its release (see Bombs without flight records under [What is read, and how well it is known](how-it-reads.md)) |
+| `extrapolated` | an aircraft sample that is the client's dead reckoning, not a state it received (see [Dead reckoning](aircraft.md#dead-reckoning-and-the-smoother)); a bomb's sample worked out from its release (see Bombs without flight records in [How it reads a replay](how-it-reads.md#what-is-read-and-the-check)) |
 | `moved`, `xRaw`, `yRaw`, `zRaw`, `headingRaw`, `pitchRaw`, `rollRaw` | how far the smoother moved the sample (m), and the replay's own position and attitude (roll in the table's sign) |
 | `targetX`, `targetY`, `targetZ` | a `shot`'s hit point |
 | `hitOutcome`, `hitFlags` | a `shot`'s outcome on a ground unit: `kill`, `critical`, `penetration` or `nonpenetration` (bounced or stopped: the replay does not tell a ricochet apart), from the bits the server sends with the hit (`hitFlags`, raw); empty where none is sent (aircraft, ships). See [Hit outcomes](hits.md#hit-outcomes) |

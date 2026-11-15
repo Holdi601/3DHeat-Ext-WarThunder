@@ -3,79 +3,85 @@ title: Home
 nav_order: 1
 ---
 
-# 3DHeat War Thunder replay converter
+# 3DHeat War Thunder replays
 
-War Thunder replays (`.wrpl`) into the table the 3DHeat viewer opens: every
-aircraft's, tank's, ship's and AI unit's track with its vehicle, team and
-player, the missiles, rockets, bombs and torpedoes in flight, and the kills,
-hits, destroyed modules and launches where they happened. A match document
-beside it holds everything else the replay says: the mission settings and
-sky, every unit and weapon the replay created, the mission's zones and
-airfields, explosions, awards, the recording player's instruments, the scoreboard over time, the chat
-and the whole results block.
+**What is it?** War Thunder can record a battle as a replay file. This tool
+turns the recording into a file you can watch from above in the
+[3DHeat viewer](https://holdi601.github.io/3DHeat/), with every plane, tank
+and ship, every missile and bomb, and every hit where it happened. A second
+command turns the levels of your own game install into 3D levels to show the
+battles on.
 
-**What it is useful for:** a debrief of a battle in 3D with every unit's
-track, weapon flight and hit where it happened; heatmaps of where you and
-others fly, drive, fight and die over many battles; hit analysis in the
-victim's own frame; what a battle cost and earned. The output is plain
-Parquet and JSON inside one `.3dheat` file a battle, so other tools can read
-it too. A second command turns the levels of your own install into 3D levels
-for the viewer, to show the battles on.
+**Why would I use it?** For a debrief of a battle in 3D; for heatmaps of
+where you and others fly, drive, fight and die over many battles; to see
+where hits landed on a vehicle; to see what a battle cost and earned. The
+output is plain Parquet and JSON, so other tools can read it too.
 
-![From a replay to the viewer](assets/img/pipeline.svg)
+**Example:** one `.wrpl` replay in, one `<match>.3dheat` file out:
+
+![From a replay to the 3DHeat viewer](assets/img/pipeline.svg)
 
 ## Quick start
+
+New to the command line? Read [Before you start](before-you-start.md) first.
 
 ```bash
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
 cd 3DHeat-Ext-WarThunder
-pip install -e .                               # installs heat3d-wt-replay and heat3d-wt-level
+pip install -e .                                  # installs heat3d-wt-replay and heat3d-wt-level
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 ```
 
-Then open `out/<map>/<match>.3dheat` in the [3DHeat viewer](https://holdi601.github.io/3DHeat/).
-
-## Part of 3DHeat
-
-This converter is one of the tools of [3DHeat](https://github.com/Holdi601/3DHeat), a realtime 3D
-telemetry and replay viewer for very large positional datasets
-([documentation](https://holdi601.github.io/3DHeat/)). Its output opens in the viewer as it is: the table
-in the Heatmap tab, the match document in the Match tab. How the viewer packs
-a match's files into one `.3dheat` file is described in
-[One file a match](https://holdi601.github.io/3DHeat/container.html); what every converter must keep in
-[Converters keep everything](https://holdi601.github.io/3DHeat/converters.html).
-
-- Source and issues: [3DHeat-Ext-WarThunder](https://github.com/Holdi601/3DHeat-Ext-WarThunder)
-- This site: [https://holdi601.github.io/3DHeat-Ext-WarThunder/](https://holdi601.github.io/3DHeat-Ext-WarThunder/)
+You should see one line per battle: `ok out/<map>/<match>.3dheat`. Open that
+file in the 3DHeat viewer.
 
 ## This documentation
 
 | Page | What it covers |
 |---|---|
-| [Installing](installing.md) | requirements, install, names from your install, updates |
-| [Converting replays](converting.md) | `heat3d-wt-replay` step by step, every option |
+| [Before you start](before-you-start.md) | Python, a terminal, and what success looks like |
+| [Installing](installing.md) | install, names from your install, updates |
+| [Converting replays](converting.md) | `heat3d-wt-replay` step by step, every option, messages |
 | [Output files](output-files.md) | the `.3dheat` file, `--loose` files, names |
 | [The table](table.md) | every column and event |
-| [The match document](match-document.md) | `<match>.match.json` |
-| [Sidecars](sidecars.md) | messages, objectives and flight entries kept whole |
-| [How it reads a replay](how-it-reads.md) | what is read and how well it is known |
-| [Aircraft](aircraft.md) | cockpit, flight entries, dead reckoning, attitude |
-| [Ground units and camera](ground.md) | turrets, the camera, ends of tracks, battle mode |
-| [Hits, gunfire and fires](hits.md) | shots, hit outcomes, ammunition, vehicle fires |
-| [Economy](economy.md) | Silver Lions and research points, who won |
-| [Objectives](objectives.md) | capture zones, airfields, scene units |
+| [The match document](match-document.md) | every key of `<match>.match.json` |
+| [Sidecars and completeness](sidecars.md) | what is kept whole besides the table, and the counts |
 | [Levels](levels.md) | `heat3d-wt-level`: levels from your install as `.glb` |
-| [Terms and sources](terms.md) | Gaijin's terms, sources, tests, licence |
+| [How it reads a replay](how-it-reads.md) | what is read, and how it was checked |
+| [Aircraft](aircraft.md), [Ground units and camera](ground.md), [Hits, gunfire and fires](hits.md) | the details behind the columns |
+| [Economy](economy.md), [Objectives](objectives.md) | Silver Lions and research points; capture zones, airfields |
+| [Terms and licence](terms.md) | Gaijin's terms, sources, tests, licence |
+| [Command reference](cli-reference.md), [Column list](columns.md) | generated from the code |
 
-## Why it is apart
+## Part of 3DHeat
 
-The `.wrpl` format is undocumented, and Gaijin's EULA (3.2.2, 3.2.9) forbids
-reverse engineering the game and mining data not meant to be shown; nothing
-there names replays, which the game itself shows the player. The user decided
-to read them. So that a licence question or a takedown touches only this
-converter, it lives outside the 3DHeat Watcher: the watcher runs this command
-on new replays when it is installed, imports nothing of it, and works without
-it.
+This converter is one of the tools of [3DHeat](https://github.com/Holdi601/3DHeat),
+a realtime 3D telemetry and replay viewer ([documentation](https://holdi601.github.io/3DHeat/)).
+The viewer opens the `.3dheat` file: the table in its Heatmap tab, the match
+document in its Match tab ([One file a match](https://holdi601.github.io/3DHeat/container.html)).
+What every converter must keep: [Converters keep everything](https://holdi601.github.io/3DHeat/converters.html).
+
+**Why it is a separate tool.** The `.wrpl` format is undocumented, and
+Gaijin's EULA (3.2.2, 3.2.9) forbids reverse engineering the game and mining
+data not meant to be shown; it does not name replays, which the game itself
+shows the player. So that a licence question touches only this converter, it
+lives outside the 3DHeat Watcher: the Watcher runs it on new replays when it
+is installed, and works without it.
+
+| Tool | What it does | Source | Documentation |
+|---|---|---|---|
+| 3DHeat viewer | shows the data in 3D: heatmaps, replays, race analysis | [3DHeat](https://github.com/Holdi601/3DHeat) | [site](https://holdi601.github.io/3DHeat/) |
+| GameFiles | courses and levels out of the files games ship | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [site](https://holdi601.github.io/3DHeat-GameFiles/) |
+| GameCapture | lap telemetry, and levels rebuilt from gameplay video | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [site](https://holdi601.github.io/3DHeat-GameCapture/) |
+| Unreal Exporter | an Unreal Editor plugin that exports a level | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [site](https://holdi601.github.io/3DHeat-UnrealExporter/) |
+| CS2 | Counter-Strike 2 demos and maps | [3DHeat-CS2](https://github.com/Holdi601/3DHeat-CS2) | [site](https://holdi601.github.io/3DHeat-CS2/) |
+| Watcher | records what games publish while you play | [3DHeat-Watcher](https://github.com/Holdi601/3DHeat-Watcher) | [site](https://holdi601.github.io/3DHeat-Watcher/) |
+| War Thunder replays | `.wrpl` replays and War Thunder levels | [3DHeat-Ext-WarThunder](https://github.com/Holdi601/3DHeat-Ext-WarThunder) | [site](https://holdi601.github.io/3DHeat-Ext-WarThunder/) |
+| World of Tanks replays | `.wotreplay` replays | [3DHeat-Ext-WoT](https://github.com/Holdi601/3DHeat-Ext-WoT) | [site](https://holdi601.github.io/3DHeat-Ext-WoT/) |
+| World of Warships replays | `.wowsreplay` replays | [3DHeat-Ext-WoWs](https://github.com/Holdi601/3DHeat-Ext-WoWs) | [site](https://holdi601.github.io/3DHeat-Ext-WoWs/) |
+| Squad demos | Squad server demos | [3DHeat-Ext-Squad](https://github.com/Holdi601/3DHeat-Ext-Squad) | [site](https://holdi601.github.io/3DHeat-Ext-Squad/) |
+| DCS maps | DCS World maps as 3D levels | [3DHeat-Ext-DCS](https://github.com/Holdi601/3DHeat-Ext-DCS) | [site](https://holdi601.github.io/3DHeat-Ext-DCS/) |
+| IL-2 maps | IL-2 Great Battles maps as 3D levels | [3DHeat-Ext-IL2](https://github.com/Holdi601/3DHeat-Ext-IL2) | [site](https://holdi601.github.io/3DHeat-Ext-IL2/) |
 
 ---
 
