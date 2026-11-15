@@ -21,7 +21,7 @@ pour la visionneuse, dans le même repère que les tables des replays.
    99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
    1 levels in C:\Games\War Thunder
    ```
-2. Extrayez un niveau, plusieurs (les jokers sont permis) ou tous :
+2. Extrayez un niveau, plusieurs (les caractères génériques sont permis) ou tous :
 
    ```bash
    heat3d-wt-level extract <level> -o levels
@@ -42,7 +42,7 @@ Les niveaux que vous écrivez restent sur votre machine : ne les publiez jamais 
 | Commande / option | Rôle |
 |---|---|
 | `list [--game FOLDER]` | chaque niveau de l'installation |
-| `extract <levels...>` / `--all` | les niveaux nommés (comme les affiche `list` ; jokers permis), ou tous les niveaux |
+| `extract <levels...>` / `--all` | les niveaux nommés (comme les affiche `list` ; caractères génériques permis), ou tous les niveaux |
 | `-o`, `--out` | dossier de sortie ; chaque niveau va dans `<out>/<level>/` |
 | `--game FOLDER` | le dossier de War Thunder (par défaut : trouvé par Steam ou le lanceur ; aussi `HEAT3D_WT_GAME`) |
 | `--detail low/medium/high` | pas du sol, couleur du sol et budget d'objets sur la carte de char (par défaut `medium`) |
@@ -82,7 +82,7 @@ couronne. Les couleurs de sommet (`COLOR_0`) contiennent des valeurs encodées e
 3DHeat lit ainsi.
 
 **Coordonnées.** Ce sont les mètres du jeu avec z retourné : glb (x, y, z) = jeu (x, y, -z). Le monde du jeu
-est gaucher (x est, y haut, z nord) ; glTF est droitier. `heat3d-wt-replay` garde le z du jeu et indique à la
+est gaucher (x vers l'est, y vers le haut, z vers le nord) ; glTF est droitier. `heat3d-wt-replay` garde le z du jeu et indique à la
 visionneuse de le retourner, de sorte qu'un replay et le niveau de sa carte se superposent sans étape de
 placement. Le JSON donne le rectangle de chaque carte tactique en mètres du jeu et ses coins dans l'espace du
 glb, pour charger le PNG comme image de carte.
@@ -131,7 +131,7 @@ couleurs, routes et décalcomanies de sol ; `trianglesTotal`, `glbBytes` et `sec
 | Cartes tactiques | depuis `content/base/res/locations_maps.dxp.bin`, placées selon `mapCoord0/1` et `tankMapCoord0/1` du BLK ; le haut de l'image est le nord |
 | Objets placés (`RIGz` : les instances fixes du générateur d'instances de rendu) | chaque instance, sous forme de matrice 3x4 de valeurs sur 16 bits ou, sur certains niveaux, sur 32 bits (le nombre d'octets de la cellule décide) ; chaque octet de chaque cellule est comptabilisé sur les niveaux vérifiés |
 | Objets générés (masques de classes de terrain de `RIGz` et ressources `LandClass`) | le générateur du jeu, porté : mêmes emplacements essayés dans le même ordre avec les mêmes nombres aléatoires, les masques de classes de terrain et d'exclusion, l'objet choisi à chaque emplacement, sa rotation, son échelle et son décalage de hauteur ; entités en tuiles (blocs de villes) et plantées (forêts, buissons, champs). Généré sur la carte de char seulement. Approximations : la hauteur et la normale du sol (depuis la carte de hauteur ; le jeu trace un rayon), les boîtes d'exclusion que le jeu enregistre à l'exécution, et l'orientation des arbres (le jeu l'aligne sur la palette de rotation de l'imposteur) |
-| Maillages de rendu (ressources `RendInst` dans `content/*/res/*.grp`, matériaux dans `riDesc.bin`) | les sommets et triangles de chaque LOD (positions en flottants ; index sur 16 ou 32 bits, simples ou compressés par meshoptimizer), le matériau de chaque élément. Les éléments de décalcomanie et de panneau-impostor sont omis ; les éléments transparents (verre) sont conservés |
+| Maillages de rendu (ressources `RendInst` dans `content/*/res/*.grp`, matériaux dans `riDesc.bin`) | les sommets et triangles de chaque LOD (positions en flottants ; index sur 16 ou 32 bits, simples ou compressés par meshoptimizer), le matériau de chaque élément. Les éléments de décalcomanie et de panneau-imposteur sont omis ; les éléments transparents (verre) sont conservés |
 | Couleurs des objets | par matériau, la moyenne du petit mip de sa texture diffuse (pondérée par l'alpha pour les feuilles), issue des paquets de textures de l'installation : t0 pour la plupart des shaders, la première diffuse de détail là où t0 est une superposition ou un masque. Une couleur par matériau : aucune texture sur les objets |
 | Formes de collision (`<object>_collision`) | ressources de collision de la version de flux 3, utilisées là où un objet n'a pas de maillage de rendu. Seul ce que touchent les rayons du jeu (nœuds `TRACEABLE`) est dessiné, et les boîtes, sphères et capsules seulement lorsque la ressource n'a pas de maillage : le reste sont des substituts physiques grossiers qui apparaîtraient comme des cubes autour de l'objet |
 | Maillage de navigation (`Lnav`), maillage de terrain rendu, herbe, `spgz`, `stbl`, `d2co` | non lus |
@@ -143,7 +143,7 @@ Les niveaux sont compressés avec Oodle, qui est propriétaire. Le jeu en livre 
 ## Formats, et où ils sont documentés {#formats-and-where-they-are-documented}
 
 Gaijin a publié le code source du Dagor Engine sous licence BSD 3-Clause
-(github.com/GaijinEntertainment/DagorEngine). Les lecteurs d'ici ont été écrits à partir de lui ; aucun code du
+(github.com/GaijinEntertainment/DagorEngine). Les modules de lecture d'ici ont été écrits à partir de lui ; aucun code du
 jeu n'a été décompilé. Chaque module nomme les fichiers source qu'il suit :
 
 - `vromfs.py` : `*.vromfs.bin` (en-tête `VRFs`/`VRFx`, un corps zstd dont les 16 premiers et derniers octets

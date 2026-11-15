@@ -32,7 +32,7 @@ Con cada impacto de proyectil sobre una unidad terrestre, el servidor envía a l
 
 | Bit | Significado | Prueba |
 |---|---|---|
-| 0x20 | el impacto propio de un proyectil | casi todos llegan con un impacto 0xF0E9 en la unidad a 5 ms; sin él, con una explosión (metralla) |
+| 0x20 | el impacto propio de un proyectil | casi todos llegan con un impacto 0xF0E9 en la unidad a menos de 5 ms; sin él, con una explosión (daño por onda expansiva) |
 | 0x01 | atravesó (penetración) | todo mensaje con 0x02, 0x04 u 0x08 lo tiene también |
 | 0x02 | impacto crítico | la mayoría de los registros de impacto crítico lo tienen, mucho más a menudo que por azar |
 | 0x04 | destruido | la mayoría llega con un registro de baja y la muerte de la unidad en menos de un segundo |
@@ -40,7 +40,7 @@ Con cada impacto de proyectil sobre una unidad terrestre, el servidor envía a l
 
 `hitOutcome` toma el peor: `kill` (0x04), `critical` (0x02 u 0x08),
 `penetration` (0x01), `nonpenetration` (solo 0x20). Un impacto se empareja con el 0xF144
-con 0x20 sin pareja más cercano a su unidad a 5 ms. La cámara de impacto del juego distingue un rebote de
+con 0x20 sin pareja más cercano a su unidad a menos de 5 ms. La cámara de impacto del juego distingue un rebote de
 una no penetración, pero ningún bit ni campo encontrado aquí lo hace: los tres primeros bytes varían de
 impacto a impacto y no se conocen. Las repeticiones de cliente envían 0xF144 solo para el propio avión del
 jugador que graba, con todos los bits a cero: los impactos de aviones y barcos no tienen resultado.
@@ -86,7 +86,7 @@ sistema del vehículo (x adelante, y arriba, z izquierda).
 Filas: `fire_on` cuando aparece un incendio en la lista, `fire_off` cuando ya no está, en el
 vehículo, con `fireId` (`first:node`), `fireKind` y, para los incendios que provocó un
 impacto, `fireLocalX/Y/Z` (adelante, arriba, derecha). Una vez muerto un vehículo, su
-lista a menudo ya no se vuelve a enviar: sus incendios terminan con su resto, si no con su
+lista a menudo ya no se vuelve a enviar: sus incendios terminan con sus restos, si no con su
 entidad, si no con la repetición (`selfCheck.fires`).
 
 Comprobado: cada vez que bajó el número de extintores de incendio de un tanque, un incendio salió

@@ -53,13 +53,13 @@ Les tests unitaires ne lisent jamais une installation (`HEAT3D_WT_NO_NAMES` est 
 propres replays lit les noms dans votre installation.
 
 Les tests construisent des replays dans le code (`tests/synth.py` : en-tête, paquets, résultats, flux
-d'entités, armes en vol) selon la disposition décrite par les lecteurs ; aucun replay ne se trouve dans le
+d'entités, armes en vol) selon la disposition décrite par les modules de lecture ; aucun replay ne se trouve dans le
 dépôt.
 
 ## Licence {#licence}
 
 MIT - voir [`LICENSE`](https://github.com/Holdi601/3DHeat-Ext-WarThunder/blob/main/LICENSE). Utilise pyarrow
-(Apache-2.0), numpy (BSD-3-Clause), zstandard (BSD-3-Clause) et Pillow (MIT-CMU). Les lecteurs de niveaux ont
+(Apache-2.0), numpy (BSD-3-Clause), zstandard (BSD-3-Clause) et Pillow (MIT-CMU). Les modules de lecture des niveaux ont
 été écrits à partir du code source du Dagor Engine, Copyright (c) 2023 Gaijin Entertainment, licence BSD
 3-Clause ; aucun code de celui-ci n'est copié ici, et les constantes de format utilisées (la clé XOR des
 vromfs, les décalages de grille des plages de hauteur) sont citées là où elles apparaissent.

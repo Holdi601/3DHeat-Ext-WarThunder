@@ -112,7 +112,7 @@ El color del suelo grueso (mapas aéreos) promedia primero las texturas en mosai
 hasta el tamaño del píxel, para que las baldosas no generen patrones de interferencia (moiré). Si ni siquiera los LOD más gruesos
 caben, los árboles que más ahorran se convierten en copas, y luego se dejan fuera los tipos más pequeños
 (`leftOut`); ningún objeto se dibuja como una caja (una forma de colisión, si existe, es la propia del objeto).
-Los objetos generados se aclaran de forma determinista por tipo (`density`), los mismos
+Los objetos generados se reducen de forma determinista por tipo (`density`), los mismos
 en cada ejecución. `--max-object-triangles` cambia el presupuesto, `--max-grid` (por defecto 1024)
 limita las partes más gruesas del mapa de altura, `--no-objects` omite los objetos, `--no-generated`
 los generados, `--no-terrain-colour` aplica al suelo el mapa táctico, `--no-texture` lo deja sin textura.

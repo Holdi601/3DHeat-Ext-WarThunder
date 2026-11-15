@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Objetivos {#objectives}
 
-`objectives` en el documento de la partida lista por lo que se combate la batalla, desde dos fuentes (`source`):
+`objectives` en el documento de la partida lista lo que se disputa en la batalla, desde dos fuentes (`source`):
 
 - **La repetición** (`replay`): los objetos de misión que nombra 0xD039 (zonas de captura `cz_circle_NN`, aeródromos, helipuertos,
   bases), colocados donde los objetos replicados de tipo 3 (0xF02D) los sitúan ahora - una zona de captura empieza en el lugar
@@ -41,7 +41,7 @@ Un nivel puede colocar unidades propias: las entidades `unit_loader+rail_wagon` 
 archivo de escena del nivel (`gamedata/scenes/<nivel>_objects.blk` en `aces.vromfs.bin`: `setting__unit_class`, su
 transformación e `setting__isDead`). Sus entidades no llevan un uid legible, así que una trayectoria terrestre sin entidad de unidad
 cuya primera muestra cae a 2 m de una unidad de escena es esa unidad: su clase como `Vehicle`, tipo `train`, tipo
-`tram`, `locomotive` o `wagon`, sin equipo; una unidad que la escena coloca muerta (como tranvías quemados) es un resto (`alive` 0) desde su primera fila. El juego no tiene un nombre en inglés para ellas; `VehicleName` es el id
+`tram`, `locomotive` o `wagon`, sin equipo; una unidad que la escena coloca muerta (como tranvías quemados) es un vehículo destruido (`alive` 0) desde su primera fila. El juego no tiene un nombre en inglés para ellas; `VehicleName` es el id
 leído como palabras ("Railway tram A"). Sus posiciones no oscilan: casi todas nunca se mueven (cada
 muestra igual bit a bit). La repetición las envía unas diez veces por segundo
 de todos modos, así que de sus muestras solo se guardan las que las mueven (0,05 m o 0,1 grados), y una cada 10 s

@@ -68,7 +68,7 @@ y actitud:
   contadores de la cabina un tick después, en casi todas las muestras.
 - **Mandos y acelerador**: 7 bytes tras la velocidad, leídos como 14 nibbles.
   Para el jugador que graba, en cada tick: 1 el elevador, 2 los alerones, 3
-  el timón (8 en reposo), 11 el acelerador en dieciseisavos (15 también para la potencia de
+  el timón (8 en reposo), 11 el acelerador en quinceavos (15 también para la potencia de
   emergencia de guerra y la postcombustión), 4 los frenos de rueda, 5 el aerofreno, 8
   probablemente el paracaídas de frenado. Los nibbles de los demás aviones cambian solo unas pocas veces
   por batalla y no son sus mandos en ese momento.
@@ -99,7 +99,7 @@ los equipos (índice 1 y 2):
 
 ## Estimación por navegación y suavizador {#dead-reckoning-and-the-smoother}
 
-Un repetición de cliente registra cada avión cuatro veces por segundo, tal como lo dibujó el cliente. Entre
+Una repetición de cliente registra cada avión cuatro veces por segundo, tal como lo dibujó el cliente. Entre
 las actualizaciones que recibe de un avión lejano, el cliente lo sigue moviendo a lo largo de su última
 velocidad y lo gira a sus últimas velocidades de giro, y en la siguiente actualización lo
 coloca de golpe allí. Leído tal cual, una trayectoria va recta y luego salta. Nada
@@ -109,7 +109,7 @@ mismo ritmo, con un error de menos de 3 cm.
 
 Cuánto importa depende de la batalla: en batallas arcade cerca de la mitad de las
 muestras de los demás aviones pueden ser estimadas por navegación; en batallas de simulador,
-solo un pocos por ciento. El suavizador corta unos cinco veces los saltos de más de 15 g
+solo unos pocos por ciento. El suavizador corta unos cinco veces los saltos de más de 15 g
 (`selfCheck.deadReckoning`). El avión propio del jugador que graba no lo extrapola el cliente
 y se deja como está.
 
@@ -125,10 +125,10 @@ se conservan en las columnas `Raw`.
 ## Actitud, comprobada {#attitude-checked}
 
 En el avión propio del jugador que graba, el rumbo está a un grado
-(mediana) de la dirección de avance, el cabeceo a unos grados del ángulo de ascenso, y en los
+(mediana) de la dirección de avance, el cabeceo a unos pocos grados del ángulo de ascenso, y en los
 giros claros el balanceo tiene el signo del giro en casi todas las muestras: el balanceo del modelo
 de vuelo es positivo con el ala izquierda abajo, y la tabla lo invierte a positivo con el ala derecha
-abajo (`selfCheck.aircraftAttitude`). Los ángulos de 10 bits avanzan de 0,18 grados en 0,18 grados.
+abajo (`selfCheck.aircraftAttitude`). Los ángulos de 10 bits avanzan en pasos de 0,18 grados.
 La actitud de las unidades terrestres se comprueba frente a sus disparos ([Torretas](ground.md#turrets)).
 
 ---

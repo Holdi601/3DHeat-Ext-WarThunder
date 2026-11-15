@@ -55,7 +55,7 @@ La imagen es una ejecución sobre una repetición que las pruebas construyen en 
 |---|---|---|
 | `replays` (una o más) | - | archivos `.wrpl`, carpetas con ellos (la carpeta en sí, no sus subcarpetas), o zips de ellos (una repetición de servidor: sus partes `.wrpl` se descomprimen en una carpeta temporal) |
 | `-o`, `--out` | obligatoria | dónde escribir: una carpeta por mapa dentro |
-| `--game CARPETA` | encontrada | la carpeta de War Thunder cuyos textos dan nombre a vehículos, armas y munición, y cuyas tablas valoran la [economía](economy.md); también `HEAT3D_WT_GAME` |
+| `--game CARPETA` | encontrada | la carpeta de War Thunder cuyos textos dan nombre a vehículos, armas y munición, y cuyas tablas fijan los precios de la [economía](economy.md); también `HEAT3D_WT_GAME` |
 | `--no-smoothing` | desactivada | conserva las muestras de estimación por navegación y las recibidas de otras unidades tal como están en la repetición ([Estimación por navegación](aircraft.md#dead-reckoning-and-the-smoother)) |
 | `--container` | activada | empaqueta cada batalla en un archivo `.3dheat` |
 | `--loose` | desactivada | guarda cada batalla como archivos separados (tabla, documento de la partida, archivos auxiliares) |

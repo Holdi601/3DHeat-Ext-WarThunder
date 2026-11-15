@@ -49,7 +49,7 @@ forma, independiente; aquí solo se dan el método y la coincidencia.
 | Estadísticas de jugador y puntuaciones de equipo | al final de la batalla, cada estadística es igual a la de los resultados para cada jugador: [Datos de reflexión](aircraft.md#reflection-data) |
 | Nombres de armas y vehículos | de la localización en inglés de tu instalación; algunos cinturones por defecto de barcos y radares de aeródromos no tienen nombre en el juego |
 | Jugadores y IA | ninguna fila de un jugador de los resultados es IA, cada fila que no es IA es de un jugador de los resultados (`selfCheck.identity`) |
-| Restos | las muestras de una unidad tras su muerte siguen llegando; el resto de una unidad terrestre o barco es `alive` 0 hasta que se quita su entidad, y sigue siendo una sola trayectoria; los aviones mantienen `alive` 0 durante 60 s como máximo (`selfCheck.wrecks`) |
+| Restos | las muestras de una unidad tras su muerte siguen llegando; los restos de una unidad terrestre o barco tienen `alive` 0 hasta que se quita su entidad, y siguen siendo una sola trayectoria; los aviones mantienen `alive` 0 durante 60 s como máximo (`selfCheck.wrecks`) |
 | Cambios de vehículo | una unidad del jugador aún viva cuando aparece la siguiente unidad del mismo jugador termina ahí (un vehículo abandonado en pie). `selfCheck.vehicleSwitch.twoLiveVehicles` debe ser 0 |
 | Modo de batalla | [Modo de batalla](ground.md#battle-mode) |
 | Aviones en una repetición de servidor de 2026 | leídos en la disposición de 2026; el rumbo y el signo del balanceo coinciden con los giros; los aviones de marcador y los drones de reconocimiento no llevan datos |

@@ -87,8 +87,8 @@ Una trayectoria se dibuja desde su primera fila hasta su última. Cuando su unid
 antes de que acabe la repetición, su última fila es una fila `despawn` en su último lugar:
 en el momento en que el juego quitó su entidad (cuando ocurrió a menos de 6 s de su
 última muestra), si no, en su última muestra. Una trayectoria sin ella dura hasta el final
-de la repetición. Las filas de una misma trayectoria pueden estar muy separadas (una unidad lejana o un
-resto se actualiza cada pocos segundos, y un resto a veces no durante minutos): su último
+de la repetición. Las filas de una misma trayectoria pueden estar muy separadas (una unidad lejana o unos
+restos se actualizan cada pocos segundos, y los restos a veces no durante minutos): su último
 estado se mantiene hasta su siguiente fila.
 
 ## Modo de batalla {#battle-mode}

@@ -41,8 +41,8 @@ Si le regroupement échoue, les fichiers séparés sont conservés et la ligne l
 
 ![Où pointent x, y et z](../assets/img/fr/frame.svg)
 
-En mètres, dans le monde propre au jeu : x est, y est vers le haut, z est nord. Le pied de la table
-indique à la visionneuse de retourner z, et les niveaux de `heat3d-wt-level` sont écrits de la même
+En mètres, dans le monde propre au jeu : x vers l'est, y vers le haut, z vers le nord. Le pied de la table
+indique à la visionneuse d'inverser z, et les niveaux de `heat3d-wt-level` sont écrits de la même
 façon : un replay et son niveau se superposent.
 
 ---
