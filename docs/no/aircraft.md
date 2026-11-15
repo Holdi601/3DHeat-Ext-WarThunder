@@ -108,7 +108,7 @@ Hvor mye dette betyr, avhenger av slaget: i arkadeslag kan omtrent halvparten av
 de andre flyenes samples være dead reckoning, i simulatorslag bare noen få
 prosent. Utjevneren kutter stegene over 15 g med omtrent fem ganger
 (`selfCheck.deadReckoning`). Opptakspilotens eget fly ekstrapoleres ikke av
-klienten og lar seg stå som det er.
+klienten og beholdes som den er.
 
 Som standard (`--no-smoothing` slår det av) settes sporene til alle enheter
 unntatt opptakspilotens der de mottatte tilstandene sier de var: et dead

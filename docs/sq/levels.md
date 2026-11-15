@@ -3,7 +3,7 @@ title: "Nivelet"
 nav_order: 9
 lang: sq
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -45,10 +45,10 @@ Nivelet që shkruan mbeten në makinën tënde: mos i publiko kurrë (shih
 | `list [--game FOLDER]` | çdo nivel në instalim |
 | `extract <levels...>` / `--all` | nivelet e emërtuara (siç i printon `list`; lejohen wildcards), ose çdo nivel |
 | `-o`, `--out` | dosja e daljes; çdo nivel shkon në `<out>/<level>/` |
-| `--game FOLDER` | dosja e War Thunder (e paracaktuar: gjendet përmes Steam ose nisësit; edhe `HEAT3D_WT_GAME`) |
-| `--detail low/medium/high` | mostrimi i tokës, ngjyra e tokës dhe buxheti i objekteve mbi hartën e tankeve (e paracaktuar `medium`) |
-| `--max-object-triangles N` | buxheti i objekteve (e paracaktuar: ai i detajit) |
-| `--max-grid N` | mostra heightmap për anë, për pjesë (e paracaktuar 1024) |
+| `--game FOLDER` | dosja e War Thunder (parazgjedhja: gjendet përmes Steam ose nisësit; edhe `HEAT3D_WT_GAME`) |
+| `--detail low/medium/high` | mostrimi i tokës, ngjyra e tokës dhe buxheti i objekteve mbi hartën e tankeve (parazgjedhja `medium`) |
+| `--max-object-triangles N` | buxheti i objekteve (parazgjedhja: ai i detajit) |
+| `--max-grid N` | mostra heightmap për anë, për pjesë (parazgjedhja 1024) |
 | `--no-objects` | lë jashtë ndërtesat, pemët dhe objekte të tjera të vendosura |
 | `--no-generated` | lë jashtë objektet që gjenerojnë klasat e tokës (pyje, qytete) |
 | `--no-terrain-colour` | teksturon tokën me hartën taktike, jo me klasat e tokës |
@@ -64,7 +64,7 @@ hartat tokësore marrin edhe `<level>_terrain.png`, ngjyrat e vetë tokës mbi
 hartën e tankeve. Glb shkruhet te `<level>.glb.part` dhe riemërtohet kur mbaron;
 ndërsa një nivel shkruhet, mbahet `<out>/<level>/.<level>.lock`, kështu që dy
 nxjerrje nuk shkruajnë kurrë të njëjtin nivel (e dyta printon `busy <level>`).
-Instalimi gjendet përmes Steam ose dosjeve të paracaktuara të nisësit;
+Instalimi gjendet përmes Steam ose dosjeve parazgjedhëse të nisësit;
 përndryshe `--game <folder>` ose `HEAT3D_WT_GAME` tregojnë ku është.
 
 | Pjesa | Çfarë është |
@@ -90,7 +90,7 @@ pasqyrojë, kështu që një riluajtje dhe niveli i hartës së saj puthiten pa 
 vendosjeje. JSON jep drejtkëndëshin e çdo harte taktike në metra loje
 dhe qoshet e saj në hapësirën e glb, për ngarkimin e PNG si imazh harte.
 
-**Detajet.** `--detail low|medium|high` (e paracaktuar medium) vendos, mbi hartën e tankeve:
+**Detajet.** `--detail low|medium|high` (parazgjedhja medium) vendos, mbi hartën e tankeve:
 
 | | mesi i hartës së tankeve | pjesa tjetër e hartës së tankeve | ngjyra e tokës | buxheti i objekteve | maksimumi i trekëndëshave për objekt | bimë të gjeneruara të mbajtura |
 |---|---|---|---|---|---|---|
@@ -113,7 +113,7 @@ bëhen kurora, dhe pastaj llojet më të vogla lihen jashtë (`leftOut`); asnjë
 nuk vizatohet si kuti (një formë përplasjeje, nëse ka, është e vetë objektit).
 Objektet e gjeneruara rrallohen në mënyrë deterministe sipas llojit (`density`), të njëjtat
 në çdo ekzekutim. `--max-object-triangles` e anashkalon buxhetin,
-`--max-grid` (e paracaktuar 1024) kufizon pjesët më të trasha të heightmap, `--no-objects`
+`--max-grid` (parazgjedhja 1024) kufizon pjesët më të trasha të heightmap, `--no-objects`
 lë jashtë objektet, `--no-generated` ato të gjeneruarat, `--no-terrain-colour`
 teksturon tokën me hartën taktike, `--no-texture` e lë pa teksturë.
 

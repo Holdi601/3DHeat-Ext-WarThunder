@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Comhaid aschuir {#output-files}
 
-Go réamhshocraithe is **comhad amháin** é gach cath, `out/<map>/<match>.3dheat`: an tábla, an cháipéis chluiche agus na comhaid chliatháin pacáilte le chéile, le mainifest a ainmníonn an cluiche, an léarscáil, an cluiche, mód an chatha, an t-am tosaigh agus an tiontaire (agus geilleagar an chatha faoi `extensions["heat3d/economy"]`). Is é formáid na faire é: [Comhad amháin an cluiche (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
+Go réamhshocraithe is **comhad amháin** é gach cath, `out/<map>/<match>.3dheat`: an tábla, an cháipéis chluiche agus na comhaid chliatháin pacáilte le chéile, le mainifest a ainmníonn an cluiche, an léarscáil, an cluiche, mód an chatha, an t-am tosaigh agus an tiontaire (agus geilleagar an chatha faoi `extensions["heat3d/economy"]`). Is é formáid an amharcáin é: [Comhad amháin an cluiche (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
 
 ![An rud atá i gcomhad .3dheat](../assets/img/ga/container.svg)
 
@@ -35,7 +35,7 @@ Is é `<match>` `<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>`, mar atá sa
 
 ![An áit a dtreoraíonn x, y agus z](../assets/img/ga/frame.svg)
 
-Méadair, i saol féin an chluiche: x soir, y suas, z ó thuaidh. Deir buntásc an tábla leis an bhfaire z a scáthánú, agus scríobhtar leibhéil ó `heat3d-wt-level` ar an mbealach céanna, mar sin luíonn athsheinm agus a leibhéal ar a chéile.
+Méadair, i saol féin an chluiche: x soir, y suas, z ó thuaidh. Deir buntásc an tábla leis an amharcán z a scáthánú, agus scríobhtar leibhéil ó `heat3d-wt-level` ar an mbealach céanna, mar sin luíonn athsheinm agus a leibhéal ar a chéile.
 
 ---
 

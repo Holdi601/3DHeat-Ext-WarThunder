@@ -3,7 +3,7 @@ title: "Рівні"
 nav_order: 9
 lang: uk
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -30,7 +30,7 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Завантажте `levels/<level>/<level>.glb` у панелі рівнів переглядача, під
+3. Завантажте `levels/<level>/<level>.glb` у панелі «Тло / рівень» переглядача, під
    боями цієї карти.
 
 Рівні, які ви записуєте, лишаються на вашому комп'ютері: ніколи не публікуйте їх

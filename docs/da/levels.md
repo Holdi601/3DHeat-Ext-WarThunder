@@ -3,7 +3,7 @@ title: Baner
 nav_order: 9
 lang: da
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -29,7 +29,7 @@ til vieweren, i samme koordinatsystem som replayenes tabeller.
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Indlæs `levels/<level>/<level>.glb` i viewerens Level-panel, under kampene på det kort.
+3. Indlæs `levels/<level>/<level>.glb` i viewerens panel Baggrund / bane, under kampene på det kort.
 
 Banerne, du skriver, bliver på din maskine: publicér dem aldrig (se
 [Vilkår og licens](terms.md)).
@@ -134,7 +134,7 @@ landklasserne og deres farver, veje og jorddekaler; `trianglesTotal`, `glbBytes`
 | Vand-heightmap (`WHM`: et gitter af flade celler og 130x130-sider med 16-bit-højder) | læst, hvor en bane har et; dens floder skråner med terrænet |
 | Taktiske kort | fra `content/base/res/locations_maps.dxp.bin`, placeret ud fra BLK'ens `mapCoord0/1` og `tankMapCoord0/1`; billedets top er nord |
 | Placerede objekter (`RIGz`: render-instansgeneratorens faste instanser) | hver instans, som en 3x4-matrix af 16-bit-værdier eller, på nogle baner, 32-bit-værdier (cellens bytetal afgør det); hver byte i hver celle regnskabsført på de kontrollerede baner |
-| Genererede objekter (`RIGz`-landklasse-masker og `LandClass`-ressourcer) | spillets generator, porteret: de samme steder prøvet i samme rækkefølge med de samme tilfældige tal, landklasse- og udelukkelsesmaskerne, objektet valgt på hvert sted, dets rotation, skala og højdeforskydning; flisede (byblokke) og plantede (skove, buske, marker) entiteter. Genereret kun over stridsvognskortet. Tilnærmet: jordhøjden og normalen (fra heightmap'et; spillet sporer en stråle), udelukkelseskasserne spillet registrerer under kørsel, og træers gir (spillet fanger det til impostorens rotationspalet). |
+| Genererede objekter (`RIGz`-landklasse-masker og `LandClass`-ressourcer) | spillets generator, porteret: de samme steder prøvet i samme rækkefølge med de samme tilfældige tal, landklasse- og udelukkelsesmaskerne, objektet valgt på hvert sted, dets rotation, skala og højdeforskydning; flisede (byblokke) og plantede (skove, buske, marker) entiteter. Genereret kun over stridsvognskortet. Tilnærmet: jordhøjden og normalen (fra heightmap'et; spillet sporer en stråle), udelukkelseskasserne spillet registrerer under kørsel, og træers giring (spillet fanger det til impostorens rotationspalet). |
 | Render-meshes (`RendInst`-ressourcer i `content/*/res/*.grp`, materialer i `riDesc.bin`) | hver LOD's hjørner og trekanter (flydende positioner; 16- eller 32-bit-indekser, almindelige eller meshoptimizer-pakkede), hvert elements materiale. Decal- og impostor-billboard-elementer udelades; de gennemsigtige (glas) beholdes |
 | Objektfarver | pr. materiale, gennemsnittet af dets diffuse teksturs lille mip (alfa-vægtet for blade), fra installationens teksturpakker: t0 for de fleste shadere, den første detaljediffuse, hvor t0 er et overlay eller en maske. Én farve pr. materiale: ingen tekstur på objekterne |
 | Kollisionsformer (`<object>_collision`) | kollisionsressourcer af strømversion 3, brugt, hvor et objekt ikke har en render-mesh. Kun det spillets stråler rammer (`TRACEABLE`-noder) tegnes, og kasser, kugler og kapsler kun, når ressourcen ingen mesh har: resten er grove fysikstand-ins, der ville vise sig som kuber omkring objektet |

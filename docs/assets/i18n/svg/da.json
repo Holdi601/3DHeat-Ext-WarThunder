@@ -11,7 +11,7 @@
  "<match>.objectives.parquet": "<match>.objectives.parquet",
  "<match>.parquet": "<match>.parquet",
  "<match>.parquet, <match>.match.json, ...": "<match>.parquet, <match>.match.json, ...",
- "Background / level: levels from heat3d-wt-level": "Level-panel: baner fra heat3d-wt-level",
+ "Background / level: levels from heat3d-wt-level": "Baggrund / bane: baner fra heat3d-wt-level",
  "From a replay to the 3DHeat viewer": "Fra en replay til 3DHeat-vieweren",
  "Heatmap tab: the table": "Heatmap-fanen: tabellen",
  "Levels are mirrored too, so both fit.": "Banerne spejles også, så begge passer.",

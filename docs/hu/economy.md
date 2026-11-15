@@ -37,7 +37,7 @@ visszajátszások nem tartalmaznak kimenetelt (a szerver-visszajátszás `status
 módosításokat: az eredmények játékosonként csak a járművek nevét és típusát sorolják fel.
 Ezeknél a `won` üres marad.
 
-A nézegető költségmodellje a `cost_*` (és `earn_*`) oszlopokat olvassa a `currency` mellett;
+A megjelenítő költségmodellje a `cost_*` (és `earn_*`) oszlopokat olvassa a `currency` mellett;
 a `cost_fired_sl + cost_lost_sl` összege azt mutatja, hol költöttek el és vesztettek el
 ezüstoroszlánokat, az `earn_sl` pedig azt, hol szereztek őket (egy ölés jutalma a saját
 `reward` során áll, nem a `kill` soron, így semmi sem számolódik kétszer).

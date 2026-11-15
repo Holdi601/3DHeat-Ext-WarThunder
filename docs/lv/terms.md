@@ -17,8 +17,8 @@ disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
 the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
 permitted to store, download, modify, or otherwise use any part of the Game(s)"
 beyond the client. Savas kopijas līmeņu failu nolasīšana vietējā 3D skatā ir
-lietotāja lēmums, kas pieņemts, to zinot. Uzrakstītie līmeņi paliek tavā datorā:
-**nekad tos nepublicē**, un šeit nekas nepiegādā spēles datus.
+lietotāja lēmums, kas pieņemts, to zinot. Uzrakstītie līmeņi paliek jūsu datorā:
+**nekad tos nepublicējiet**, un šeit nekas nepiegādā spēles datus.
 
 ## Avoti {#sources}
 
@@ -53,7 +53,7 @@ HEAT3D_WT_REPLAYS=<folder of your own replays> python -m pytest -q        # step
 ```
 
 Vienības testi nekad nelasa instalāciju (`HEAT3D_WT_NO_NAMES` ir uzstādīts);
-tests ar tavu atkārtojumu nolasa nosaukumus no tavas instalācijas.
+tests ar jūsu atkārtojumu nolasa nosaukumus no jūsu instalācijas.
 
 Testi izveido atkārtojumus kodā (`tests/synth.py`: galvene, pakete, rezultāti,
 entītiju plūsma, lidojumā esoši ieroči) saskaņā ar izkārtojumu, ko lasītāji dokumentē;

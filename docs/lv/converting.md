@@ -14,14 +14,14 @@ Rezultāts: viens `.3dheat` fails katrai kaujai (noklusējums) vai atsevišķi f
 
 ## Soli pa solim {#step-by-step}
 
-1. **Ieslēdz atkārtojumu saglabāšanu.** War Thunder saglabā klienta atkārtojumus
+1. **Ieslēdziet atkārtojumu saglabāšanu.** War Thunder saglabā klienta atkārtojumus
    spēles mapē `Replays`, ja atkārtojumu saglabāšana ir ieslēgta tās iestatījumos,
    piemēram `C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays`.
    Servera atkārtojumu, kas saglabāts no spēles atkārtojumu lapas (zip ar `0000.wrpl`,
    `0001.wrpl` ...), arī var pārvērst.
-2. **Atver termināli** mapē, kurā rezultāti drīkst tikt rakstīti
+2. **Atveriet termināli** mapē, kurā rezultāti drīkst tikt rakstīti
    ([Pirms sākat](before-you-start.md)).
-3. **Pārvērs:**
+3. **Pārvērtiet:**
 
    ```bash
    heat3d-wt-replay "<War Thunder>/Replays" -o out
@@ -30,9 +30,9 @@ Rezultāts: viens `.3dheat` fails katrai kaujai (noklusējums) vai atsevišķi f
    heat3d-wt-replay a.wrpl -o out --loose          # atsevišķi faili, nevis viens .3dheat
    ```
 
-   `out` tiek izveidota mapē, kurā atrodas tavs termināls.
-4. **Izlasi, ko tas saka.** Vajadzētu redzēt vienu rindu katrai kaujai.
-5. **Atver to:** ielādē `out/<map>/<match>.3dheat` 3DHeat skatītājā
+   `out` tiek izveidota mapē, kurā atrodas jūsu termināls.
+4. **Izlasiet, ko tas saka.** Vajadzētu redzēt vienu rindu katrai kaujai.
+5. **Atveriet to:** ielādējiet `out/<map>/<match>.3dheat` 3DHeat skatītājā
    ([Ielādējot vienu](https://holdi601.github.io/3DHeat/container.html#loading-one)).
 
 ![Izpilde ar sintētisku atkārtojumu: viens .3dheat, --loose, bojāts fails, tukša mape](../assets/img/convert.svg)

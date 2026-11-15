@@ -51,7 +51,7 @@ millegagi, mida kordus ütleb teisel, sõltumatul viisil; siin antakse ainult me
 | Sõidukivahetused | mängija üksus, mis on veel elus, kui sama mängija järgmine üksus ilmub, lõpetatakse seal (sõiduk jäi seisma). `selfCheck.vehicleSwitch.twoLiveVehicles` peab olema 0 |
 | Lahingurežiim | [Lahingurežiim](ground.md#battle-mode) |
 | Lennukid 2026 serveri kordusel | loetud 2026 paigutuses; suund ja rulli märk kokkulangevad pööretega; kohahoidja-lennukid ja luurelennukid ei kanna andmeid |
-| Serveri kordusa mängijad | leitud nime järgi kohtadest; iga statistika võrdub tulemustega (`selfCheck.players`) |
+| Serveri korduse mängijad | leitud nime järgi kohtadest; iga statistika võrdub tulemustega (`selfCheck.players`) |
 | Lennukid 2025 serveri kordustes ja versioonis 101286 | ei loeta: nende lennupakettidel on teine paigutus |
 
 ## Sõnumid üksustele {#messages-to-units}

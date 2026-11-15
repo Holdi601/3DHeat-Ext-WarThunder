@@ -14,7 +14,7 @@ hvor mye de kan stole på. Kontroller gir bare metoden og samsvaret.
 
 ## Tårn {#turrets}
 
-En tanks bakketilstand (16-bits holdning) holder, etter posisjonen, 141 bits som
+En stridsvogns bakketilstand (16-bits holdning) holder, etter posisjonen, 141 bits som
 ikke leses, og deretter per tårn 62 bits: tårnets gir og kanonens stigning (16 bits
 hver, 360/65536 grader per steg, med fortegn), og 30 bits som ikke leses; så
 utfylling, og i noen tilstander 200 bits til. Antallet tårn er byten som sendes
@@ -24,16 +24,16 @@ med klokken, 0 rett frem; stigningen er relativ til skroget, opp positiv.
 
 Slik ble det kontrollert:
 
-- **Mot skuddene:** for hvert treff fra en tank, dens hovedkanons verdensretning
+- **Mot skuddene:** for hvert treff fra en stridsvogn, dens hovedkanons verdensretning
   (skrogets holdning dreid med tårnets gir og kanonens stigning) mot linjen fra
   skytteren til enheten som ble truffet, minst 30 m unna: per slag en median på
   ca. 98 % innen 3 grader i retning og 99 % i høyde (`selfCheck.turretsVsShots`).
   Resten er stort sett treff fra en maskingevær i et annet tårn.
-- **Mot opptakspilotens sikting:** hans egen tank sender sin siktings verdensvinkel
+- **Mot opptakspilotens sikting:** hans egen stridsvogn sender sin siktings verdensvinkel
   (mot klokken fra øst), stigning og avstand. Skrogets retning pluss tårnets gir
   ligger innen en halv grad (median) fra sikten.
 
-**Serverreplayer** (0xF074) sender hver tanks tilstand i samme oppsett, etterfulgt
+**Serverreplayer** (0xF074) sender hver stridsvogns tilstand i samme oppsett, etterfulgt
 av data av sin egen, så hvert tårn hvis to vinkler ligger innenfor tilstanden
 leses (minst hovedtårnet for nesten hver tankrad). Det er tårnet, ikke kameraet:
 
@@ -53,7 +53,7 @@ ferdigheter og modifikasjoner; 45 og 20 grader per sekund der installasjonen ikk
 oppgir noen). Ved hvert treff fra hovedkanonen settes tårnet nøyaktig til skuddets
 linje, og et tilbakegående pass får det dit i tide (`selfCheck.turretLimit`).
 `shot`-raden bærer også `turretYaw` / `gunPitch`. Verdien slik den sendes, står
-i `turretYawRaw` / `gunPitchRaw`. En tank hvis tilstand ikke har noe tårn, har
+i `turretYawRaw` / `gunPitchRaw`. En stridsvogn hvis tilstand ikke har noe tårn, har
 tomme tårnkolonner (visningsprogrammet kan falle tilbake til `viewYaw`).
 `gunPitch` ligger litt over `viewPitch` på lang avstand: kanonens hevning for
 prosjektilets fall.
@@ -67,7 +67,7 @@ Melding 0xD043, ca. 20 i sekundet, er opptakspilotens egne replay-kamera: felt 1
 kvaternion som dreier kameraets forside dit det ser; 2 kameraets plass fra
 kjøretøyet det følger (m); 4 den samme forskyvningen i kjøretøyets egen ramme (x
 forover, y opp, z venstre); 5 hvor spilleren sikter (en enhetsvektor); 3 zoomen
-(ca. 1,2 i en tanks tredjepersonsvisning, ca. 1,0 i et fly, høyere i en skytters
+(ca. 1,2 i en stridsvogns tredjepersonsvisning, ca. 1,0 i et fly, høyere i en skytters
 sikte eller gjennom kikkert). Kontrollert: felt 4 er felt 2 dreiet inn i kjøretøyets
 ramme, innen 0,5 m for nesten hver melding; kameraets forside har sikteretningen.
 Replayen sender ikke noe synsfelt i grader, bare zoomen.

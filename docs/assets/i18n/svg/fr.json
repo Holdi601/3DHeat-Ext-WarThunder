@@ -17,7 +17,7 @@
  "Levels are mirrored too, so both fit.": "Niveaux retournés aussi, ils s'alignent.",
  "Match tab: the match document": "Onglet Match : le document de match",
  "Metres, in the game's own world": "Mètres, dans le monde du jeu",
- "The table's footer tells the viewer to mirror z.": "Le pied de la table indique à la visionneuse de retourner z.",
+ "The table's footer tells the viewer to mirror z.": "Le pied de table dit au visualiseur d'inverser z.",
  "The viewer opens it like the loose files. With --loose you get these files one by one instead.": "La visionneuse l'ouvre comme les fichiers séparés. Avec --loose, vous obtenez ces fichiers un à un.",
  "What one .3dheat file holds": "Ce que contient un fichier .3dheat",
  "Where x, y and z point": "Où pointent x, y et z",

@@ -20,7 +20,7 @@
 <text x="235" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">hliðarskrá: færslur flugmódels</text>
 <rect x="450" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">manifest</text>
-<text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">leikur, kort, leikur, breytir,</text>
+<text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">leikur, kort, leikur, umbreytir,</text>
 <text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">hagkerfi bardagans</text>
 <text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Skoðarinn opnar hana eins og lausu skrárnar. Með --loose færðu þessar skrár í staðinn hverja fyrir sig.</text>
 </svg>

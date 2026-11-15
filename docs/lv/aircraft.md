@@ -38,7 +38,7 @@ Ziņojums 0xD04A nosūta ieraksta spēlētāja mērinstrumentus kā (numurs, vē
 
 Vēl dažus numurus sūta, kuru nozīme nav zināma; tie paturēti mača dokumenta `authorInstruments.notNamed`.
 
-Tabulas `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` un `throttle` nāk no šiem, ieraksta spēlētāja paša rindās, ņemot pēdējo ziņojumu ne vairāk kā 0,2 s pēc paraugs.
+Tabulas `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` un `throttle` nāk no šiem, ieraksta spēlētāja paša rindās, ņemot pēdējo ziņojumu ne vairāk kā 0,2 s pēc paraugu.
 
 ## Lidojuma ieraksti {#flight-entries}
 

@@ -14,7 +14,7 @@ permalink: /da/
 laver optagelsen om til en fil, du kan se oppefra i
 [3DHeat-vieweren](https://holdi601.github.io/3DHeat/), med hvert fly, hver tank
 og hvert skib, hver missil og bombe, og hvert træf der hvor det skete. En anden
-kommando laver banerne i dit eget spilinstallation om til 3D-baner, som kampene
+kommando laver banerne i din egen spilinstallation om til 3D-baner, som kampene
 kan vises på.
 
 **Hvorfor skulle jeg bruge det?** Til en gennemgang af en kamp i 3D; til

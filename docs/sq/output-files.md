@@ -17,7 +17,7 @@ ekonominë e betejës te `extensions["heat3d/economy"]`). Formati është i shik
 
 ![Çfarë mban një skedar .3dheat](../assets/img/sq/container.svg)
 
-Me `--loose` të njëjtët skedarë shkruhen më në fund krah për krah:
+Me `--loose` të njëjtët skedarë shkruhen krah për krah, në vend të tij:
 
 ![Skedarët e një beteje sintetike, të paketuar dhe të shkëputur](../assets/img/files.svg)
 

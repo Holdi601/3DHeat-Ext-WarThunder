@@ -10,11 +10,11 @@ permalink: /ko/
 ---
 # 3DHeat 워 썬더 리플레이 {#dheat-war-thunder-replays}
 
-**무엇인가요?** 워 썬더는 전투를 리플레이 파일로 녹화할 수 있어요. 이 도구는 그 녹화를 [3DHeat 뷰어](https://holdi601.github.io/3DHeat/)에서 위에서 내려다보며 볼 수 있는 파일로 바꿔 줘요. 모든 비행기, 전차, 함선, 미사일과 폭탄, 그리고 맞은 곳까지 그대로 보여 줘요. 두 번째 명령은 여러분의 게임 설치본에 있는 레벨을 전투를 보여 줄 3D 레벨로 바꿔 줘요.
+**무엇입니까?** 워 썬더는 전투를 리플레이 파일로 녹화할 수 있습니다. 이 도구는 그 녹화를 [3DHeat 뷰어](https://holdi601.github.io/3DHeat/)에서 위에서 내려다보며 볼 수 있는 파일로 바꿉니다. 모든 비행기, 전차, 함선, 미사일과 폭탄, 그리고 맞은 곳까지 그대로 보여 줍니다. 두 번째 명령은 여러분의 게임 설치본에 있는 레벨을 전투를 보여 줄 3D 레벨로 바꿉니다.
 
-**왜 쓰나요?** 전투를 3D로 되돌아보기 위해서요. 여러분과 다른 사람들이 많은 전투에서 어디로 날고, 달리고, 싸우고, 죽었는지 히트맵으로 보기 위해서요. 차량 어디에 공격이 맞았는지 보기 위해서요. 전투에 얼마가 들고 얼마를 벌었는지 보기 위해서요. 결과물은 평범한 Parquet과 JSON 파일이라서 다른 도구도 읽을 수 있어요.
+**왜 씁니까?** 전투를 3D로 되돌아보기 위해서입니다. 여러분과 다른 사람들이 많은 전투에서 어디로 날고, 달리고, 싸우고, 죽었는지 히트맵으로 보기 위해서입니다. 차량 어디에 공격이 맞았는지 보기 위해서입니다. 전투에 얼마가 들고 얼마를 벌었는지 보기 위해서입니다. 결과물은 평범한 Parquet과 JSON 파일이라서 다른 도구도 읽을 수 있습니다.
 
-**예시:** `.wrpl` 리플레이 하나를 넣으면 `<match>.3dheat` 파일 하나가 나와요.
+**예시:** `.wrpl` 리플레이 하나를 넣으면 `<match>.3dheat` 파일 하나가 나옵니다.
 
 ![리플레이에서 3DHeat 뷰어까지](../assets/img/ko/pipeline.svg)
 
@@ -25,11 +25,11 @@ permalink: /ko/
 ```bash
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
 cd 3DHeat-Ext-WarThunder
-pip install -e .                                  # heat3d-wt-replay와 heat3d-wt-level을 설치해요
+pip install -e .                                  # heat3d-wt-replay와 heat3d-wt-level을 설치합니다
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 ```
 
-전투마다 `ok out/<map>/<match>.3dheat` 한 줄이 보여요. 그 파일을 3DHeat 뷰어에서 열어 주세요.
+전투마다 `ok out/<map>/<match>.3dheat` 한 줄이 보입니다. 그 파일을 3DHeat 뷰어에서 열어 주세요.
 
 ## 이 문서 {#this-documentation}
 
@@ -51,13 +51,13 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 
 ## 3DHeat의 일부 {#part-of-3dheat}
 
-이 변환기는 [3DHeat](https://github.com/Holdi601/3DHeat)의 도구 중 하나예요. 3DHeat는 실시간 3D 텔레메트리와 리플레이 뷰어예요([문서](https://holdi601.github.io/3DHeat/)). 뷰어는 `.3dheat` 파일을 열어요. 테이블은 히트맵 탭에, 매치 문서는 매치 탭에 나와요([파일 하나에 매치 하나](https://holdi601.github.io/3DHeat/container.html)). 모든 변환기가 지켜야 할 것: [변환기는 모든 것을 보관해요](https://holdi601.github.io/3DHeat/converters.html).
+이 변환기는 [3DHeat](https://github.com/Holdi601/3DHeat)의 도구 중 하나입니다. 3DHeat는 실시간 3D 텔레메트리와 리플레이 뷰어입니다([문서](https://holdi601.github.io/3DHeat/)). 뷰어는 `.3dheat` 파일을 엽니다. 테이블은 히트맵 탭에, 매치 문서는 매치 탭에 나옵니다([파일 하나에 매치 하나](https://holdi601.github.io/3DHeat/container.html)). 모든 변환기가 지켜야 할 것: [변환기는 모든 것을 보관합니다](https://holdi601.github.io/3DHeat/converters.html).
 
-**왜 따로 된 도구인가요.** `.wrpl` 형식은 공개된 문서가 없고, Gaijin의 EULA(3.2.2, 3.2.9)는 게임을 리버스 엔지니어링하는 것과 보여 주기 위해 의도되지 않은 데이터를 캐내는 것을 금지해요. 이 EULA는 리플레이를 따로 언급하지 않아요. 리플레이는 게임이 플레이어에게 직접 보여 주는 것이니까요. 라이선스 문제가 이 변환기에만 닿도록 이 도구는 3DHeat Watcher 밖에 있어요. Watcher가 설치되어 있으면 새 리플레이에 이 변환기를 돌리고, 설치되어 있지 않아도 Watcher는 작동해요.
+**왜 따로 된 도구입니까.** `.wrpl` 형식은 공개된 문서가 없고, Gaijin의 EULA(3.2.2, 3.2.9)는 게임을 리버스 엔지니어링하는 것과 보여 주기 위해 의도되지 않은 데이터를 캐내는 것을 금지합니다. 이 EULA는 리플레이를 따로 언급하지 않습니다. 리플레이는 게임이 플레이어에게 직접 보여 주는 것이니까요. 라이선스 문제가 이 변환기에만 닿도록 이 도구는 3DHeat Watcher 밖에 있습니다. Watcher가 설치되어 있으면 새 리플레이에 이 변환기를 돌리고, 설치되어 있지 않아도 Watcher는 작동합니다.
 
 | 도구 | 하는 일 | 소스 | 문서 |
 |---|---|---|---|
-| 3DHeat 뷰어 | 데이터를 3D로 보여줘요: 히트맵, 리플레이, 레이스 분석 | [3DHeat](https://github.com/Holdi601/3DHeat) | [사이트](https://holdi601.github.io/3DHeat/) |
+| 3DHeat 뷰어 | 데이터를 3D로 보여 줍니다: 히트맵, 리플레이, 레이스 분석 | [3DHeat](https://github.com/Holdi601/3DHeat) | [사이트](https://holdi601.github.io/3DHeat/) |
 | GameFiles | 게임이 함께 배포하는 파일에서 꺼낸 코스와 레벨 | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [사이트](https://holdi601.github.io/3DHeat-GameFiles/) |
 | GameCapture | 랩 텔레메트리, 그리고 게임 영상으로 다시 만든 레벨 | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [사이트](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | 레벨을 내보내는 Unreal Editor 플러그인 | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [사이트](https://holdi601.github.io/3DHeat-UnrealExporter/) |

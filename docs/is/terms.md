@@ -69,3 +69,5 @@ zstandard (BSD-3-Clause) og Pillow (MIT-CMU). Borðslesararnir voru skrifaðir
 út frá frumkóða Dagor Engine, Copyright (c) 2023 Gaijin Entertainment, BSD
 3-Clause leyfi; enginn kóði úr honum er afritaður hér, og sniðfastarnir sem eru notaðir
 (vromfs XOR-lykillinn, offset hæðarsviðsnetsins) eru tilgreindir þar sem þeir birtast.
+
+Hluti af [3DHeat](https://github.com/Holdi601/3DHeat) ([skjölun](https://holdi601.github.io/3DHeat/)). Kóði: [3DHeat-Ext-WarThunder](https://github.com/Holdi601/3DHeat-Ext-WarThunder).

@@ -23,5 +23,5 @@
 <text x="440" y="414" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">3. 3DHeat-skoðarinn</text>
 <text x="440" y="436" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Flipinn Hitakort: taflan</text>
 <text x="440" y="456" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Flipinn Leikur: leikjaskjalið</text>
-<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Borðspjald: borð úr heat3d-wt-level</text>
+<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Bakgrunnur / borð: borð úr heat3d-wt-level</text>
 </svg>

@@ -68,9 +68,8 @@ Mida iga konverter peab säilitama: [Konverterid hoiavad kõike](https://holdi60
 
 **Miks see on eraldi tööriist.** `.wrpl` formaat ei ole dokumenteeritud ja Gaijini
 EULA (3.2.2, 3.2.9) keelab mängu pöördprojekteerimise ning andmete kogumise, mis
-ei ole mõeldud avalikuks näitamiseks; kordusi see nimetab ei ole, need näitab
-mängija endale mäng ise. Et litsentsiküsimus puudutaks ainult seda konverterit,
-elab see 3DHeat Watcherist väljaspool: Watcher käivitab selle uutel kordustel,
+ei ole mõeldud avalikuks näitamiseks; see ei nimeta kordusi, mille mäng näitab mängijale endale. Et litsentsiküsimus puudutaks ainult seda konverterit,
+asub see 3DHeat Watcherist väljaspool: Watcher käivitab selle uutel kordustel,
 kui see on paigaldatud, ja töötab ka ilma selleta.
 
 | Tööriist | Mida see teeb | Lähtekood | Dokumentatsioon |

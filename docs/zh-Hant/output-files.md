@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # 輸出檔案 {#output-files}
 
-預設情況下，每場戰鬥是**一個檔案**，即 `out/<map>/<match>.3dheat`：表格、對應文件與附屬檔案打包在一起，其中的清單會記載遊戲、地圖、對戰、戰鬥模式、開始時間與轉換器（以及 `extensions["heat3d/economy"]` 下的戰鬥經濟）。這個格式屬於檢視器：[每場對戰一個檔案（.3dheat）](https://holdi601.github.io/3DHeat/container.html)。
+預設情況下，每場戰鬥是**一個檔案**，即 `out/<map>/<match>.3dheat`：表格、對戰文件與附屬檔案打包在一起，其中的清單會記載遊戲、地圖、對戰、戰鬥模式、開始時間與轉換器（以及 `extensions["heat3d/economy"]` 下的戰鬥經濟）。這個格式屬於檢視器：[每場對戰一個檔案（.3dheat）](https://holdi601.github.io/3DHeat/container.html)。
 
 ![一個 .3dheat 檔案包含的內容](../assets/img/zh-Hant/container.svg)
 
@@ -20,7 +20,7 @@ search_exclude: true
 | 檔案 | 內容 | 頁面 |
 |---|---|---|
 | `<match>.parquet` | 每個取樣或事件一列 | [表格](table.md) |
-| `<match>.match.json` | 回放所記錄的其他一切 | [對應文件](match-document.md) |
+| `<match>.match.json` | 回放所記錄的其他一切 | [對戰文件](match-document.md) |
 | `<match>.messages.parquet` | 每則訊息、元件數值與封包，完整保存 | [附屬檔案](sidecars.md) |
 | `<match>.objectives.parquet` | 隨時間變化的佔領區域 | [附屬檔案](sidecars.md) |
 | `<match>.flight.parquet` | 每架飛機的每一筆飛行模型紀錄，完整保存 | [附屬檔案](sidecars.md) |

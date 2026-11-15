@@ -35,7 +35,7 @@ Si l'empaquetat falla, es mantenen els fitxers separats i la línia ho indica.
 ## Noms {#names}
 
 `<partida>` és `<mapa>_<AB|RB|SB>_<mode>_<inici, UTC>_<id de sessió>`, com a la
-imatge: vegeu [Quins fitxers són una batalla](converting.md#which-files-are-one-battle).
+imatge: mira [Quins fitxers són una batalla](converting.md#which-files-are-one-battle).
 `<mapa>` és l'identificador del mapa dins del joc (`99_testmap` a les imatges).
 
 ## Coordenades {#coordinates}

@@ -74,7 +74,7 @@ följer. `selfCheck.camera` räknar raderna och kontrollen.
 En bana ritas från sin första rad till sin sista. När dess enhet är borta innan repriset tar slut är
 dess sista rad en `despawn`-rad på dess sista plats: vid den tid spelet tog bort dess entitet (när den
 kom inom 6 s från dess sista mätpunkt), annars vid dess sista mätpunkt. En bana utan en varar till
-repriset slut. Rader i en bana kan ligga långt isär (en avlägsen enhet eller ett vrak uppfrischas var
+repriset slut. Rader i en bana kan ligga långt isär (en avlägsen enhet eller ett vrak uppfriskas var
 några sekund, ett vrak ibland inte på minuter): dess sista tillstånd gäller tills nästa rad.
 
 ## Stridsläge {#battle-mode}

@@ -91,7 +91,7 @@ ok out/<map>/<match>.3dheat
 
 ## Gyakori hibák {#common-errors}
 
-| Ezt látod | Mit tégy |
+| Ezt látod | Mit tegyél |
 |---|---|
 | `'python' is not recognized ...` vagy `command not found` | a Python nincs a PATH-ban: telepítsd újra a **Add python.exe to PATH** bejelölésével, vagy Windowson `py`-t írj a `python` helyett |
 | `'pip' is not recognized ...` | írd be helyette: `python -m pip install -e .` |

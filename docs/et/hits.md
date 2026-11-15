@@ -14,11 +14,10 @@ Kontrollid annavad ainult meetodi ja kokkulangevuse.
 
 ## Tulistamine {#gunfire}
 
-Iga projektil, mis tabas üksust, on kordusest olemas (sõnum 0xF0E9): rida `shot` laskja asukohas
+Iga üksust tabanud projektil on kordusest olemas (sõnum 0xF0E9): rida `shot` laskja asukohas
 tabamuse hetkel, `targetX/Y/Z` tabamuspunkt (tabatud üksus, nihutatud tabamispunkti võrra selle
 raamistikus, pööratud tema asendi järgi), suund sinna, `other` tabatud üksus. Mööda läinud mürske
-ja kuule ei saadeta: need ei ole olemid, ja lendavate relvade sõnumid hoiavad ainult rakette,
-rakette, pomme ja torpeedosid. Salvestajamängija lastud laskemoon (tema veerg `ammo`) kahaneb tema
+ja kuule ei saadeta: need ei ole olemid, ja lendavate relvade sõnumid hoiavad ainult rakette, juhitavaid rakette, pomme ja torpeedosid. Salvestajamängija lastud laskemoon (tema veerg `ammo`) kahaneb tema
 tulistamisel, nii et tema pursud saab eristada, kuid mitte seda, kuhu need laskemoonad läksid.
 Raske õhutõrje ja suurtükivägi saadavad iga üksiku lasu (`gun_shot`, suunata ei ole), 40 mm
 õhutõrjekahuritel nende pursud (`fire_start`, `fire_stop`).

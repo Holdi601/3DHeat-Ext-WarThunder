@@ -3,7 +3,7 @@ title: Tasemed
 nav_order: 9
 lang: et
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -105,7 +105,7 @@ moire'i. Kui isegi kõige jämedamad LOD-id ei mahu, muutuvad kõige rohkem sä�
 jäetakse välja kõige väiksemad tüübid (`leftOut`); ühtegi objekti ei joonistata kastina (kokkupõrkekuju, kui
 see on, on objekti enda oma).
 Genereeritud objektid hõrendatakse tüübi järgi (`density`) deterministlikult, samad igal käivitusel.
-`--max-object-triangles` ületab eelarve, `--max-grid` (vaikimisi 1024) piirab kõrguskaardi jämedamaid osi,
+`--max-object-triangles` seab objektieelarve ise, `--max-grid` (vaikimisi 1024) piirab kõrguskaardi jämedamaid osi,
 `--no-objects` jätab objektid välja, `--no-generated` genereeritud objektid, `--no-terrain-colour`
 katab maapinna taktikalise kaardiga, `--no-texture` jätab selle tekstuurita.
 

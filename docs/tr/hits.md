@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # İsabetler, ateş ve yangınlar {#hits-gunfire-and-fires}
 
-Isabet, mühimmat ve yangın sütunlarının nereden geldiğini bilmek isteyenler içindir. Denetimler yalnızca yöntemi
+İsabet, mühimmat ve yangın sütunlarının nereden geldiğini bilmek isteyenler içindir. Denetimler yalnızca yöntemi
 ve uyumu verir.
 
 ## Ateş {#gunfire}

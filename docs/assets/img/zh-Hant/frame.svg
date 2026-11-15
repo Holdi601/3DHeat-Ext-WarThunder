@@ -11,5 +11,5 @@
 <text x="430" y="100" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">公尺，遊戲世界中的單位</text>
 <text x="430" y="124" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">x 朝東、y 向上、z 朝北（左手座標系）。</text>
 <text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">表格結尾告訴檢視器將 z 鏡像。</text>
-<text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">地圖也會鏡像，因此兩者吻合。</text>
+<text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">關卡也會鏡像，因此兩者吻合。</text>
 </svg>

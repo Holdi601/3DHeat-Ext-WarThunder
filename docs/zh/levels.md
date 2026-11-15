@@ -3,7 +3,7 @@ title: "关卡"
 nav_order: 9
 lang: zh
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -37,10 +37,10 @@ search_exclude: true
 
 | 命令 / 选项 | 作用 |
 |---|---|
-| `list [--game 文件夹]` | 安装中的每个关卡 |
+| `list [--game <文件夹>]` | 安装中的每个关卡 |
 | `extract <关卡...>` / `--all` | 指定的关卡（使用 `list` 所输出的名称；可使用通配符），或全部关卡 |
 | `-o`、`--out` | 输出文件夹；每个关卡放在 `<输出>/<关卡>/` 中 |
-| `--game 文件夹` | 战争雷霆文件夹（默认：通过 Steam 或启动器找到；也可以用 `HEAT3D_WT_GAME`） |
+| `--game <文件夹>` | 战争雷霆文件夹（默认：通过 Steam 或启动器找到；也可以用 `HEAT3D_WT_GAME`） |
 | `--detail low/medium/high` | 战术地图上的地面采样、地面颜色和物体预算（默认 `medium`） |
 | `--max-object-triangles N` | 物体预算（默认：取决于 detail） |
 | `--max-grid N` | 每部分每一边的高度图采样数（默认 1024） |

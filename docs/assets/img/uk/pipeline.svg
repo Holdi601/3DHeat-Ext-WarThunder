@@ -23,5 +23,5 @@
 <text x="440" y="414" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">3. Переглядач 3DHeat</text>
 <text x="440" y="436" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Теплова карта: таблиця</text>
 <text x="440" y="456" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Матч: документ матчу</text>
-<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Панель рівнів: рівні з heat3d-wt-level</text>
+<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Панель «Тло / рівень»: рівні з heat3d-wt-level</text>
 </svg>

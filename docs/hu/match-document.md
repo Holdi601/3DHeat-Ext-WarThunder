@@ -12,7 +12,7 @@ search_exclude: true
 ![Egy szintetikus meccsdokumentum eleje és kulcsai](../assets/img/match-document.svg)
 
 A `<match>.match.json` mindent tartalmaz, amit a visszajátszás elmond, és ami nem a táblázat
-egy sora. A nézegető Meccs fülje ezt olvassa.
+egy sora. A megjelenítő Meccs fülje ezt olvassa.
 
 ## A csata {#the-battle}
 
@@ -59,7 +59,7 @@ egy sora. A nézegető Meccs fülje ezt olvassa.
 | `results` | a teljes eredmény-blk, ahogy a játék írta |
 | `counts` | sorok, események, életek, fajták, minták, entitások sablonként, fegyverek, beolvasott és nem beolvasott csomagok, minden látott üzenetazonosító és a nem beolvasottak, kihagyott minták |
 | `trackBreaks` | minden pályavágás egy olyan lépésnél, amely gyorsabb, mint amire az egység képes: hol, mennyire messze, milyen gyorsan, és mi a valószínű oka |
-| `selfCheck` | a [Hogyan olvassa a visszajátszást](how-it-reads.md) oldalon felsorolt ellenőrzések, minden konvertáláskor kiszámolva; a `stepSpeed` fajtánként megadja a pálya egymást követő sorai közötti sebességet, ahogy a nézegető összeköti őket (medián, 99. percentilis, legnagyobb, és a lehetetlenül gyors lépések, amelyeknek 0-nak kell lenniük) |
+| `selfCheck` | a [Hogyan olvassa a visszajátszást](how-it-reads.md) oldalon felsorolt ellenőrzések, minden konvertáláskor kiszámolva; a `stepSpeed` fajtánként megadja a pálya egymást követő sorai közötti sebességet, ahogy a megjelenítő összeköti őket (medián, 99. percentilis, legnagyobb, és a lehetetlenül gyors lépések, amelyeknek 0-nak kell lenniük) |
 
 ---
 

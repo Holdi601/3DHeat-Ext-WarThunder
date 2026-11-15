@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Qabel ma tibda {#before-you-start}
 
-Ġdid fil-linja tal-kmandi? Din il-paġna tiħodok minn xejn sa `heat3d-wt-replay`
+Ġdid mal-linja tal-kmandi? Din il-paġna tieħdok minn xejn sa `heat3d-wt-replay`
 li jaħdem f'madwar għaxar minuti. Jekk diġà tuża Python, mur direttament għal
 [Installazzjoni](installing.md).
 

@@ -33,7 +33,7 @@ nėra (serverio įrašo `status` visada `success` ir autoriaus nenurodo), ir nei
 įdiegtų modifikacijų: rezultatuose kiekvieno žaidėjo technika nurodoma tik pagal vardą ir tipą. Ten
 `won` lieka tuščias.
 
-Vaizdo kainų modelis skaito stulpelius `cost_*` (ir `earn_*`) su `currency`; sudėjus `cost_fired_sl +
+Žiūryklės kainų modelis skaito stulpelius `cost_*` (ir `earn_*`) su `currency`; sudėjus `cost_fired_sl +
 cost_lost_sl` gaunama, kur Sidabro liūtai buvo išleisti ir prarasti, `earn_sl` - kur jie buvo uždirbti
 (žudymo atlygis yra jo `reward` eilutėje, o ne `kill` eilutėje, todėl niekas neskaičiuojama dukart).
 

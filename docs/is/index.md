@@ -29,7 +29,7 @@ verkfæri geta líka lesið það.
 
 ## Fljótleg byrjun {#quick-start}
 
-Nýr í skipanalínunni? Lestu fyrst [Áður en þú byrjar](before-you-start.md).
+Hefurðu aldrei notað skipanalínu? Lestu fyrst [Áður en þú byrjar](before-you-start.md).
 
 ```bash
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
@@ -45,7 +45,7 @@ Opnaðu þá skrá í 3DHeat-skoðaranum.
 
 | Síða | Hvað hún fjallar um |
 |---|---|
-| [Áður en þú byrjar](before-you-start.md) | Python, skipanaglugga og hvernig árangur lítur út |
+| [Áður en þú byrjar](before-you-start.md) | Python, skipanalínu og hvernig árangur lítur út |
 | [Uppsetning](installing.md) | uppsetning, nöfn úr þinni uppsetningu, uppfærslur |
 | [Upptökum breytt](converting.md) | `heat3d-wt-replay` skref fyrir skref, allir valkostir, skilaboð |
 | [Úttaksskrár](output-files.md) | `.3dheat` skráin, `--loose` skrár, nöfn |
@@ -61,11 +61,11 @@ Opnaðu þá skrá í 3DHeat-skoðaranum.
 
 ## Hluti af 3DHeat {#part-of-3dheat}
 
-Þessi breytir er eitt af verkfærum [3DHeat](https://github.com/Holdi601/3DHeat),
+Þessi umbreytir er eitt af verkfærum [3DHeat](https://github.com/Holdi601/3DHeat),
 rauntíma 3D-skoðara fyrir mælingar og upptökur ([skjölun](https://holdi601.github.io/3DHeat/)).
 Skoðarinn opnar `.3dheat` skrána: töfluna í flipanum Hitakort, leikjaskjalið
 í flipanum Leikur ([Ein skrá á leik](https://holdi601.github.io/3DHeat/container.html)).
-Það sem hver breytir verður að varðveita: [Breytar varðveita allt](https://holdi601.github.io/3DHeat/converters.html).
+Það sem hver umbreytir verður að varðveita: [Umbreytar varðveita allt](https://holdi601.github.io/3DHeat/converters.html).
 
 **Hvers vegna þetta er sérstakt verkfæri.** Sniðið `.wrpl` er óskjalfest og
 EULA Gaijin (3.2.2, 3.2.9) bannar að rekja leikinn með bakvirkni og að vinna

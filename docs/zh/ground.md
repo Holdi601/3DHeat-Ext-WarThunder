@@ -42,7 +42,7 @@ search_exclude: true
 
 ## 战斗模式 {#battle-mode}
 
-文件头偏移 688 处的字节，其低四位保存难度：0 为街机（AB），5 为 realistic（RB），10 为模拟（SB）。已与录像所属的战斗类型进行核对。如果任务允许生成坦克，则游戏模式为 `ground`；否则如果允许生成舰船，则为 `naval`；否则为 `air`（`allowedUnitTypes`）。任务自身的模式来自其键（`missions/_Dom`），并根据你安装中的 `lang/missions_versus.csv` 命名。相同的键也就是文件名中的 `<模式>` 部分以及对局 ID（`Conq4`、`Dom`）；如果文件头中没有给出，则该部分被省略。
+文件头偏移 688 处的字节，其低四位保存难度：0 为街机（AB），5 为拟真（RB），10 为模拟（SB）。已与录像所属的战斗类型进行核对。如果任务允许生成坦克，则游戏模式为 `ground`；否则如果允许生成舰船，则为 `naval`；否则为 `air`（`allowedUnitTypes`）。任务自身的模式来自其键（`missions/_Dom`），并根据你安装中的 `lang/missions_versus.csv` 命名。相同的键也就是文件名中的 `<模式>` 部分以及对局 ID（`Conq4`、`Dom`）；如果文件头中没有给出，则该部分被省略。
 
 ---
 

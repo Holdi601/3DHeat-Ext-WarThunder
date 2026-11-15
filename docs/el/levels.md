@@ -3,7 +3,7 @@ title: "Επίπεδα"
 nav_order: 9
 lang: el
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -22,7 +22,7 @@ search_exclude: true
    99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
    1 levels in C:\Games\War Thunder
    ```
-2. Εξήγαγε ένα, περισσότερα (επιτρέπονται μπαλαντέρ) ή όλα:
+2. Εξαγάγετε ένα, περισσότερα (επιτρέπονται μπαλαντέρ) ή όλα:
 
    ```bash
    heat3d-wt-level extract <level> -o levels

@@ -2,7 +2,7 @@
 <text x="440" y="30" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle" fill="#1d2330">Ад запісу да праглядальніка 3DHeat</text>
 <rect x="20" y="48" width="840" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="440" y="72" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">1. Ваш запіс</text>
-<text x="440" y="94" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">файлы .wrpl або тэчка з імі</text>
+<text x="440" y="94" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">файлы .wrpl або папка з імі</text>
 <text x="440" y="114" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">або часткі запісу сервера (0000.wrpl ...) ці іх zip</text>
 <line x1="440" y1="128" x2="440" y2="160" stroke="#5b6270" stroke-width="1.8" marker-end="url(#a)"/>
 <rect x="20" y="162" width="840" height="80" rx="8" fill="#eef4ff" stroke="#5b6270" stroke-width="1.2"/>
@@ -13,7 +13,7 @@
 <rect x="20" y="276" width="408" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="224" y="300" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.3dheat (па змаўчанні)</text>
 <text x="224" y="322" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">адзін файл на бой: табліца,</text>
-<text x="224" y="342" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">дакумент матча і дадатковыя файлы</text>
+<text x="224" y="342" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">дакумент матча і дапаможныя файлы</text>
 <rect x="452" y="276" width="408" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="656" y="300" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">або, з --loose</text>
 <text x="656" y="322" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">тое ж як асобныя файлы:</text>

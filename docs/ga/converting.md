@@ -26,7 +26,7 @@ Aschur: comhad `.3dheat` amháin do gach cath (an réamhshocrú), nó comhaid sc
 
    Déantar `out` sa fhillteán a bhfuil do theirminéal ann.
 4. **Léigh an méid a deir sé.** Ba cheart duit líne amháin a fheiceáil do gach cath.
-5. **Oscail é:** luchtaigh `out/<map>/<match>.3dheat` i bhfaire 3DHeat ([Ceann amháin a luchtú](https://holdi601.github.io/3DHeat/container.html#loading-one)).
+5. **Oscail é:** luchtaigh `out/<map>/<match>.3dheat` in amharcán 3DHeat ([Ceann amháin a luchtú](https://holdi601.github.io/3DHeat/container.html#loading-one)).
 
 ![Rith ar athsheinm shintéiseach: .3dheat amháin, --loose, comhad briste, fillteán folamh](../assets/img/convert.svg)
 

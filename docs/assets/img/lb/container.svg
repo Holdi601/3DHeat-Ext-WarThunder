@@ -11,16 +11,16 @@
 <text x="645" y="154" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">d'Match-Dokument</text>
 <rect x="40" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="235" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.messages.parquet</text>
-<text x="235" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Sidecar: all Message, ganz</text>
+<text x="235" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Niewendatei: all Message, ganz</text>
 <rect x="450" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="645" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.objectives.parquet</text>
-<text x="645" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Sidecar: Eroberungszonen iwwer d'Zäit</text>
+<text x="645" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Niewendatei: Eroberungszonen iwwer d'Zäit</text>
 <rect x="40" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="235" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.flight.parquet</text>
-<text x="235" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Sidecar: Flugmodell-Androungen</text>
+<text x="235" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Niewendatei: Flugmodell-Androungen</text>
 <rect x="450" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">Manifest</text>
 <text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Spill, Kaart, Match, Konverter,</text>
 <text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">d'Wirtschaft vum Gefecht</text>
-<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">De Viewer mécht se op wéi d'lose Dateien. Mat --loose kritt s du dës Dateien eenzel.</text>
+<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">De Viewer mécht se op wéi d'lose Dateien. Mat --loose kritt Dir dës Dateien eenzel.</text>
 </svg>

@@ -3,7 +3,7 @@ title: "Nivåer"
 nav_order: 9
 lang: no
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -74,9 +74,9 @@ vannivået, kartrektanglene, antall trekanter, tidsbruk) og nivåets taktiske ka
 | `water:<nivå>` | ett flatt rektangel på nivåets `water_level` over alt terreng: spillet tegner vann som ett plan, og lav bakke under det er sjø, innsjø eller elveleie |
 | `water:<nivå> rivers` | på nivåer med et vannhøydekart (`WHM`), vannflaten med helning over cellene den dekker |
 | `structure:<nivå> buildings` | hvert plasserte objekt som ikke er en plante: hus, ruiner, murer, gjerder, broer, skinner, steiner, rekvisitter. De faste (`RIGz`) og, over stridsvognkartet, de landklassene lager (bybolker, steiner). Hvert tegnes med sitt rendermesh (vegger, tak, vindusåpninger, bjelker), i den LOD-en triangelbudsjettet tillater, fargelagt per materiale etter gjennomsnittet av dets diffuse tekstur |
-| `structure:<nivå> trees` | trær og busker, faste og laget (skoger, hekker): deres rendermesh der budsjettet tillater, ellers en stamme og en krone (en kjegle for bartrær) i trærnes egen løvfarge, over trærnes virkelige størrelse |
+| `structure:<nivå> trees` | trær og busker, faste og laget (skoger, hekker): deres rendermesh der budsjettet tillater, ellers en stamme og en trekrone (en kjegle for bartrær) i trærnes egen løvfarge, over trærnes virkelige størrelse |
 
-Objekter uten rendermesh faller tilbake til sin kollisjonsform; trær uten en til kronen. Hjørnefarger
+Objekter uten rendermesh faller tilbake til sin kollisjonsform; trær uten en til trekronen. Hjørnefarger
 (`COLOR_0`) holder sRGB-kodede verdier, som er slik 3DHeat-visningsprogrammet leser dem.
 
 **Koordinater** er spillets meter med z speilet: glb (x, y, z) = spill (x, y, -z). Spillets verden er
@@ -101,7 +101,7 @@ Et bakkekart ved `high` blir ca. 8 millioner trekanter (3,5 M bakke, 4,5 M objek
 passer i budsjettet: små rekvisitter faller til grove LOD-er først og store bygninger sist, etter rekkeviddene deres
 lagere ga hver LOD (JSON-ens `lodDistance`); det som spares utover budsjettet, går tilbake til de største
 objektene. Grov bakkefarge (luftkart) midler hver landklasses flislagte teksturer ned til pikselstørrelsen først, så
-flisene ikke gir moaré. Hvis selv de groveste LOD-ene ikke passer, blir de trærne som sparer mest til kroner, og så
+flisene ikke gir moaré. Hvis selv de groveste LOD-ene ikke passer, blir de trærne som sparer mest til trekroner, og så
 utelates de minste typene (`leftOut`); intet objekt tegnes som en boks (en kollisjonsform, om den finnes, er objektets egen).
 Genererte objekter tynnes deterministisk etter type (`density`), de samme hver gang. `--max-object-triangles` overstyrer
 budsjettet, `--max-grid` (standard 1024) begrenser høydekartets grovere deler, `--no-objects` utelater objektene,

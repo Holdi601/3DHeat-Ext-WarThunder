@@ -9,9 +9,9 @@ search_exclude: true
 ---
 # Ekonomika {#economy}
 
-Ko kauja izmaksāja un ko nopelnīja, kā kolonnas uz tās notikumu rindām. Tās tiek nolasītas no **tavas instalācijas konvertēšanas laikā**
+Ko kauja izmaksāja un ko nopelnīja, kā kolonnas uz tās notikumu rindām. Tās tiek nolasītas no **jūsu instalācijas konvertēšanas laikā**
 (`char.vromfs.bin`: `config/wpcost.blk` katram transportlīdzeklim, `config/warpoints.blk` un `config/rank.blk`; ieroču blk faili no
-`aces.vromfs.bin` norāda, kura modifikācija ir katrs šāviņš). Šajā repozitorijā nav neviena spēles skaitļa: vērtības nonāk tikai tavā
+`aces.vromfs.bin` norāda, kura modifikācija ir katrs šāviņš). Šajā repozitorijā nav neviena spēles skaitļa: vērtības nonāk tikai jūsu
 pašā izvadē. Bez instalācijas `char.vromfs.bin` nekāds ekonomikas ieraksts netiek veidots (`economy.available` ir false). Cenas ir
 kaujas grūtības cenas (RB `repairCostHistorical`, AB `...Arcade`, SB `...Simulation`).
 

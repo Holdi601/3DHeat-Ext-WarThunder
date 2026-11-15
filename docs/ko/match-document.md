@@ -11,7 +11,7 @@ search_exclude: true
 
 ![합성 매치 문서의 시작 부분과 그 키들](../assets/img/match-document.svg)
 
-`<match>.match.json`에는 리플레이가 테이블의 행이 아닌 것으로 말하는 모든 것이 들어 있어요. 뷰어의 매치 탭이 이 파일을 읽어요.
+`<match>.match.json`에는 리플레이가 테이블의 행이 아닌 것으로 말하는 모든 것이 들어 있습니다. 뷰어의 매치 탭이 이 파일을 읽습니다.
 
 ## 전투 {#the-battle}
 
@@ -46,19 +46,19 @@ search_exclude: true
 | `weapons` | 발사된 모든 로켓, 미사일, 폭탄, 어뢰, 보조 연료탱크, 버린 짐: 언제, 어디서 발사했는지(위치, 자세, 속도), 어느 유닛이(300 m와 1.5초 안에서 가장 가까운 것), 비행 샘플 수, 마지막으로 본 곳, 언제 지워졌는지 |
 | `explosions`, `flak` | `PlayExplosionVisual`(위치, 방향, 종류)과 `PlayFlakExplosionVisual`(위치) |
 | `awards` | 녹화한 플레이어의 보상(`TextStreak`: first_blood, 연속 처치, 도전 과제 카운터) |
-| `detections`, `unitStates` | `UnitDetected` 유닛 쌍; 유닛의 위치, 자세, 속도를 담은 메시지(0xF093)인데 그 뜻은 알 수 없어요 |
-| `authorInstruments` | 녹화한 플레이어의 조종석 값(`ReplayCockpitParams`)을 계기 번호별로, 초당 최대 한 번. `known`은 이 리플레이가 보낸 번호마다 이름(이름, 유닛, 확인 방법)을, `notNamed`는 나머지를 담아요 |
+| `detections`, `unitStates` | `UnitDetected` 유닛 쌍; 유닛의 위치, 자세, 속도를 담은 메시지(0xF093)인데 그 뜻은 알 수 없습니다 |
+| `authorInstruments` | 녹화한 플레이어의 조종석 값(`ReplayCockpitParams`)을 계기 번호별로, 초당 최대 한 번. `known`은 이 리플레이가 보낸 번호마다 이름(이름, 유닛, 확인 방법)을, `notNamed`는 나머지를 담습니다 |
 | `scoreboard` | 바뀔 때마다 모든 플레이어의 통계(처치, 사망, 어시스트, 점수, AI 처치, 해전 처치, 구역, 피해, 미사일 회피, 분대), 그리고 시간에 따른 각 팀의 점수와 추정 티켓 수([리플렉션 데이터](aircraft.md#reflection-data) 참고) |
 | `economy` | 전투의 실버 라이온과 연구 포인트([경제](economy.md) 참고): 합계, 플레이어별, 차량별, 배수, 승자, 확인 |
 | `entityMessages` | 클래스 번호별 엔티티 메시지(0x20): 개수, 대상 템플릿, 크기 |
 | `chat` | 모든 채팅 줄 |
 | `triggers`, `hints`, `missionProgress` | 임무 스크립트의 동작(RunTriggerAction), 힌트, 진행 메시지 |
-| `camera` | 녹화한 플레이어의 리플레이 카메라의 필드를 0.25초마다, 보내온 그대로(테이블에는 궤적으로 있어요) |
+| `camera` | 녹화한 플레이어의 리플레이 카메라의 필드를 0.25초마다, 보내온 그대로(테이블에는 궤적으로 있습니다) |
 | `projectileHitReplays` | 녹화한 플레이어가 명중시킨 것과 맞은 것, 무기와 탄약, 영어 이름 포함 |
 | `results` | 게임이 쓴 결과 blk 전체 |
 | `counts` | 행, 이벤트, 수명, 종류, 샘플, 템플릿별 엔티티, 무기, 읽은 것과 읽지 않은 패킷, 본 메시지 ID와 읽지 않은 것, 버린 샘플 |
 | `trackBreaks` | 유닛이 갈 수 있는 것보다 빠른 단계를 보인 궤적의 모든 끊김: 어디서, 얼마나 멀리, 얼마나 빨랐는지, 가장 가능성 높은 원인 |
-| `selfCheck` | [리플레이를 읽는 법](how-it-reads.md)에 있는 확인들. 변환할 때마다 계산돼요. `stepSpeed`는 뷰어가 궤적을 잇는 방식대로, 한 궤적의 연속 행 사이 속도를 종류별로 보여 줘요(중앙값, 99번째 백분위수, 최댓값, 그리고 가능한 것보다 빠른 단계의 수. 이 수는 0이어야 해요) |
+| `selfCheck` | [리플레이를 읽는 법](how-it-reads.md)에 있는 확인들. 변환할 때마다 계산됩니다. `stepSpeed`는 뷰어가 궤적을 잇는 방식대로, 한 궤적의 연속 행 사이 속도를 종류별로 보여 줍니다(중앙값, 99번째 백분위수, 최댓값, 그리고 가능한 것보다 빠른 단계의 수. 이 수는 0이어야 합니다) |
 
 ---
 

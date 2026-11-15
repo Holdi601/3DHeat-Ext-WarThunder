@@ -9,10 +9,10 @@ search_exclude: true
 ---
 # Wirtschaft {#economy}
 
-Wat d'Gefecht kascht an agedron huet, als Kolonnen op senge Evenement-Zeilen, gelies aus **denger Installatioun beim Émwandelen**
+Wat d'Gefecht kascht an agedron huet, als Kolonnen op senge Evenement-Zeilen, gelies aus **Ärer Installatioun beim Émwandelen**
 (`char.vromfs.bin`: `config/wpcost.blk` pro Gefier, `config/warpoints.blk` an `config/rank.blk`; d'Waffen-blks
 vun `aces.vromfs.bin` soen, wéi eng Modifikatioun all Granat ass). Keng Zuel vum Spill ass an dësem Repository: d'
-Wäerter ginn nëmmen an deng eege Ausgab. Ouni d'`char.vromfs.bin` vun der Installatioun gëtt keng Wirtschaft geschriwwen
+Wäerter ginn nëmmen an Är eege Ausgab. Ouni d'`char.vromfs.bin` vun der Installatioun gëtt keng Wirtschaft geschriwwen
 (`economy.available` false). D'Präisser sinn déi vun der Schwieregkeet vum Gefecht (`repairCostHistorical` fir RB,
 `...Arcade` AB, `...Simulation` SB).
 

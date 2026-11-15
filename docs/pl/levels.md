@@ -3,7 +3,7 @@ title: Poziomy
 nav_order: 9
 lang: pl
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---

@@ -24,8 +24,8 @@ loeb seda.
 | `battleClass`, `environment`, `weather` | nii, nagu päis need annab |
 | `sessionId`, `server` | lahingu sessiooni ID; server |
 | `replayVersion`, `flightLayout` | kordusformaadi versioon; loetud lennupaketi paigutus (`2025` või `2026`) |
-| `files` | loetud kordusefailid (üks või serveri kordusa osad) |
-| `started`, `timePlayed`, `replayEnd` | algusaeg (ISO, UTC); mängitud sekundid tulemustest; sekundid kordusa viimase paketini |
+| `files` | loetud kordusefailid (üks või serveri korduse osad) |
+| `started`, `timePlayed`, `replayEnd` | algusaeg (ISO, UTC); mängitud sekundid tulemustest; sekundid korduse viimase paketini |
 | `author`, `authorUserId` | salvestajamängija ja tema Gaijini ID (kliendi kordused) |
 | `teams` | lahingus olevad meeskonnad (`1`, `2`) |
 | `result` | `winner`, `status` (`success` või `fail`, autori tulemus), `authorTeam`, `teams` ([Majandus](economy.md)) |
@@ -39,7 +39,7 @@ loeb seda.
 | `battle`, `difficulty`, `gameMode` | lahingurežiim: `difficulty` `AB` / `RB` / `SB` (ja tema nimi ning päise bait), `gameMode` `ground` / `air` / `naval`, missiooni režiim (`Dom`, `Conq`, `Bttl`, `I2M`, ...) ja tema inglisekeelne nimi sinu installatsioonist (`Domination`, `Enduring Confrontation`), lubatud üksusetüübid (vt [Lahingurežiim](ground.md#battle-mode)) |
 | `settings` | missiooni blk pärast päist: režiim, keskkond, ilm, skoori ja aja piirangud, riigid, lubatud üksusetüübid, tuul ja `stars` (laiuskraad, pikkuskraad, kuupäev, kohalik aeg) |
 | `sky` | esimene `CustomWeatherParams`: päikese ja kuu suund, tuul, taevavärvid, pilvede nihked |
-| `players`, `slots` | tulemuste rida mängija kohta (tapmised, maapealsed tapmised, surmad, abistamised, skoor, vallutused, rühm, klann, riik, koosseis, sõidukid, mida nad juhtisid uid-idega); kordusa mängijakohad (nimi, kasutaja ID, meeskond) |
+| `players`, `slots` | tulemuste rida mängija kohta (tapmised, maapealsed tapmised, surmad, abistamised, skoor, vallutused, rühm, klann, riik, koosseis, sõidukid, mida nad juhtisid uid-idega); korduse mängijakohad (nimi, kasutaja ID, meeskond) |
 | `units` | iga üksuse olem, mille kordus lõi: eid, uid, mall, sõiduk, liik, tüüp, meeskond, mängija, missiooni nimi, millal loodi ja eemaldati, kus loodi, millised komponendid ei olnud loetavad |
 | `objects` | missiooni nimega objektid: vallutussoonid ja lennuväljad koos asukoha ja suurusega, lennuväljade piirjooned punktidena, tekitamisalad |
 | `objectives` | lahingu eesmärgid, igaüks oma `type` (`capture_zone`, `airfield`, `helipad`, `base`, `spawn`, `convoy_spawn`, `battle_area`, `bombing_target`, `exit_zone`, `kill_area`, `rearm_zone`), `team` (kordusest 1 või 2, mõlema jaoks tühi), `name` (vallutussoonil tema täht, `A`), `shape` (`sphere`, `cylinder`, `box`, `point`, `points`, `outline`) koos `position`, `radius` / `height` / `size` ja `heading`, `source` (`replay` või `mission`) ja muu, mis on teada (vt [Eesmärgid](objectives.md)) |

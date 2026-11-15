@@ -19,9 +19,9 @@ Ausgab: eng `.3dheat`-Datei pro Gefecht (de Standard), oder lose Dateie mat
    `C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays`.
    E Server-Replay, deen op der Replay-Säit vum Spill gespäichert gouf (eng Zip mat `0000.wrpl`,
    `0001.wrpl`, ...), kann och émgewandelt ginn.
-2. **Maach en Terminal op** an engem Dossier, an dee d'Resultater däerfen goen
-   ([Ier s du ufänks](before-you-start.md)).
-3. **Wandel em:**
+2. **Mécht en Terminal op** an engem Dossier, an dee d'Resultater däerfen goen
+   ([Ier Dir ufänkt](before-you-start.md)).
+3. **Wandelt em:**
 
    ```bash
    heat3d-wt-replay "<War Thunder>/Replays" -o out
@@ -30,9 +30,9 @@ Ausgab: eng `.3dheat`-Datei pro Gefecht (de Standard), oder lose Dateie mat
    heat3d-wt-replay a.wrpl -o out --loose          # separate files instead of one .3dheat
    ```
 
-   `out` gëtt an dem Dossier gemaach, an deem däin Terminal ass.
-4. **Liest, wat et seet.** Du soll eng Zeil pro Gefecht gesinn.
-5. **Maach et op:** lued `out/<map>/<match>.3dheat` am 3DHeat-Viewer
+   `out` gëtt an dem Dossier gemaach, an deem Äre Terminal ass.
+4. **Liest, wat et seet.** Dir sollt eng Zeil pro Gefecht gesinn.
+5. **Mécht et op:** luet `out/<map>/<match>.3dheat` am 3DHeat-Viewer
    ([Eng lueden](https://holdi601.github.io/3DHeat/container.html#loading-one)).
 
 ![E Laf op engem synthetesche Replay: eng .3dheat, --loose, eng futtis Datei, en eidele Dossier](../assets/img/convert.svg)
@@ -56,7 +56,7 @@ keng Installatioun):
 | `--game FOLDER` | fonnt | den War-Thunder-Dossier, deem seng Texter Gefierer, Waffen a Munitioun benennen, an deem seng Tabelle fir d'[Wirtschaft](economy.md) d'Präisser ginn; och `HEAT3D_WT_GAME` |
 | `--no-smoothing` | aus | d'Echantillone vun aneren Eenheeten, déi duerch Dead Reckoning geschat oder empfaange goufen, esou behalen, wéi de Replay se huet ([Dead Reckoning](aircraft.md#dead-reckoning-and-the-smoother)) |
 | `--container` | un | all Gefecht an eng `.3dheat`-Datei paken |
-| `--loose` | aus | all Gefecht als getrennten Dateie behalen (Tabell, Match-Dokument, Sidecars) |
+| `--loose` | aus | all Gefecht als getrennten Dateie behalen (Tabell, Match-Dokument, Niewendateien) |
 | `--version` | - | `heat3d-wt-replay <version>` drécken an ophalen |
 | `-h`, `--help` | - | d'Optiounen drécken an ophalen |
 

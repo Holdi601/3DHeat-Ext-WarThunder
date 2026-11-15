@@ -12,7 +12,7 @@ search_exclude: true
 Alapértelmezés szerint minden csata **egy fájl**: `out/<map>/<match>.3dheat`. Ebben van a
 táblázat, a meccsdokumentum és a kísérőfájlok egy csomagban, egy manifesttel, amely megnevezi a
 játékot, a térképet, a meccset, a csatamódot, a kezdési időt és a konvertert (a csata gazdaságát
-pedig a `extensions["heat3d/economy"]` alatt). A formátum a nézegetőé:
+pedig a `extensions["heat3d/economy"]` alatt). A formátum a megjelenítőé:
 [Egy fájl egy meccshez (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
 
 ![Mi van egy .3dheat fájlban](../assets/img/hu/container.svg)
@@ -42,7 +42,7 @@ A `<map>` a térkép játékbeli azonosítója (a képeken a `99_testmap`).
 ![Hová mutat az x, y és z](../assets/img/hu/frame.svg)
 
 Méterben, a játék saját világában: x kelet, y fel, z észak. A táblázat láblécében szereplő
-utasítás megmondja a nézegetőnek, hogy tükrözze a z-t, és a `heat3d-wt-level` pályái is ugyanígy
+utasítás megmondja a megjelenítőnek, hogy tükrözze a z-t, és a `heat3d-wt-level` pályái is ugyanígy
 íródnak, így a visszajátszás és a pályája egymásra esik.
 
 ---

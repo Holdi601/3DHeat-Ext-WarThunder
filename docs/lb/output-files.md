@@ -10,7 +10,7 @@ search_exclude: true
 # Ausgabedateien {#output-files}
 
 Standardméisseg ass all Gefecht **eng Datei**, `out/<map>/<match>.3dheat`: d'
-Tabell, d'Match-Dokument an d'Sidecars zesummegepaakt, mat engem Manifest,
+Tabell, d'Match-Dokument an d'Niewendateien zesummegepaakt, mat engem Manifest,
 dat d'Spill, d'Kaart, de Match, de Gefechtsmodus, d'Startzäit an de Konverter nennt (an
 d'Wirtschaft vum Gefecht ënner `extensions["heat3d/economy"]`). D'Format ass dat vum
 Viewer: [Eng Datei pro Match (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
@@ -25,9 +25,9 @@ Mat `--loose` ginn déiselwecht Dateie niewenteneen geschriwwen:
 |---|---|---|
 | `<match>.parquet` | eng Zeil pro Echantillon oder Evenement | [D'Tabell](table.md) |
 | `<match>.match.json` | alles anescht, wat de Replay seet | [D'Match-Dokument](match-document.md) |
-| `<match>.messages.parquet` | all Message, Komponentewäert a Paket, ganz | [Sidecars](sidecars.md) |
-| `<match>.objectives.parquet` | d'Eroberungszonen iwwer d'Zäit | [Sidecars](sidecars.md) |
-| `<match>.flight.parquet` | all Flugmodell-Androung vun all Fliger, ganz | [Sidecars](sidecars.md) |
+| `<match>.messages.parquet` | all Message, Komponentewäert a Paket, ganz | [Niewendateien](sidecars.md) |
+| `<match>.objectives.parquet` | d'Eroberungszonen iwwer d'Zäit | [Niewendateien](sidecars.md) |
+| `<match>.flight.parquet` | all Flugmodell-Androung vun all Fliger, ganz | [Niewendateien](sidecars.md) |
 
 Wann d'Paken scheitert, bleiwe d'lose Dateien, an d'Zeil seet et.
 
@@ -42,7 +42,7 @@ Bild: kuck [Wéi eng Dateie ee Gefecht sinn](converting.md#which-files-are-one-b
 ![Wouhin x, y an z weisen](../assets/img/lb/frame.svg)
 
 Meter, an der eegener Welt vum Spill: x Ouschten, y erop, z Norden. D'Fouss vun der Tabell
-seet dem Viewer, z ze spigelen, a Leveler vun `heat3d-wt-level` ginn
+seet dem Viewer, z ze spigelen, a Levelen vun `heat3d-wt-level` ginn
 op déiselwecht Manéier geschriwwen, sou datt e Replay a säi Level openeen läit.
 
 ---

@@ -30,7 +30,7 @@ delar: [Konverterare behåller allt](https://holdi601.github.io/3DHeat/converter
   biten i dess första byte den startade vid), med dess hastighet, de 14 reglage-halvbytena
   (`control1-3`, `throttle`), dess motorer med deras tillstånd, efterbrännare och skick, och dess
   skott per vapen (`ammo`; `numbers` är hela listan). Andra flygplans värden är som senast
-  uppfrischade.
+  uppfriskade.
 
 ## Vad räknarna garanterar {#what-the-counts-guarantee}
 

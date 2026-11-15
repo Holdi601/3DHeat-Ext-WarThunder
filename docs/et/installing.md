@@ -40,10 +40,8 @@ seda reaga `note:`).
 ## Uuendused {#updates}
 
 Iga käivitamine kontrollib kõigepealt projekti GitHubi väljalaske (kõige rohkem
-üks päring iga paari tunni tagant; see ei peata kunagi konverteerimist, võrgus
-või mitte). Kui on ilmunud uuem väljalase, küsib käsk enne paigaldamist: `git clone`
-uuendatakse käsuga `git pull --ff-only` (keeldub, kui sul on lokaalseid muudatusi),
-allalaaditud koopia väljalaske arhiivist. `HEAT3D_NO_UPDATE=1` lülitab kontrolli ja
+üks päring iga paari tunni tagant; see ei peata kunagi konverteerimist, ka siis, kui võrku ei ole). Kui on ilmunud uuem väljalase, küsib käsk enne paigaldamist: `git clone`
+uuendatakse käsuga `git pull --ff-only` (keeldub, kui sul on lokaalseid muudatusi); allalaaditud koopia uuendatakse väljalaske arhiivist. `HEAT3D_NO_UPDATE=1` lülitab kontrolli ja
 uuendamise välja.
 
 ---

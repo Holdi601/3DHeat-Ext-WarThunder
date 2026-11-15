@@ -26,7 +26,7 @@ għodod oħra jistgħu jaqrawh ukoll.
 
 ## Bidu veloċi {#quick-start}
 
-Ġdid fil-linja tal-kmandi? Aqra [Qabel ma tibda](before-you-start.md) l-ewwel.
+Ġdid mal-linja tal-kmandi? Aqra [Qabel ma tibda](before-you-start.md) l-ewwel.
 
 ```bash
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
@@ -44,7 +44,7 @@ il-fajl fid-3DHeat viewer.
 |---|---|
 | [Qabel ma tibda](before-you-start.md) | Python, terminal, u kif tkun taf li ħadem |
 | [Installazzjoni](installing.md) | installa, ismijiet mill-installazzjoni tiegħek, aġġornamenti |
-| [Il-konverżjoni tar-ripetizzjonijiet](converting.md) | `heat3d-wt-replay` pass pass, kull għażla, messaġġi |
+| [Il-konverżjoni tar-ripetizzjonijiet](converting.md) | `heat3d-wt-replay` pass b'pass, kull għażla, messaġġi |
 | [Fajls tal-ħruġ](output-files.md) | il-fajl `.3dheat`, fajls `--loose`, ismijiet |
 | [It-tabella](table.md) | kull kolonna u avveniment |
 | [Id-dokument tal-partita](match-document.md) | kull ċavetta ta' `<match>.match.json` |
@@ -65,14 +65,14 @@ fit-tab Partita tiegħu ([Fajl wieħed għal kull partita](https://holdi601.gith
 X'għandu jżomm kull konvertitur: [Il-konvertituri jżommu kollox](https://holdi601.github.io/3DHeat/converters.html).
 
 **Għaliex hija għodda separata.** Il-format `.wrpl` mhuwiex iddokumentat, u l-EULA ta' Gaijin
-(3.2.2, 3.2.9) tipprojbixxi r-reverse engineering tal-logħba u l-estrazzjoni ta' data li mhix
+(3.2.2, 3.2.9) tipprojbixxi r-reverse engineering tal-logħba u l-estrazzjoni ta' dejta li mhix
 maħsuba biex turi; ma ssemmix ripetizzjonijiet, li l-logħba nnifisha turi lill-plejer. Biex
 mistoqsija ta' liċenzja tmiss lil dan il-konvertitur biss, jgħix barra mid-3DHeat Watcher: il-Watcher
 iħaddmu fuq ripetizzjonijiet ġodda meta jkun installat, u jaħdem mingħajru.
 
 | Għodda | X'tagħmel | Sors | Dokumentazzjoni |
 |---|---|---|---|
-| 3DHeat viewer | juri d-data bi 3D: heatmaps, ripetizzjonijiet, analiżi tat-tellieqa | [3DHeat](https://github.com/Holdi601/3DHeat) | [sit](https://holdi601.github.io/3DHeat/) |
+| 3DHeat viewer | juri d-dejta bi 3D: heatmaps, ripetizzjonijiet, analiżi tat-tellieqa | [3DHeat](https://github.com/Holdi601/3DHeat) | [sit](https://holdi601.github.io/3DHeat/) |
 | GameFiles | korsijiet u livelli mill-fajls li jiġu mal-logħob | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [sit](https://holdi601.github.io/3DHeat-GameFiles/) |
 | GameCapture | telemetrija tal-gir, u livelli mibnija mill-vidjo tal-logħob | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [sit](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | plugin tal-Unreal Editor li jesporta livell | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [sit](https://holdi601.github.io/3DHeat-UnrealExporter/) |

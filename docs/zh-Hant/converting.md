@@ -46,7 +46,7 @@ search_exclude: true
 | `--game FOLDER` | 自動找到 | War Thunder 的資料夾，其文字用來命名載具、武器與彈藥，其價格表用來計算[經濟](economy.md)；也可使用 `HEAT3D_WT_GAME` |
 | `--no-smoothing` | 關閉 | 保留其他單位的航位推算與收到的取樣，與回放中的原樣相同（[航位推算](aircraft.md#dead-reckoning-and-the-smoother)） |
 | `--container` | 開啟 | 將每場戰鬥打包成一個 `.3dheat` 檔案 |
-| `--loose` | 關閉 | 將每場戰鬥保留為分開的檔案（表格、對應文件、附屬檔案） |
+| `--loose` | 關閉 | 將每場戰鬥保留為分開的檔案（表格、對戰文件、附屬檔案） |
 | `--version` | - | 印出 `heat3d-wt-replay <version>` 後停止 |
 | `-h`、`--help` | - | 印出選項後停止 |
 

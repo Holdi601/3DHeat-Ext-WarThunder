@@ -12,7 +12,7 @@ search_exclude: true
 Ħruġ: fajl `.3dheat` wieħed għal kull battalja (id-default), jew fajls separati
 b'`--loose`.
 
-## Pass pass {#step-by-step}
+## Pass b'pass {#step-by-step}
 
 1. **Ixgħel ir-ripetizzjonijiet.** War Thunder isejvja ripetizzjonijiet tal-klijent fil-folder
    `Replays` tal-logħba meta s-saving tar-ripetizzjonijiet ikun mixgħul fl-għażliet tagħha,
@@ -48,7 +48,7 @@ mhux installazzjoni):
 
 ## Għażliet {#options}
 
-| Għażla | Default | Tagħmel |
+| Għażla | Default | X'jagħmel |
 |---|---|---|
 | `replays` (waħda jew aktar) | - | fajls `.wrpl`, folders tagħhom (il-folder nnifsu, mhux is-subfolders), jew zips tagħhom (ripetizzjoni tas-server: il-partijiet `.wrpl` tagħha jinfetħu f'folder temporanju) |
 | `-o`, `--out` | meħtieġa | fejn jinkiteb: folder għal kull mappa ġewwa |

@@ -16,7 +16,7 @@ search_exclude: true
   uz šī režīma zonu sākumā (`moved`). Kind 3 numuri seko 0xD039 secībai; katrs objekts, kas nav pārvietots, atrodas tieši tur, kur to
   attēlo 0xD039, un tas pārbauda secību. Kapitāla zona iegūst savas vietas misijas laukuma formu un rādiusu (`area`, 2 m robežās) un savu
   burtu no sava indeksa (kind 5 lauks 69: 0 = A); burtu secība ir atkārtojuma, nav pārbaudīta pret spēles karti.
-- **Misija** (`mission`): misijas fails `<mission>.blk` tavā instalācijas `mis.vromfs.bin` un šablonus, ko tas importē (tikai lasīšana,
+- **Misija** (`mission`): misijas fails `<mission>.blk` jūsu instalācijas `mis.vromfs.bin` un šablonus, ko tas importē (tikai lasīšana,
   konvertēšanas laikā): tās laukumus, klasificētus pēc nosaukuma — dzimšanas zonas (dzimšanas zonas numurētie punkti `..._spawnareaNN` kā
   viena `points` dzimšanas zona), kaujas laukumi, bombardēšanas mērķi (`bomb_zone`), konvoju dzimšanas punkti (`road_NN_spawn`), izejas un
   nogalināšanas zonas. Citu tā paša kartes režīmu laukumi (`conq_`, `dom_`, `bttl_`, ...) ir ārpusē, un no `_arcade` / `_realistic` /

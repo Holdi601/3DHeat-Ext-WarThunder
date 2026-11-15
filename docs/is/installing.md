@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Uppsetning {#installing}
 
-Nýr í skipanalínunni? Lestu fyrst [Áður en þú byrjar](before-you-start.md).
+Hefurðu aldrei notað skipanalínu? Lestu fyrst [Áður en þú byrjar](before-you-start.md).
 Þarf Python 3.10 eða nýrra; pyarrow, numpy, zstandard og Pillow eru sett upp
 með því.
 
@@ -18,7 +18,7 @@ með því.
 1. Náðu í kóðann: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
    eða sæktu zip úr [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
    og pakkaðu því upp.
-2. Opnaðu skipanaglugga í þeirri möppu og skrifaðu `pip install -e .`. Þetta
+2. Opnaðu skipanalínu í þeirri möppu og skrifaðu `pip install -e .`. Þetta
    setur upp tvær skipanir: `heat3d-wt-replay` (upptökur) og `heat3d-wt-level`
    (borð).
 3. Athugaðu það: `heat3d-wt-replay --version`. Þú ættir að sjá
@@ -36,7 +36,7 @@ lesnum úr þinni uppsetningu þegar breytt er. Uppsetningin finnst í gegnum
 Steam eða sjálfgefnar möppur ræsiforritsins; `--game <folder>` eða
 umhverfisbreytan `HEAT3D_WT_GAME` segja til um hvar hún er annars. Ekkert af
 texta leiksins er í þessari geymslu; án uppsetningar eru nöfnin auðkenni
-farartækjanna (breytirinn segir frá því í `note:` línu).
+farartækjanna (umbreytirinn segir frá því í `note:` línu).
 
 ## Uppfærslur {#updates}
 

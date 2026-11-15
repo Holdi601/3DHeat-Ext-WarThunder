@@ -65,13 +65,13 @@ transportlīdzekļa vietā plus 2. lauks, skatoties pa kvaternionu (`dirX/Y/Z`, 
 Celiņš tiek zīmēts no pirmās rindas līdz pēdējai. Ja tā vienība ir pazudusi, pirms atkārtojums beidzas, tās pēdējā rinda ir `despawn`
 rinda pēdējā vietā: tajā laikā, kad spēle noņēma tās vienību (ja tas notika 6 s laikā pēc tās pēdējā paraugu), citādi pēdējā paraugā. Celiņš
 bez tā ilgst līdz atkārtojuma beigām. Viena celiņa rindas var būt tālu viena no otras (tāls objekts vai vraks tiek atjaunināts ik pēc dažām
-sekundēm, vraks dažreiz pat minūtēm nē); tā pēdējais stāvoklis paliek spēkā līdz nākamajai rindai.
+sekundēm, vraks dažreiz pat ik pēc dažām minūtēm); tā pēdējais stāvoklis paliek spēkā līdz nākamajai rindai.
 
 ## Kaujas režīms {#battle-mode}
 
 Galvenes baits pozīcijā 688 satur grūtības režīmu zemākajos četros bitos: 0 arkāde (AB), 5 reālistisks (RB), 10 simulators (SB). Pārbaudīts
 pret kaujas tipiem, par kuriem atkārtojumi bija zināmi. Spēles režīms ir `ground`, ja misija ļauj tankiem parādīties, citādi `naval`, ja
-ļauj kuģiem, citādi `air` (`allowedUnitTypes`); misijas pašas režīms nāk no tās atslēgas (`missions/_Dom`), un to nosaka no tavas instalācijas
+ļauj kuģiem, citādi `air` (`allowedUnitTypes`); misijas pašas režīms nāk no tās atslēgas (`missions/_Dom`), un to nosaka no jūsu instalācijas
 `lang/missions_versus.csv`. Tā pati atslēga ir faila nosaukuma daļa `<mode>` un mača ID (`Conq4`, `Dom`), izlaista, ja galvenē tādas nav.
 
 ---

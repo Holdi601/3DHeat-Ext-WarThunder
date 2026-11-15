@@ -11,10 +11,12 @@ search_exclude: true
 
 ## 利用規約 {#the-terms}
 
-Gaijin の利用規約（2026-08-17 更新）、EULA（付属書 2）:
-3.2.2 「ゲームを修正、翻訳、派生物の作成、リバースエンジニアリング、逆アセンブル、またはデコンパイルすること」、
-3.2.9 「ゲームから、公に表示されることを意図していないデータを採掘または収集すること」、
-1.2 「クライアントの範囲を超えて、ゲームのいかなる部分も保存、ダウンロード、修正、またはそれ以外の方法で使用することは許可されない」。
+Gaijin の利用規約（2026-08-17 更新）、EULA（付属書 2）。条文は英語の原文のまま引用します:
+3.2.2 "modify, translate, create derivative works of, reverse engineer,
+disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
+the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
+permitted to store, download, modify, or otherwise use any part of the Game(s)"
+beyond the client.
 ご自身のゲームのコピーのレベルファイルを、ローカルの 3D 表示に読み込むことは、そのことを承知のうえでのユーザーご自身の判断です。
 書き出されたレベルはお使いのマシンに残ります。**決して公開しないでください**。ここにあるものは、ゲームのデータを一切含みません。
 

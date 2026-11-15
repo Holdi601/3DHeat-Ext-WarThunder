@@ -102,7 +102,7 @@ Namnen är gemenskapens (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
   och sitt klassnummer.
 - **Andra replikerade objekt** (andra slag än spelarplatser och lag): lästa och
   behållna, inte namngivna; resultaten har inget att kontrollera dem mot.
-- **Andra flygplans reglage, gas och skott**: uppfrischade bara då och då; behållna
+- **Andra flygplans reglage, gas och skott**: uppfriskade bara då och då; behållna
   i flygsidofilen, inte i tabellen.
 - **Flygplanbränder**: hittas inte i något meddelande; ett flygplan i brand har ingen
   `fire_on`-rad.

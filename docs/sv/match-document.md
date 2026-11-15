@@ -24,7 +24,7 @@ Match-flik läser det.
 | `battleClass`, `environment`, `weather` | så som headern anger dem |
 | `sessionId`, `server` | stridens session-id; servern |
 | `replayVersion`, `flightLayout` | repriformatets version; den läsda flygpaketslayouten (`2025` eller `2026`) |
-| `files` | de repriesfiler som lästes (en, eller en serverrepris delar) |
+| `files` | de repriserfiler som lästes (en, eller delarna av en serverrepris) |
 | `started`, `timePlayed`, `replayEnd` | starttid (ISO, UTC); spelade sekunder, från resultaten; sekunder till repriets sista paket |
 | `author`, `authorUserId` | den inspelande spelaren och dess Gaijin-id (klientrepriser) |
 | `teams` | lagen i striden (`1`, `2`) |

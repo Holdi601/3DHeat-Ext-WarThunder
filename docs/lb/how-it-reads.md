@@ -10,7 +10,7 @@ search_exclude: true
 # Wéi e Replay gelies gëtt {#how-it-reads-a-replay}
 
 Dës Säit ass fir Leit, déi wëllen wëssen, wat de Konverter liest, wéi et gepréift
-gouf, an domat, wéi wäit ee jidder Kolonn däerf trauen. Du brauchs se net, fir
+gouf, an domat, wéi wäit ee jidder Kolonn däerf trauen. Dir braucht se net, fir
 Replays émzewandelen.
 
 D'Liese gouf op Client-Replays vu Loft-Arcade-, Loft-Simulator- a
@@ -33,7 +33,7 @@ onofhängeg Manéier seet; nëmmen d'Method an d'Iwwereneestëmmung ginn hei ugi
 | Teleporte | eng Spur gëtt geschnidden, wou hir Eenheet méi wäit geet, wéi se kann: fir d'éischt géint hir Aart (Fliger 750 m/s, Buedem a Schëff 40 m/s, Waffen 1800 m/s), dann géint hiren eegenen Tempo. All Schnëtt steet an `trackBreaks` mat senger wahrscheinlecher Ursaach (Respawn, d'Spill dat de Spiller beweegt, eng Korrektur vun enger wäiter Eenheet). No de Schnëtt ass kee Schrëtt tëscht Zeile vun enger Spur méi séier, wéi hir Aart erlaabt (`selfCheck.stepSpeed`) |
 | Buedem- a Schëffspositiounen (0xF073 / 0xF074) | kee Paket ongelies. Heading, Pitch a Roll aus der 16-Bit-Lag: d'Heading stëmmt bannent ongeféier 2 Grad (Median) mat der Beweegungsrichtung iwwereneen; d'Pitch zielt 180/65536 Grad de Schrëtt; mat gedréintem Virzeechen vum Roll weist dem Rumpf an dem Turm seng Kanounrichtung bei bal all Panzerschoss op déi getraff Eenheet. Schëff sinn um Waasserniveau |
 | Tierm | Turm-Yaw a Kanounpitch vu Panzer: kuck [Tierm](ground.md#turrets) |
-| Gepaakte Buedemhéichten | a 64 Bits gepaakt Positioune zielen hir Héicht ab -100 m op de meeschte Leveler an ab Waasserniveau op e puer; den Offset gëtt op all Replay aus Eenheeten gemooss, déi a béide Forme gesi goufen (`selfCheck.packedGroundHeight`) |
+| Gepaakte Buedemhéichten | a 64 Bits gepaakt Positioune zielen hir Héicht ab -100 m op de meeschte Levelen an ab Waasserniveau op e puer; den Offset gëtt op all Replay aus Eenheeten gemooss, déi a béide Forme gesi goufen (`selfCheck.packedGroundHeight`) |
 | Entitéit-Stroum (Erstellung, Zerstéierung) | all Erstellung gelies. D'Layout kënnt aus dem verëffentlechte Quellcode vun der Dagor Engine; dem War Thunder seng eege Komponenttypen ginn iwwersprong, andeems fonnt gëtt, wou déi nächst Komponent ufänkt. D'Gefier an de Spiller-Slot vun all Eenheet sinn déi, déi d'Kill- an Treffer-Enregistrementer nennen, fir all kontrolléiert Enregistrement |
 | Wien wéi eng Eenheet gefuer ass, KI-Eenheeten, Schëff, Buedemziler | aus dem Entitéit-Stroum: all Eenheet huet hiert Gefier an hiert Team, dem Spiller seng Eenheet säi Spiller |
 | Kills géint d'Resultater | d'Doudeger pro Spiller si gläich wéi déi vun de Resultater; d'Resultater zielen méi Kills, well dem Client net all Kill geschéckt gëtt. E Replay, deen nom Ufank vum Gefecht ufänkt, hält nëmmen d'Kills duerno |
@@ -48,7 +48,7 @@ onofhängeg Manéier seet; nëmmen d'Method an d'Iwwereneestëmmung ginn hei ugi
 | Aner Felder vun de Fluchentréeën | Geschwindegkeet, Schëss, Rudere, Motoren: [Fluchentréeën](aircraft.md#flight-entries) |
 | Lag vun den Evenement-Zeilen | all Evenement-Zeil dréit d'Heading, Pitch, Roll a de Bléckvecteur vu senger Eenheet an deem Moment |
 | Spillerstatistiken a Teamscoren | um Enn vum Gefecht ass all Statistik gläich wéi déi vun de Resultater fir all Spiller: [Reflection-Daten](aircraft.md#reflection-data) |
-| Waffen- a Gefiernimm | aus der englescher Lokalisatioun vun denger Installatioun; e puer Standard-Gurten vu Schëff a Fluchhafenradaren hunn keen Numm am Spill |
+| Waffen- a Gefiernimm | aus der englescher Lokalisatioun vun Ärer Installatioun; e puer Standard-Gurten vu Schëff a Fluchhafenradaren hunn keen Numm am Spill |
 | Spiller a KI | keng Zeil vun engem Resultater-Spiller ass KI, all Zeil, déi net KI ass, ass vun engem Resultater-Spiller (`selfCheck.identity`) |
 | Wracken | d'Echantillone vun enger Eenheet no hirem Doud kommen weider; dem Buedemeenheet oder Schëff säi Wrack ass `alive` 0, bis seng Entitéit ewechgeholl gëtt, a bleift eng Spur; Fliger halen `alive` 0 héchstens 60 s (`selfCheck.wrecks`) |
 | Gefierwiesselen | d'Eenheet vun engem Spiller, déi nach lieft, wann dem selwechte Spiller seng nächst Eenheet opdaucht, gëtt do beendegt (e stoe gelooss Gefier). `selfCheck.vehicleSwitch.twoLiveVehicles` muss 0 sinn |
@@ -80,7 +80,7 @@ Fir Spezialisten, d'Messagen, déi gelies ginn:
 | 0xF13E, 0xF031 | dem Treffer säi visuellen Effekt an en Effekt, deen op der Eenheet gespillt gëtt; si kommen mat engem Treffer op déiselwecht Eenheet |
 | 0xD041 | eng pro Verdeedegungskanoun vun engem Fliger, zweemol d'Sekonn; hir Indexe passen zu de Schëtzewaffen vum Flugmodell |
 | 0xD048, 0xF117 | Layout gelies, Bedeitung net bekannt |
-| de Rescht (0xF09A, 0xD020, 0xF015, 0xF04F, ...) | am Messages-Sidecar mat hirer Eenheet a Felder |
+| de Rescht (0xF09A, 0xD020, 0xF015, 0xF04F, ...) | an der Messages-Niewendatei mat hirer Eenheet a Felder |
 
 D'Nimm sinn déi vun der Communautéit (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
 
@@ -89,7 +89,7 @@ D'Nimm sinn déi vun der Communautéit (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names
 - **Replikatioun vum Entitéit-Stroum** (0x22, 0x23): pro Entitéit e Block vu
   Komponentewäerter: Schëffsreparaturzäitgeber, Zuele vu Verbrauchsgidder, Besëtzer- an Team-
   Ännerungen, Motorüberhëtzung. Gezielt an `counts.replicatedComponents`; d'
-  Wäerter am Messages-Sidecar.
+  Wäerter an der Messages-Niewendatei.
 - **Missiounsskript-Aktiounen** (0xF028) an **Hiweiser** (0xF0EC): `triggers`,
   `hints`. **Missiounsfortschrëtt** (0xF07A, 0xF07C): `missionProgress`.
 - **D'Replay-Kamera** (0xD043): kuck [D'Kamera](ground.md#the-camera).
@@ -103,7 +103,7 @@ D'Nimm sinn déi vun der Communautéit (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names
 - **Aner replizéiert Objeten** (aner Aarte wéi Spiller-Slots an Teams):
   gelies a behalen, net benannt; näischt an de Resultater, fir se dergéint ze préifen.
 - **Rudere, Gashiewel a Schëss vun anere Fliger**: nëmmen heiansdo
-  rafraîchéiert; am Fluch-Sidecar behalen, net an der Tabell.
+  rafraîchéiert; an der Fluch-Niewendatei behalen, net an der Tabell.
 - **Fligerbränn**: a kenger Message fonnt; e brennende Fliger huet keng
   `fire_on`-Zeil.
 - **Nimm vun ofgeschoss Waffen**: d'Entitéit vun enger Bomm oder Rakéit hält keen Numm;

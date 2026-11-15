@@ -61,7 +61,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 この変換ツールは [3DHeat](https://github.com/Holdi601/3DHeat) の道具の 1 つです。
 3DHeat は、リアルタイムの 3D テレメトリとリプレイのビューアです
 （[ドキュメント](https://holdi601.github.io/3DHeat/)）。ビューアは `.3dheat` ファイルを開きます。
-テーブルは Heatmap タブで、マッチドキュメントは Match タブで表示されます
+テーブルは ヒートマップ タブで、マッチドキュメントは マッチ タブで表示されます
 （[1 マッチを 1 ファイルに](https://holdi601.github.io/3DHeat/container.html)）。
 どの変換ツールも残さなければならないもの: [変換ツールはすべてを残す](https://holdi601.github.io/3DHeat/converters.html)。
 
@@ -75,7 +75,7 @@ Watcher はインストールされていれば新しいリプレイに対して
 | ツール | 内容 | ソース | ドキュメント |
 |---|---|---|---|
 | 3DHeat ビューア | データを 3D で表示: ヒートマップ、リプレイ、レース分析 | [3DHeat](https://github.com/Holdi601/3DHeat) | [サイト](https://holdi601.github.io/3DHeat/) |
-| GameFiles | ゲームに同梱されているファイルからのコースとレベル | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [サイト](https://holdi601.github.io/3DHeat-GameFiles/) |
+| GameFiles | ゲーム自身のファイルからのレベルとコース | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [サイト](https://holdi601.github.io/3DHeat-GameFiles/) |
 | GameCapture | ラップのテレメトリ、ゲームプレイ動画から組み直したレベル | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [サイト](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | レベルを書き出す Unreal Editor プラグイン | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [サイト](https://holdi601.github.io/3DHeat-UnrealExporter/) |
 | CS2 | Counter-Strike 2 のデモとマップ | [3DHeat-CS2](https://github.com/Holdi601/3DHeat-CS2) | [サイト](https://holdi601.github.io/3DHeat-CS2/) |

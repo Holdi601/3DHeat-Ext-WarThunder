@@ -44,7 +44,7 @@ Katra pārbaude salīdzina vērtību ar kaut ko, ko atkārtojums saka otrā, nea
 | Lidojuma ierakstu citi lauki | ātrums, munīcija, vadība, dzinēji: [Lidojuma ieraksti](aircraft.md#flight-entries) |
 | Notikumu rindu orientācija | katra notikuma rindā ir tās vienības virziens, pacēlums, sānu sašķiebums un skata vektors tajā brīdī |
 | Spēlētāju statistika un komandu punkti | kaujas beigās katra statistika ir vienāda ar rezultātu katram spēlētājam: [Refleksijas dati](aircraft.md#reflection-data) |
-| Ieroču un transportlīdzekļu nosaukumi | no tavas instalācijas angļu lokalizācijas; dažiem kuģu noklusējuma jostām un aerodromu radariem spēlē nav nosaukuma |
+| Ieroču un transportlīdzekļu nosaukumi | no jūsu instalācijas angļu lokalizācijas; dažiem kuģu noklusējuma jostām un aerodromu radariem spēlē nav nosaukuma |
 | Spēlētāji un MI | neviena rezultātu spēlētāja rinda nav MI, katra rinda, kas nav MI, ir rezultātu spēlētāja (`selfCheck.identity`) |
 | Vraki | vienības paraugi pēc tās nāves turpinās nākt; sauszemes vienības vai kuģa vraks ir `alive` 0, līdz tā entītija tiek noņemta, un paliek viena trajektorija; lidmašīnas saglabā `alive` 0 ne ilgāk par 60 s (`selfCheck.wrecks`) |
 | Transportlīdzekļu maiņa | spēlētāja vienība, kas vēl ir dzīva, kad parādās tā paša spēlētāja nākamā vienība, tiek tur izbeigta (transportlīdzeklis, kas palicis stāvam). `selfCheck.vehicleSwitch.twoLiveVehicles` jābūt 0 |

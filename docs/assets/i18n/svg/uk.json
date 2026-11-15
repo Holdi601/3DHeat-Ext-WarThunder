@@ -11,7 +11,7 @@
  "<match>.objectives.parquet": "<match>.objectives.parquet",
  "<match>.parquet": "<match>.parquet",
  "<match>.parquet, <match>.match.json, ...": "<match>.parquet, <match>.match.json, ...",
- "Background / level: levels from heat3d-wt-level": "Панель рівнів: рівні з heat3d-wt-level",
+ "Background / level: levels from heat3d-wt-level": "Панель «Тло / рівень»: рівні з heat3d-wt-level",
  "From a replay to the 3DHeat viewer": "Від повтору до переглядача 3DHeat",
  "Heatmap tab: the table": "Теплова карта: таблиця",
  "Levels are mirrored too, so both fit.": "Рівні теж відзеркалені, тож сходяться.",

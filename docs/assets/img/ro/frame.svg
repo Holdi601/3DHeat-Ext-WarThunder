@@ -10,6 +10,6 @@
 <text x="256" y="128" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">z: nord</text>
 <text x="430" y="100" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">Metri, în lumea jocului</text>
 <text x="430" y="124" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">x est, y sus, z nord (sistem stângaci).</text>
-<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Subsolul tabelului îi spune vizualizatorului să oglindească z.</text>
+<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Subsolul tabelului face ca z să fie oglindit.</text>
 <text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Nivelurile sunt oglindite și ele, deci se potrivesc.</text>
 </svg>

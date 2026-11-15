@@ -29,7 +29,7 @@ Tabell ass. Dem Viewer säi Match-Tab liest et.
 | `author`, `authorUserId` | de opuelende Spiller a seng Gaijin-ID (Client-Replays) |
 | `teams` | d'Teams am Gefecht (`1`, `2`) |
 | `result` | `winner`, `status` (`success` oder `fail`, dem Auteur säin Ausgang), `authorTeam`, `teams` ([Wirtschaft](economy.md)) |
-| `vehicleNames` | vu wou d'Gefiernimm koumen (deng Installatioun) an hir Sprooch |
+| `vehicleNames` | vu wou d'Gefiernimm koumen (Är Installatioun) an hir Sprooch |
 | `conventions` | d'Eenheeten an d'Virzeeche vun der Tabell: Achsen, Zäit, life, track, alive, roll, a méi |
 
 ## Alles anescht {#everything-else}
@@ -37,7 +37,7 @@ Tabell ass. Dem Viewer säi Match-Tab liest et.
 
 | Schlëssel | Wat |
 |---|---|
-| `battle`, `difficulty`, `gameMode` | de Gefechtsmodus: `difficulty` `AB` / `RB` / `SB` (a säin Numm, an den Header-Byte), `gameMode` `ground` / `air` / `naval`, de Modus vun der Mission (`Dom`, `Conq`, `Bttl`, `I2M`, ...) a säin englesche Numm aus denger Installatioun (`Domination`, `Enduring Confrontation`), déi erlaabt Eenheetstypen (kuck [Battle-Modus](ground.md#battle-mode)) |
+| `battle`, `difficulty`, `gameMode` | de Gefechtsmodus: `difficulty` `AB` / `RB` / `SB` (a säin Numm, an den Header-Byte), `gameMode` `ground` / `air` / `naval`, de Modus vun der Mission (`Dom`, `Conq`, `Bttl`, `I2M`, ...) a säin englesche Numm aus Ärer Installatioun (`Domination`, `Enduring Confrontation`), déi erlaabt Eenheetstypen (kuck [Battle-Modus](ground.md#battle-mode)) |
 | `settings` | de Mission-blk nom Header: Modus, Émfeld, Wieder, Punkte- a Zäitlimiten, Länner, erlaabt Eenheetstypen, Wand, a `stars` (Breedegrad, Längegrad, Datum, Ortszäit) |
 | `sky` | déi éischt `CustomWeatherParams`: Sonn- a Mounnrichtung, Wand, Himmelsfaarwen, Wollekenoffsets |
 | `players`, `slots` | d'Zeil vun de Resultater pro Spiller (Kills, Buedem-Kills, Doudeger, Assists, Score, Eroberungen, Squad, Clan, Land, Line-up, d'uids, déi se gefuer hunn); d'Spiller-Slots vum Replay (Numm, User-ID, Team) |

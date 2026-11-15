@@ -28,7 +28,7 @@ comparteixen tots els convertidors de 3DHeat:
   canvi que ha enviat el servidor: `time`, `event` (`state`, `progress`, `captured`,
   `neutralised`), `zone` (la seva lletra), `zoneId`, `object`, `owner` (0 cap, 1, 2),
   `progress` (-100..100, positiu cap a l'equip 2), les `x`, `y`, `z` de la zona i tots els
-  `fields` de l'objecte en hex (vegeu [Objectius](objectives.md)).
+  `fields` de l'objecte en hex (mira [Objectius](objectives.md)).
 - `<partida>.flight.parquet`: cada entrada del model de vol de cada avió sencera (els seus
   bits, i `phase`: el bit del seu primer byte on va començar), amb la seva velocitat, els
   14 quarts de comandament (`control1-3`, `throttle`), els seus motors amb el seu estat,

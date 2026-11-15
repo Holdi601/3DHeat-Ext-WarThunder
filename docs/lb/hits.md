@@ -60,7 +60,7 @@ Fliger, all Bits fräi: Fliger- a Schëfftreffer hunn keen Ausgang.
   no all senge Treffer, bei enger Autokanoun e Bruchdeel vun enger Sekonn duerno. D'
   Treffer vun engem Schëtze ginn no Gefier, Signatur a Stouss gruppéiert; eng Grupp ass
   vun enger Waff, wann déi Waff bannent 20 s no der Hallschent vun hiren Treffer
-  oder méi mat enger stännegen Verzögerung eng Patroun lued. `ammoSlot` ass `weapon/slot`, de Slot, dee
+  oder méi mat enger stännegen Verzögerung eng Patroun luet. `ammoSlot` ass `weapon/slot`, de Slot, dee
   virum Treffer gelueden war: wahrscheinlech deen, dee geschoss gouf, ausser de Spiller huet d'
   Munitioun dertëschent gewiesselt. Maschinnegewierer schécken keen 0xF0BD.
 * **D'Granat.** Dem Kill seng Waff ass d'ID vun der Granat (`125mm_3bm46`); dem
@@ -75,7 +75,7 @@ Fliger, all Bits fräi: Fliger- a Schëfftreffer hunn keen Ausgang.
 
 Net fonnt: Ofpraller. Verschidde weider Messagen droen de Schëtze vum Treffer an
 d'Nummer (0xF0C2, wahrscheinlech de Wee vun der Treffer-Kamera duerch d'Gefier; 0xF117,
-0xF13C, 0xF13E); si ginn am Sidecar behalen, net decodéiert. Eng
+0xF13C, 0xF13E); si ginn an der Niewendatei behalen, net decodéiert. Eng
 Nonpenetration bleift `nonpenetration`.
 
 ## Gefierbränn {#vehicle-fires}

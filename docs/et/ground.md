@@ -68,9 +68,9 @@ tagant, jälgitava sõiduki asukohas pluss väli 2, vaadates mööda kvaternioon
 
 ## Raja lõpp {#end-of-a-track}
 
-Rada joonistatakse esimesest reast viimaseni. Kui selle üksus on kadunud enne kordusa lõppu, on tema
+Rada joonistatakse esimesest reast viimaseni. Kui selle üksus on kadunud enne korduse lõppu, on tema
 viimane rida `despawn`-rida viimasel asukohal: sel ajal, kui mäng eemaldas tema olemi (kui see tuli
-6 s jooksul tema viimasest näidisest), muidu viimasel näidisel. Rada ilma selleta kestab kordusa lõpuni.
+6 s jooksul tema viimasest näidisest), muidu viimasel näidisel. Rada ilma selleta kestab korduse lõpuni.
 Ühe raja read võivad olla üksteisest kaugel (kaugem üksus või vrakk värskendatakse iga paari sekundi
 tagant, vrakk mõnikord minuteid mitte): tema viimane olek kehtib kuni järgmise reani.
 

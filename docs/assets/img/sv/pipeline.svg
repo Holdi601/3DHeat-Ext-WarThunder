@@ -23,5 +23,5 @@
 <text x="440" y="414" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">3. 3DHeat-visaren</text>
 <text x="440" y="436" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Värmekarta-fliken: tabellen</text>
 <text x="440" y="456" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Match-fliken: matchdokumentet</text>
-<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Nivå-panelen: nivåer från heat3d-wt-level</text>
+<text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Bakgrund / nivå: nivåer från heat3d-wt-level</text>
 </svg>

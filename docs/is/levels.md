@@ -3,7 +3,7 @@ title: "Borð (heat3d-wt-level)"
 nav_order: 9
 lang: is
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -30,7 +30,7 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Hladdu `levels/<level>/<level>.glb` í Borðspjald skoðarans, undir
+3. Hladdu `levels/<level>/<level>.glb` í spjaldið Bakgrunnur / borð í skoðaranum, undir
    bardögum þess korts.
 
 Borðin sem þú skrifar haldast á tölvunni þinni: birtu þau aldrei (sjá

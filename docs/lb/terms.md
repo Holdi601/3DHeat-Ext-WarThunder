@@ -16,9 +16,9 @@ Dem Gaijin seng Terms of Service (aktualiséiert 2026-08-17), EULA (Annex 2):
 disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
 the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
 permitted to store, download, modify, or otherwise use any part of the Game(s)"
-iwwer de Client eraus. D'Level-Dateie vun denger eegener Kopie an eng lokal 3D-Usiicht ze liesen,
-ass dem Benotzer seng Entscheedung, geholl mat Wëssen dorëms. Déi geschriwwe Leveler bleiwen op
-denger Maschinn: **verëffentlech se ni**, an hei gëtt keng Spilldaten matgeliwwert.
+iwwer de Client eraus. D'Level-Dateie vun Ärer eegener Kopie an eng lokal 3D-Usiicht ze liesen,
+ass dem Benotzer seng Entscheedung, geholl mat Wëssen dorëms. Déi geschriwwe Levelen bleiwen op
+Ärer Maschinn: **verëffentlecht se ni**, an hei gëtt keng Spilldaten matgeliwwert.
 
 ## Quellen {#sources}
 
@@ -56,7 +56,7 @@ HEAT3D_WT_REPLAYS=<folder of your own replays> python -m pytest -q        # step
 ```
 
 D'Eenheetstester liesen ni eng Installatioun (`HEAT3D_WT_NO_NAMES` ass gesat); den
-Test mat dengen eegene Replays liest d'Nimm aus denger Installatioun.
+Test mat Ären eegene Replays liest d'Nimm aus Ärer Installatioun.
 
 D'Tester bauen Replays am Code (`tests/synth.py`: Header, Pakete, Resultater,
 den Entitéit-Stroum, Waffen am Fluch) no der Layout, déi d'Reader dokumentéieren; kee

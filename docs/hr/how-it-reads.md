@@ -73,7 +73,7 @@ Za stručnjake, poruke se čitaju ovako:
 | 0xF01B, 0xF01C | retci `fire_start`, `fire_stop`: rafali 40 mm protuzračnih topova (top koji puca; požar na vozilu je `fire_on`, vidi [Požari vozila](hits.md#vehicle-fires)) |
 | 0xF050, 0xF033, 0xF054, 0xF0BD, 0xD046 | retci `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` |
 | 0xD0FE ProjectileHitReplay | vlastiti pogoci igrača koji snima i pogoci koje prima, s oružjem i streljivom, imenovani iz instalacije (`projectileHitReplays`) |
-| 0xF13E, 0xF031 | vizualni efekt pogotka i efekt pušteн na jedinici; dolaze uz pogodak na istu jedinicu |
+| 0xF13E, 0xF031 | vizualni efekt pogotka i efekt pušten na jedinici; dolaze uz pogodak na istu jedinicu |
 | 0xD041 | jedna po obrambenom topu zrakoplova, dva puta u sekundi; njezini indeksi odgovaraju strijelčevim oružjima iz modela leta |
 | 0xD048, 0xF117 | raspored pročitan, značenje nepoznato |
 | ostalo (0xF09A, 0xD020, 0xF015, 0xF04F, ...) | u pomoćnoj datoteci poruka, s jedinicom i poljima |

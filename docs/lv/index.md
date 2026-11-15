@@ -11,14 +11,14 @@ permalink: /lv/
 # 3DHeat War Thunder atkārtojumi {#dheat-war-thunder-replays}
 
 **Kas tas ir?** War Thunder var ierakstīt kauju kā atkārtojuma failu. Šis rīks
-pārvērš ierakstu failā, ko vari skatīt no augšas
+pārvērš ierakstu failā, ko varat skatīt no augšas
 [3DHeat skatītājā](https://holdi601.github.io/3DHeat/): ar katru lidmašīnu, tanku
 un kuģi, katru raketi un bumbu un katru trāpījumu tur, kur tas notika. Otra
-komanda pārvērš tavas spēles instalācijas līmeņus 3D līmeņos, kuros rādīt kaujas.
+komanda pārvērš jūsu spēles instalācijas līmeņus 3D līmeņos, kuros rādīt kaujas.
 
-**Kāpēc to izmantot?** Lai kaujas pēcpārskatu 3D; lai redzētu siltumkartes, kur tu
+**Kāpēc to izmantot?** Lai kaujas pēcpārskatu 3D; lai redzētu siltumkartes, kur jūs
 un citi lidojat, braucat, cīnāties un krītat daudzās kaujās; lai redzētu, kur
-trāpījumi skārusi transportlīdzekli; lai redzētu, cik kauja maksāja un ko
+trāpījumi skāruši transportlīdzekli; lai redzētu, cik kauja maksāja un ko
 nopelnīja. Rezultāts ir vienkāršs Parquet un JSON, tāpēc to var lasīt arī citi
 rīki.
 
@@ -29,7 +29,7 @@ iziet:
 
 ## Ātrais sākums {#quick-start}
 
-Jauns komandrindā? Vispirms izlasi [Pirms sākat](before-you-start.md).
+Jauns komandrindā? Vispirms izlasiet [Pirms sākat](before-you-start.md).
 
 ```bash
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
@@ -38,7 +38,7 @@ pip install -e .                                  # uzstāda heat3d-wt-replay un
 heat3d-wt-replay "<War Thunder>/Replays" -o out
 ```
 
-Katrai kaujai redzēsi vienu rindu: `ok out/<map>/<match>.3dheat`. Atver šo failu
+Katrai kaujai redzēsiet vienu rindu: `ok out/<map>/<match>.3dheat`. Atveriet šo failu
 3DHeat skatītājā.
 
 ## Šī dokumentācija {#this-documentation}
@@ -46,13 +46,13 @@ Katrai kaujai redzēsi vienu rindu: `ok out/<map>/<match>.3dheat`. Atver šo fai
 | Lappuse | Ko tā aptver |
 |---|---|
 | [Pirms sākat](before-you-start.md) | Python, termināls un kā izskatās veiksme |
-| [Uzstādīšana](installing.md) | uzstādīšana, nosaukumi no tavas instalācijas, atjauninājumi |
+| [Uzstādīšana](installing.md) | uzstādīšana, nosaukumi no jūsu instalācijas, atjauninājumi |
 | [Atkārtojumu pārvēršana](converting.md) | `heat3d-wt-replay` solis pa solim, katra iespēja, ziņojumi |
 | [Izvades faili](output-files.md) | `.3dheat` fails, `--loose` faili, nosaukumi |
 | [Tabula](table.md) | katra kolonna un notikums |
 | [Mača dokuments](match-document.md) | katra `<match>.match.json` atslēga |
 | [Papildfaili un pilnība](sidecars.md) | kas tiek saglabāts pilnībā blakus tabulai un skaitļi |
-| [Levels](levels.md) | `heat3d-wt-level`: instalācijas līmeņi kā `.glb` |
+| [Līmeņi](levels.md) | `heat3d-wt-level`: instalācijas līmeņi kā `.glb` |
 | [Kā tas nolasa atkārtojumu](how-it-reads.md) | kas tiek nolasīts un kā tas pārbaudīts |
 | [Lidmašīnas](aircraft.md), [Sauszemes vienības un kamera](ground.md), [Trāpījumi, šaušana un ugunsgrēki](hits.md) | detaļas aiz kolonnām |
 | [Ekonomika](economy.md), [Mērķi](objectives.md) | sudraba lauvas un pētniecības punkti; kapitāla zonas, aerodromi |
@@ -80,7 +80,7 @@ Watcher to palaiž jaunajiem atkārtojumiem, ja tas ir uzstādīts, un darbojas 
 | GameCapture | apļu telemetrija un līmeņi, kas atjaunoti no spēles video | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [vietne](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | Unreal Editor spraudnis, kas eksportē līmeni | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [vietne](https://holdi601.github.io/3DHeat-UnrealExporter/) |
 | CS2 | Counter-Strike 2 demo un kartes | [3DHeat-CS2](https://github.com/Holdi601/3DHeat-CS2) | [vietne](https://holdi601.github.io/3DHeat-CS2/) |
-| Watcher | ieraksta to, ko spēles publicē, kamēr tu spēlē | [3DHeat-Watcher](https://github.com/Holdi601/3DHeat-Watcher) | [vietne](https://holdi601.github.io/3DHeat-Watcher/) |
+| Watcher | ieraksta to, ko spēles publicē, kamēr jūs spēlējat | [3DHeat-Watcher](https://github.com/Holdi601/3DHeat-Watcher) | [vietne](https://holdi601.github.io/3DHeat-Watcher/) |
 | War Thunder atkārtojumi | `.wrpl` atkārtojumi un War Thunder līmeņi | [3DHeat-Ext-WarThunder](https://github.com/Holdi601/3DHeat-Ext-WarThunder) | [vietne](https://holdi601.github.io/3DHeat-Ext-WarThunder/) |
 | World of Tanks atkārtojumi | `.wotreplay` atkārtojumi | [3DHeat-Ext-WoT](https://github.com/Holdi601/3DHeat-Ext-WoT) | [vietne](https://holdi601.github.io/3DHeat-Ext-WoT/) |
 | World of Warships atkārtojumi | `.wowsreplay` atkārtojumi | [3DHeat-Ext-WoWs](https://github.com/Holdi601/3DHeat-Ext-WoWs) | [vietne](https://holdi601.github.io/3DHeat-Ext-WoWs/) |

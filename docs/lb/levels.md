@@ -1,20 +1,20 @@
 ---
-title: "Leveler"
+title: "Levelen"
 nav_order: 9
 lang: lb
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
-# Leveler (heat3d-wt-level) {#levels-heat3d-wt-level}
+# Levelen (heat3d-wt-level) {#levels-heat3d-wt-level}
 
-`heat3d-wt-level` mécht aus de Levelen vun denger eegener War-Thunder-Installatioun
-`.glb`-Leveler fir de Viewer, am selwechte System wéi d'Tabelle vun de Replays.
+`heat3d-wt-level` mécht aus de Levelen vun Ärer eegener War-Thunder-Installatioun
+`.glb`-Levelen fir de Viewer, am selwechte System wéi d'Tabelle vun de Replays.
 
 ## Schrëtt fir Schrëtt {#step-by-step}
 
-1. Lëscht d'Leveler vun denger Installatioun op: `heat3d-wt-level list`. Et dréckt eng
+1. Lëscht d'Levelen vun Ärer Installatioun op: `heat3d-wt-level list`. Et dréckt eng
    Zeil pro Level: säin Numm, säin Terrain a seng Kaarten, dann d'Zuel. Zum
    Beispill (e erfonnent Level):
 
@@ -22,7 +22,7 @@ search_exclude: true
    99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
    1 levels in C:\Games\War Thunder
    ```
-2. Extraheier een, e puer (Wildcards erlaabt) oder all:
+2. Extrahéiert een, e puer (Wildcards erlaabt) oder all:
 
    ```bash
    heat3d-wt-level extract <level> -o levels
@@ -30,10 +30,10 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Lued `levels/<level>/<level>.glb` am Level-Panel vum Viewer, ënner de
+3. Luet `levels/<level>/<level>.glb` am Panel „Hannergrond / Level“ vum Viewer, ënner de
    Gefechter vun där Kaart.
 
-D'Leveler, déi s du schreifs, bleiwe op denger Maschinn: verëffentlech se ni (kuck
+D'Levelen, déi Dir schreift, bleiwen op Ärer Maschinn: verëffentlecht se ni (kuck
 [Konditiounen a Lizenz](terms.md)).
 
 ## Optiounen {#options}
@@ -43,7 +43,7 @@ D'Leveler, déi s du schreifs, bleiwe op denger Maschinn: verëffentlech se ni (
 | Befehl / Optioun | Wat et mécht |
 |---|---|
 | `list [--game FOLDER]` | all Level an der Installatioun |
-| `extract <levels...>` / `--all` | d'Leveler, déi genannt ginn (wéi `list` se dréckt; Wildcards erlaabt), oder all Level |
+| `extract <levels...>` / `--all` | d'Levelen, déi genannt ginn (wéi `list` se dréckt; Wildcards erlaabt), oder all Level |
 | `-o`, `--out` | Ausgabdossier; all Level geet an `<out>/<level>/` |
 | `--game FOLDER` | den War-Thunder-Dossier (Standard: iwwer Steam oder de Launcher fonnt; och `HEAT3D_WT_GAME`) |
 | `--detail low/medium/high` | Buedem-Sampling, Buedemfaarf an Objetbudget iwwer der Panzerkaart (Standard `medium`) |
@@ -53,7 +53,7 @@ D'Leveler, déi s du schreifs, bleiwe op denger Maschinn: verëffentlech se ni (
 | `--no-generated` | d'Objeten ewechloossen, déi d'Land-Klasse generéieren (Wälder, Stied) |
 | `--no-terrain-colour` | de Buedem mat der taktescher Kaart texturéieren, net mat de Land-Klassen |
 | `--no-texture` | de Buedem ouni Textur loossen |
-| `--skip-existing` | Leveler iwwersprangen, där hir `.glb` et gëtt |
+| `--skip-existing` | Levelen iwwersprangen, där hir `.glb` et gëtt |
 
 ## Wat geschriwwen gëtt {#what-is-written}
 
@@ -69,13 +69,13 @@ D'Installatioun gëtt iwwer Steam oder d'Standarddossiere vum Launcher fonnt;
 
 | Deel | Wat et ass |
 |---|---|
-| `ground:<level>` | d'Terrain-Héichtekaart (`HM2`) als Gitter; op Buedemkaarten d'Mëtt vun der Panzerkaart (hallef hir Breet) am Schrëtt vum `--detail`, agefierft mat de Land-Klassen, Buedemdecals a Stroossen (`<level>_terrain.png`; d'taktesch Kaart, wou dat net gemaach ka ginn); op Kaarten ouni Panzerkaart (Loftkaarten) déi ganz Héichtekaart an engem Schrëtt (2048 Echantillonen pro Säit bei `high`, soss 1024), agefierft mat de Land-Klassen iwwer dem Gebitt vun der Loftkaart (4096 Pixel pro Säit, ongeféier 32 m de Pixel iwwer 131 km; d'taktesch Kaart, wou dat net gemaach ka ginn); op Leveler ouni Héichtekaart d'Land-Mesh |
+| `ground:<level>` | d'Terrain-Héichtekaart (`HM2`) als Gitter; op Buedemkaarten d'Mëtt vun der Panzerkaart (hallef hir Breet) am Schrëtt vum `--detail`, agefierft mat de Land-Klassen, Buedemdecals a Stroossen (`<level>_terrain.png`; d'taktesch Kaart, wou dat net gemaach ka ginn); op Kaarten ouni Panzerkaart (Loftkaarten) déi ganz Héichtekaart an engem Schrëtt (2048 Echantillonen pro Säit bei `high`, soss 1024), agefierft mat de Land-Klassen iwwer dem Gebitt vun der Loftkaart (4096 Pixel pro Säit, ongeféier 32 m de Pixel iwwer 131 km; d'taktesch Kaart, wou dat net gemaach ka ginn); op Levelen ouni Héichtekaart d'Land-Mesh |
 | `ground:<level> tank map` | de Rescht vun der Panzerkaart, een Schrëtt gréber |
 | `ground:<level> heightmap surroundings` | de Rescht vun der Héichtekaart, nach gréber |
-| `ground:<level> land mesh` | d'Kollisiounsdräiecker vum Land-Mesh, wou d'Héichtekaart net hinreecht (d'Ëmgéigend vun enger Panzerkaart, bis op zéng Kilometer); op Leveler ouni Héichtekaart ass et de Buedem, agefierft wéi uewen |
+| `ground:<level> land mesh` | d'Kollisiounsdräiecker vum Land-Mesh, wou d'Héichtekaart net hinreecht (d'Ëmgéigend vun enger Panzerkaart, bis op zéng Kilometer); op Levelen ouni Héichtekaart ass et de Buedem, agefierft wéi uewen |
 | `ground:<level> outside the map` | Buedem, deen d'Bild net deckt, ouni Textur |
 | `water:<level>` | ee flacht Rechteck um `water_level` vum Level iwwer dem ganzen Terrain: d'Spill zeechent Waasser als eng Fläch, an niddregt Land drënner ass Mier-, Séi- oder Floss-Buedem |
-| `water:<level> rivers` | op Leveler mat enger Waasser-Héichtekaart (`WHM`) d'schréi Waasseroberfläch iwwer den Zellen, déi se deckt |
+| `water:<level> rivers` | op Levelen mat enger Waasser-Héichtekaart (`WHM`) d'schréi Waasseroberfläch iwwer den Zellen, déi se deckt |
 | `structure:<level> buildings` | all gesat Objet, dat keng Planz ass: Haiser, Ruinen, Maueren, Zonen, Brécken, Schinnen, Fielsen, Props. Déi fest (`RIGz`) an, iwwer der Panzerkaart, déi, déi d'Land-Klasse generéieren (Stadblocken, Steng). Jiddwer gëtt duerch säi Render-Mesh gezeechent (Maueren, Daach, Fënsteröffnungen, Balken), am LOD, dat d'Dräieckbudget erlaabt, pro Material agefierft mam Duerchschnëtt vu senger Diffus-Textur |
 | `structure:<level> trees` | Beem a Bëscher, fest a generéiert (Wälder, Hecken): hire Render-Mesh, wou d'Budget et erlaabt, soss e Stamm an eng Kroun (e Kegel bei Nolbeem) an der eegener Blieder-Faarf vum Bam, iwwer der richteger Gréisst vum Bam |
 
@@ -135,14 +135,14 @@ a Buedemdecals; `trianglesTotal`, `glbBytes` an `secondsBy` d'Totaler.
 | Waasserniveau | `water_level` aus dem BLK vum Level an `aces.vromfs.bin` (0, wou et keen huet) |
 | Waasser-Héichtekaart (`WHM`: e Gitter vu flache Zellen a 130x130-Säite vu 16-Bit-Héichten) | gelies, wou e Level een huet; seng Flëss sinn mam Buedem schräi |
 | Taktesch Kaarten | aus `content/base/res/locations_maps.dxp.bin`, gesat duerch dem BLK säin `mapCoord0/1` an `tankMapCoord0/1`; d'Uewen vum Bild ass Norden |
-| Gesat Objeten (`RIGz`: déi fest Instanze vum Render-Instanz-Generator) | all Instanz, als 3x4-Matrix vu 16-Bit-Wäerter oder, op e puer Leveler, 32-Bit-Wäerter (d'Byte-Zuel vun der Zell entscheet); all Byte vun all Zell erkläert op de gepréiften Leveler |
+| Gesat Objeten (`RIGz`: déi fest Instanze vum Render-Instanz-Generator) | all Instanz, als 3x4-Matrix vu 16-Bit-Wäerter oder, op e puer Levelen, 32-Bit-Wäerter (d'Byte-Zuel vun der Zell entscheet); all Byte vun all Zell erkläert op de gepréiften Levelen |
 | Generéiert Objeten (`RIGz`-Land-Klass-Maskë an d'`LandClass`-Ressourcen) | dem Spill säi Generator, portéiert: déiselwecht Plazen an der selwechter Reiefolleg probéiert mat de selwechten Zoufallszuelen, d'Land-Klass- an Ausschlossmaskë, dat Objet, dat un all Plaz gewielt gëtt, seng Rotatioun, Skala a Héicheoffset; getilte (Stadblocken) a gepflanzten (Wälder, Bëscher, Felder) Entitéiten. Nëmmen iwwer der Panzerkaart generéiert. Approximéiert: d'Buedemhéicht an d'Normal (aus der Héichtekaart; d'Spill verfollegt e Stral), d'Ausschlossboxen, déi d'Spill zur Laafzäit registréiert, an dem Beem säi Yaw (d'Spill rastert en op d'Rotatiounspalett vum Impostor) |
 | Render-Meshen (`RendInst`-Ressourcen an `content/*/res/*.grp`, Materialien an `riDesc.bin`) | d'Vertexen an Dräiecker vun all LOD (Float-Positiounen; 16- oder 32-Bit-Indexen, plain oder meshoptimizer-gepaakt), d'Material vun all Element. Decal- an Impostor-Billboard-Elementer ginn ewechgelooss; déi duerchsiichteg (Glas) bleiwen |
 | Objetfaarwen | pro Material, den Duerchschnëtt vum klenge Mip vu senger Diffus-Textur (alpha-gewichtet bei Blieder), aus den Texturpäck vun der Installatioun: t0 fir déi meescht Shader, den éischten Detail-Diffus, wou t0 en Overlay oder eng Mask ass. Eng Faarf pro Material: keng Textur op den Objeten |
 | Kollisiounsformen (`<object>_collision`) | Kollisiounsressourcen vum Stroumversioun 3, benotzt, wou en Objet kee Render-Mesh huet. Nëmmen dat, wat dem Spill seng Strale treffen (`TRACEABLE`-Knuet), gëtt gezeechent, a Këschten, Kugelen a Kapselen nëmmen, wann d'Ressource kee Mesh huet: de Rescht sinn gréif Physik-Ersatzformen, déi als Kuben ëm den Objet géife erschéngen |
 | Navigatiounsmesh (`Lnav`), de gerenderte Land-Mesh, Gras, `spgz`, `stbl`, `d2co` | net gelies |
 
-Leveler si mat Oodle komprimiert, dat proprietär ass. D'Spill liwwert eng Kopie mat,
+Levelen si mat Oodle komprimiert, dat proprietär ass. D'Spill liwwert eng Kopie mat,
 `<War Thunder>\win-arm64ec\oo2core_9_win64.dll` (en normale x64-Build), an
 déi gëtt gelueden; `HEAT3D_OODLE=<dll or folder>` weist op eng aner.
 Näischt vun Oodle ass hei abegraff.

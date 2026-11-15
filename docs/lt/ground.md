@@ -60,7 +60,7 @@ krypties; priešlėktuvinių patrankų pranešimas 0xD020 lieka neskaitytas.
 
 ## Kamera {#the-camera}
 
-Pranešimas 0xD043, maždaug 20 per sekundę, yra paties žaidėjo replėjaus kamera: laukas 1 - kvaternionas,
+Pranešimas 0xD043, maždaug 20 per sekundę, yra paties žaidėjo įrašo kamera: laukas 1 - kvaternionas,
 pasukantis kameros priekį į tai, kur ji žiūri; 2 - kameros vieta nuo transporto priemonės, kurią ji seka
 (m); 4 - tas pats poslinkis transporto priemonės rėmelyje (x - pirmyn, y - aukštyn, z - kairėn); 5 - kur
 žaidėjas taikosi (vienetinis vektorius); 3 - artinimas (apie 1,2 tanko trečio asmens vaizde, apie 1,0

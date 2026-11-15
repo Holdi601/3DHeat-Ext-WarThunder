@@ -9,35 +9,35 @@ search_exclude: true
 ---
 # Pirms sākat {#before-you-start}
 
-Jauns komandrindā? Šī lappuse ved no nulles līdz darbojošamies
-`heat3d-wt-replay` apmēram desmit minūtēs. Ja jau lieto Python, dodies tieši uz
+Jauns komandrindā? Šī lappuse ved no nulles līdz tam, ka `heat3d-wt-replay`
+darbojas, apmēram desmit minūtēs. Ja jau lietojat Python, dodieties tieši uz
 [Uzstādīšana](installing.md).
 
-## 1. Uzstādi Python {#install-python}
+## 1. Uzstādiet Python {#install-python}
 
-1. Lejupielādē Python **3.10 vai jaunāku** no
+1. Lejupielādējiet Python **3.10 vai jaunāku** no
    [python.org/downloads](https://www.python.org/downloads/).
-2. Windows sistēmā atzīmē **Add python.exe to PATH** instalētāja pirmajā logā un
-   tad noklikšķini **Install Now**.
-3. macOS un Linux sistēmā Python 3 bieži jau ir. Kur šīs lappuses raksta `python`,
-   raksti `python3`, un `pip` vietā raksti `pip3`.
+2. Windows sistēmā atzīmējiet **Add python.exe to PATH** instalētāja pirmajā logā un
+   tad noklikšķiniet **Install Now**.
+3. macOS un Linux sistēmā Python 3 bieži jau ir. Kur šajās lappusēs ir rakstīts `python`,
+   rakstiet `python3`, un `pip` vietā rakstiet `pip3`.
 
-## 2. Atver termināli {#open-a-terminal}
+## 2. Atveriet termināli {#open-a-terminal}
 
-Termināls ir logs, kurā raksti komandas.
+Termināls ir logs, kurā rakstāt komandas.
 
-- **Windows:** atver mapi File Explorer, noklikšķini adreses joslā, ieraksti
-  `cmd` un nospied Enter. Atveras logs, jau šajā mapē.
-- **macOS:** atver lietotni **Terminal**. **Linux:** ar peles labo pogu klikšķini
-  mapē un izvēlies **Open in Terminal**.
+- **Windows:** atveriet mapi File Explorer, noklikšķiniet adreses joslā, ierakstiet
+  `cmd` un nospiediet Enter. Atveras logs, kas jau ir šajā mapē.
+- **macOS:** atveriet lietotni **Terminal**. **Linux:** ar peles labo pogu noklikšķiniet
+  mapē un izvēlieties **Open in Terminal**.
 
-Lai pārietu uz citu mapi, ieraksti `cd` un mapes nosaukumu:
+Lai pārietu uz citu mapi, ierakstiet `cd` un mapes nosaukumu:
 
 ```bash
 cd "C:\Users\you\Downloads\3DHeat-Ext-WarThunder-main"
 ```
 
-## 3. Pārbaudi, vai Python darbojas {#check-that-python-works}
+## 3. Pārbaudiet, vai Python darbojas {#check-that-python-works}
 
 ```bash
 python --version
@@ -46,12 +46,12 @@ python --version
 Jābūt redzamam `Python 3.` un skaitlim 10 vai lielākam, piemēram
 `Python 3.12.4`.
 
-## 4. Iegūsti rīku un uzstādi to {#get-the-tool-and-install-it}
+## 4. Iegūstiet rīku un uzstādiet to {#get-the-tool-and-install-it}
 
 1. Rīka GitHub lapā ([rīka GitHub lapa](https://github.com/Holdi601/3DHeat-Ext-WarThunder))
-   noklikšķini zaļo pogu **Code**, tad **Download ZIP**, un izpako zip failu.
-2. Atver termināli izpakotajā mapē (tajā, kurā ir `README.md`).
-3. Ieraksti:
+   noklikšķiniet zaļo pogu **Code**, tad **Download ZIP**, un izpakojiet zip failu.
+2. Atveriet termināli izpakotajā mapē (tajā, kurā ir `README.md`).
+3. Ierakstiet:
 
    ```bash
    pip install -e .
@@ -59,7 +59,7 @@ Jābūt redzamam `Python 3.` un skaitlim 10 vai lielākam, piemēram
 
    Beigās vajadzētu redzēt: `Successfully installed heat3d-ext-warthunder-0.2.0`
    (varbūt ar vēl dažiem nosaukumiem).
-4. Pārbaudi:
+4. Pārbaudiet:
 
    ```bash
    heat3d-wt-replay --version
@@ -69,11 +69,11 @@ Jābūt redzamam `Python 3.` un skaitlim 10 vai lielākam, piemēram
 
 ## Kā lasīt šajās lappusēs esošās komandas {#how-to-read-the-commands-on-these-pages}
 
-- Vārdi leņķa iekavās, piemēram `<replays>`, ir vietturi: ieraksti savu failu vai
+- Vārdi leņķa iekavās, piemēram `<replays>`, ir vietturi: ierakstiet savu failu vai
   mapi tur, bez iekavām.
 - Ceļš ar atstarpēm prasa pēdiņas: `"C:\Program Files (x86)\Steam"`.
 - Teksts aiz `#` ir komentārs: to neraksti.
-- `-o out` raksta mapē `out`, kas atrodas mapē, kurā ir tavs termināls. Ja tās nav,
+- `-o out` raksta mapē `out`, kas atrodas mapē, kurā ir jūsu termināls. Ja tās nav,
   tā tiek izveidota.
 
 ## Kā izskatās veiksme {#what-success-looks-like}
@@ -88,12 +88,12 @@ un beidzas ar izejas statusu `0`. Jaunie faili ir mapē `out`.
 
 ## Biežākās kļūdas {#common-errors}
 
-| Ko redzi | Ko darīt |
+| Ko redzat | Ko darīt |
 |---|---|
-| `'python' is not recognized ...` vai `command not found` | Python nav PATH: uzstādi to vēlreiz, atzīmējot **Add python.exe to PATH**, vai raksti `py` `python` vietā (Windows) |
-| `'pip' is not recognized ...` | raksti `python -m pip install -e .` |
-| `'heat3d-wt-replay' is not recognized ...` | raksti `python -m heat3d_ext_warthunder` `heat3d-wt-replay` vietā; tas dara to pašu |
-| `No module named heat3d_ext_warthunder` | tu neesi rīka mapē vai tas nav uzstādīts: `cd` uz to un palaid `pip install -e .` |
-| `the following arguments are required: -o/--out` | pievieno komandai `-o out` |
+| `'python' is not recognized ...` vai `command not found` | Python nav PATH: uzstādiet to vēlreiz, atzīmējot **Add python.exe to PATH**, vai rakstiet `py` `python` vietā (Windows) |
+| `'pip' is not recognized ...` | rakstiet `python -m pip install -e .` |
+| `'heat3d-wt-replay' is not recognized ...` | rakstiet `python -m heat3d_ext_warthunder` `heat3d-wt-replay` vietā; tas dara to pašu |
+| `No module named heat3d_ext_warthunder` | jūs neesat rīka mapē vai tas nav uzstādīts: dodieties uz to un palaidiet `pip install -e .` |
+| `the following arguments are required: -o/--out` | pievienojiet komandai `-o out` |
 
 Tālāk: [Atkārtojumu pārvēršana](converting.md).

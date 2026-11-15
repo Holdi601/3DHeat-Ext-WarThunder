@@ -65,7 +65,7 @@ El missatge 0xD043, uns 20 per segon, és la càmera de repetició del propi jug
 és un quaternió que gira el davant de la càmera cap a on mira; 2 és el lloc de la càmera respecte al
 vehicle que segueix (m); 4 el mateix desplaçament en el marc propi del vehicle (x endavant, y amunt, z
 esquerra); 5 cap on apunta el jugador (un vector unitari); 3 el zoom (uns 1,2 en la vista de tercera
-persona d'un tanc, uns 1,0 en un avió, més alt en la mira d'un artiller o a través de binoculars).
+persona d'un tanc, uns 1,0 en un avió, més alt en la mira d'un artiller o a través de binocles).
 Comprovat: el camp 4 és el camp 2 girat al marc del vehicle, dins de 0,5 m per gairebé cada missatge;
 el davant de la càmera té el heading de la mira. La repetició no envia cap camp de visió en graus,
 només el zoom.

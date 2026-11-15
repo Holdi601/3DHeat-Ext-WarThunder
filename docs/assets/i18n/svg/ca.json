@@ -17,7 +17,7 @@
  "Levels are mirrored too, so both fit.": "Els nivells també es reflecteixen, així encaixen.",
  "Match tab: the match document": "Pestanya Partida: el document de partida",
  "Metres, in the game's own world": "Metres, al món propi del joc",
- "The table's footer tells the viewer to mirror z.": "El peu de la taula indica al visualitzador que reflecteixi z.",
+ "The table's footer tells the viewer to mirror z.": "El peu de taula fa que el visualitzador inverteixi z.",
  "The viewer opens it like the loose files. With --loose you get these files one by one instead.": "El visualitzador l'obre com els fitxers separats. Amb --loose obtens aquests fitxers un per un.",
  "What one .3dheat file holds": "Què conté un fitxer .3dheat",
  "Where x, y and z point": "On apunten x, y i z",

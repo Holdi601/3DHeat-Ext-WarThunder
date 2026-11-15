@@ -39,7 +39,7 @@ El model de cost del visualitzador llegeix les columnes `cost_*` (i `earn_*`) am
 guanyat (la recompensa d'una mort és a la seva fila `reward`, no a la fila `kill`, de manera que res no
 es compta dues vegades).
 
-- **Rondes** (`install` quan se sap l'obús de la ranura, que una mort ha nomenat, vegeu
+- **Rondes** (`install` quan se sap l'obús de la ranura, que una mort ha nomenat, mira
   [Resultats dels impactes](hits.md#hit-outcomes); en cas contrari `inferred`: el preu mitjà dels obusos
   que aquell canó pot disparar en aquell vehicle; un obús de sèrie és gratuït; les metralladores no les
   compta la repetició i no costen res).

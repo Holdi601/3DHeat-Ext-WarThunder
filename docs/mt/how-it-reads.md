@@ -52,7 +52,7 @@ hawn jingħataw biss il-metodu u l-qbil.
 | Wrecks | il-kampjuni ta' unità wara l-mewt tagħha jibqgħu jiġu; wreck ta' unità tal-art jew vapur huwa `alive` 0 sakemm tinqered l-entità tiegħu, u jibqa' mogħdija waħda; l-ajruplani jżommu `alive` 0 għal mhux aktar minn 60 s (`selfCheck.wrecks`) |
 | Bidliet ta' vettura | unità ta' plejer li għadha ħajja meta tidher l-unità li jmiss tal-istess plejer tispiċċa hemm (vettura mħallija wieqfa). `selfCheck.vehicleSwitch.twoLiveVehicles` irid ikun 0 |
 | Battle mode | [Battle mode](ground.md#battle-mode) |
-| Ajruplani f'ripetizzjoni tas-server tal-2026 | moqrija fil-layout tal-2026; l-heading u s-sinjal tar-roll jaqblu mad-dawriet; ajruplani placeholder u drones tar-rikonoxximent ma jġorru ebda data |
+| Ajruplani f'ripetizzjoni tas-server tal-2026 | moqrija fil-layout tal-2026; l-heading u s-sinjal tar-roll jaqblu mad-dawriet; ajruplani placeholder u drones tar-rikonoxximent ma jġorru ebda dejta |
 | Plejers ta' ripetizzjoni tas-server | misjuba bl-isem fis-slots; kull statistika hija ugwali għal dik tar-riżultati (`selfCheck.players`) |
 | Ajruplani f'ripetizzjonijiet tas-server tal-2025 u verżjoni 101286 | mhux moqrija: il-pakketti tat-titjira tagħhom għandhom layout differenti |
 
@@ -94,7 +94,7 @@ L-ismijiet huma tal-komunità (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
 ## Mhux moqri, u għaliex {#not-read-and-why}
 
 - **Ismijiet u korpi ta' messaġġi tal-entitajiet** (0x20, 0x21): in-numru tal-klassi huwa
-  post f'lista kkumpilata fil-logħba, mhux mibgħut u mhux fid-data tagħha. Tnejn
+  post f'lista kkumpilata fil-logħba, mhux mibgħut u mhux fid-dejta tagħha. Tnejn
   jinqraw (in-nirien ta' vettura u l-estinguituri tagħha); il-bqija jinżammu
   sħaħ bl-entità u n-numru tal-klassi tagħhom.
 - **Oġġetti replikati oħra** (tipi għajr slots tal-plejers u timijiet):

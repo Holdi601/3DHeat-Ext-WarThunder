@@ -1,19 +1,19 @@
 ---
-title: "地圖"
+title: "關卡"
 nav_order: 9
 lang: zh-Hant
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
-# 地圖（heat3d-wt-level） {#levels-heat3d-wt-level}
+# 關卡（heat3d-wt-level） {#levels-heat3d-wt-level}
 
-`heat3d-wt-level` 會把你自己 War Thunder 安裝目錄中的地圖，轉換為檢視器可用的 `.glb` 地圖，其座標系與回放表格相同。
+`heat3d-wt-level` 會把你自己 War Thunder 安裝目錄中的關卡，轉換為檢視器可用的 `.glb` 關卡，其座標系與回放表格相同。
 
 ## 逐步說明 {#step-by-step}
 
-1. 列出你安裝目錄中的地圖：`heat3d-wt-level list`。它會為每張地圖印出一行：名稱、地形與其地圖，最後是數量。例如（虛構的地圖）：
+1. 列出你安裝目錄中的關卡：`heat3d-wt-level list`。它會為每個關卡印出一行：名稱、地形與其地圖，最後是數量。例如（虛構的關卡）：
 
    ```text
    99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
@@ -27,9 +27,9 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. 在檢視器的地圖面板中，於該地圖的戰鬥之下，載入 `levels/<level>/<level>.glb`。
+3. 在檢視器的背景／關卡面板中，於該關卡的戰鬥之下，載入 `levels/<level>/<level>.glb`。
 
-你寫出的地圖會留在你的電腦上：絕對不要公開發布（見[名詞與授權](terms.md)）。
+你寫出的關卡會留在你的電腦上：絕對不要公開發布（見[名詞與授權](terms.md)）。
 
 ## 選項 {#options}
 
@@ -37,9 +37,9 @@ search_exclude: true
 
 | 指令 / 選項 | 作用 |
 |---|---|
-| `list [--game FOLDER]` | 安裝目錄中的每張地圖 |
-| `extract <levels...>` / `--all` | 指定的地圖（與 `list` 印出的名稱相同，可使用萬用字元），或全部地圖 |
-| `-o`、`--out` | 輸出資料夾；每張地圖放在 `<out>/<level>/` 中 |
+| `list [--game FOLDER]` | 安裝目錄中的每個關卡 |
+| `extract <levels...>` / `--all` | 指定的關卡（與 `list` 印出的名稱相同，可使用萬用字元），或全部關卡 |
+| `-o`、`--out` | 輸出資料夾；每個關卡放在 `<out>/<level>/` 中 |
 | `--game FOLDER` | War Thunder 資料夾（預設：透過 Steam 或啟動器找到；也可使用 `HEAT3D_WT_GAME`） |
 | `--detail low/medium/high` | 戰車地圖上的地面取樣、地面顏色與物件預算（預設 `medium`） |
 | `--max-object-triangles N` | 物件預算（預設：依 detail 而定） |
@@ -48,11 +48,11 @@ search_exclude: true
 | `--no-generated` | 不含地表類別產生的物件（森林、城鎮） |
 | `--no-terrain-colour` | 以戰術地圖貼上地面材質，而非地表類別 |
 | `--no-texture` | 地面不貼材質 |
-| `--skip-existing` | 略過已有 `.glb` 的地圖 |
+| `--skip-existing` | 略過已有 `.glb` 的關卡 |
 
 ## 會寫出什麼 {#what-is-written}
 
-每張地圖會產生 `<out>/<level>/<level>.glb`、`<level>.json`（讀取到的內容、水面高度、地圖矩形、三角形數量、耗時），以及地圖的戰術地圖 `<level>_map.png`（空戰地圖）與 `<level>_tankmap.png`（戰車地圖）；地面地圖還會有 `<level>_terrain.png`，即疊在戰車地圖上的地面自身顏色。glb 會先寫入 `<level>.glb.part`，完成後再更名；寫入某張地圖時會持有 `<out>/<level>/.<level>.lock`，因此兩次擷取不會寫入同一張地圖（第二次會印出 `busy <level>`）。安裝目錄會透過 Steam 或啟動器的預設資料夾找到；若找不到，可用 `--game <folder>` 或 `HEAT3D_WT_GAME` 指定位置。
+每個關卡會產生 `<out>/<level>/<level>.glb`、`<level>.json`（讀取到的內容、水面高度、地圖矩形、三角形數量、耗時），以及地圖的戰術地圖 `<level>_map.png`（空戰地圖）與 `<level>_tankmap.png`（戰車地圖）；地面地圖還會有 `<level>_terrain.png`，即疊在戰車地圖上的地面自身顏色。glb 會先寫入 `<level>.glb.part`，完成後再更名；寫入某張地圖時會持有 `<out>/<level>/.<level>.lock`，因此兩次擷取不會寫入同一張地圖（第二次會印出 `busy <level>`）。安裝目錄會透過 Steam 或啟動器的預設資料夾找到；若找不到，可用 `--game <folder>` 或 `HEAT3D_WT_GAME` 指定位置。
 
 | 部分 | 內容 |
 |---|---|
@@ -88,7 +88,7 @@ JSON 的 `parts.objects` 會列出各個實例（固定與產生的，依類型�
 
 | 部分 | 狀態 |
 |---|---|
-| 地圖二進位檔（`levels/<level>.bin`，`DBLD` 3x64）：區塊表 | 每張地圖都已核對 |
+| 關卡二進位檔（`levels/<level>.bin`，`DBLD` 3x64）：區塊表 | 每張地圖都已核對 |
 | 高度圖（`HM2`，版本 0-2；版本 2 是區塊中的 8 位元數值，Oodle 或 zstd 區塊） | 每張高度圖為版本 2 且使用 Oodle 區塊的地圖；已以目視對照戰術地圖核對（河流、山谷、海岸與城鎮都吻合） |
 | 陸地網格碰撞（`lmap`，其 `LTdump` 陸地光線追蹤器） | 在地圖有此資料的地方讀取（Oodle 壓縮）。它是遊戲的碰撞表面，而非渲染網格，因此在平坦的陸地上較粗略 |
 | 地面顏色（`lmap` 的地表類別與權重圖、`LMp2` 物理圖、`hspl` 樣條） | 地表類別的顏色圖與細節材質（其平均顏色），依權重圖加權；有索引的地表類別的 1 公尺生態區索引；物理圖中道路與地面貼花的形狀，以其樣條或材質的材質顏色上色；陡坡上的懸崖。已對照戰車地圖核對：道路、城鎮、湖泊、森林帶與岩層都吻合。War Thunder 自己的地形著色器的顏色公式不在公開的原始碼中；因此採用引擎公開的版本（daNetGame），其結果比戰術地圖更飽和 |
@@ -110,7 +110,7 @@ Gaijin 以 BSD 3-Clause 授權公開了 Dagor Engine 的原始碼（github.com/G
 
 - `vromfs.py`：`*.vromfs.bin`（標頭 `VRFs`/`VRFx`，一個 zstd 本體，其前後各 16 個位元組以固定金鑰進行 XOR，一張名稱表與一張偏移表：`osApiWrappers/dag_vromfs.h`、`ioSys/vromfsLoad.cpp`、`supp/dag_zstdObfuscate.h`），以及二進位 BLK（格式 1-5，使用封存的共用名稱對應 `\xff?nm` 與 zstd 字典：`ioSys/dataBlock/blk_serialize.cpp`、`blk_parser.cpp`、`blk_zstd.cpp`）。
 - `dxp.py`：材質包 `DxP2`（`lib3d/texPackMgr2.cpp`）與 DDSx 標頭（`sharedInclude/3d/ddsxTex.h`）；DXT1/DXT5/BC7 由 Pillow 解碼。
-- `dagorlevel.py`：地圖二進位檔（`scene/loadLevel.cpp`）、高度圖（`heightmap/heightmapPhysHandler.cpp`、`heightMapLand/compressedHeightmap.cpp`）、陸地光線追蹤器（`landMesh/lmeshManager.cpp`、`landMesh/landRayTracerSoA4.cpp`）與水體高度圖（`fftWater/fftWater.cpp`）。
+- `dagorlevel.py`：關卡二進位檔（`scene/loadLevel.cpp`）、高度圖（`heightmap/heightmapPhysHandler.cpp`、`heightMapLand/compressedHeightmap.cpp`）、陸地光線追蹤器（`landMesh/lmeshManager.cpp`、`landMesh/landRayTracerSoA4.cpp`）與水體高度圖（`fftWater/fftWater.cpp`）。
 - `rigen.py`：放置的物件（`rendInst/riGen/riGenData.h`、`rendInst/rendInstGen.cpp`、`rendInst/riGen/genObjUtil.h`）。
 - `landgen.py`：產生的物件（`rendInst/rendInstGenLand.cpp`、`riGen/landClassData.h`、`riGen/genObjByMask.h`、`riGen/genObjByDensGridMask.h`、`riGen/genObjUtil.h`、`riGen/riGenData.h`、`riGen/multiPointData.h`、`riGen/riRotationPalette.h`、`rendInstGen.cpp`（`create`、`precomputeCell`、`generateCell`）、`gameMath/objgenPrng.h`、`util/dag_roHugeHierBitMap2d.h`、`util/dag_hierBitMap2d.h`、`ioSys/dag_roDataBlock.h`、`ioSys/roDataBlk.cpp`、`gameRes/grpData.h`）。
 - `rendinst.py`：渲染實例（`shaders/rendInstRes.cpp`、`shaders/dag_rendInstRes.h`、`shaders/matVdataLoad.cpp`、`shaders/shaderMesh.cpp`、`shaders/dag_shaderMesh.h`、`shaders/dag_shaderCommon.h`、`drv/3d/dag_consts_base.h`、`gameRes/gameResDescBin.cpp`），以及 meshoptimizer 的索引編解碼器（`3rdPartyLibs/meshoptimizer/src/indexcodec.cpp`，MIT 授權）。

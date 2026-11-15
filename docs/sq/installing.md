@@ -32,7 +32,7 @@ Pa instalim: `python -m heat3d_ext_warthunder ...` dhe
 
 Mjetet, armët dhe municionet marrin emrat e tyre në anglisht nga skedarët e tekstit
 të vetë lojës, të lexuar nga instalimi yt gjatë konvertimit. Instalimi gjendet
-përmes Steam ose dosjeve të paracaktuara të nisësit; përndryshe `--game <folder>` ose
+përmes Steam ose dosjeve parazgjedhëse të nisësit; përndryshe `--game <folder>` ose
 ndryshorja e mjedisit `HEAT3D_WT_GAME` tregojnë ku është. Asgjë nga teksti i lojës
 nuk është në këtë depo; pa instalim emrat janë ID-të e mjeteve (konvertuesi e thotë këtë
 në një rresht `note:`).

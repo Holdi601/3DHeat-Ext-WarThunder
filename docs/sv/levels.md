@@ -3,7 +3,7 @@ title: "Nivåer (heat3d-wt-level)"
 nav_order: 9
 lang: sv
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -30,7 +30,7 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Ladda `levels/<level>/<level>.glb` i visarens Nivå-panel, under stridena på
+3. Ladda `levels/<level>/<level>.glb` i visarens panel Bakgrund / nivå, under stridena på
    den kartan.
 
 Nivåerna du skriver stannar på din dator: publicera dem aldrig (se

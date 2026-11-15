@@ -9,18 +9,18 @@ search_exclude: true
 ---
 # Uzstādīšana {#installing}
 
-Jauns komandrindā? Vispirms izlasi [Pirms sākat](before-you-start.md).
+Jauns komandrindā? Vispirms izlasiet [Pirms sākat](before-you-start.md).
 Nepieciešams Python 3.10 vai jaunāks; pyarrow, numpy, zstandard un Pillow tiek
 uzstādīti kopā ar to.
 
 ## Soli pa solim {#step-by-step}
 
-1. Iegūsti kodu: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
-   vai lejupielādē zip failu no [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
-   un izpako to.
-2. Atver termināli šajā mapē un ieraksti `pip install -e .`. Tiek uzstādītas divas
+1. Iegūstiet kodu: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
+   vai lejupielādējiet zip failu no [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
+   un izpakojiet to.
+2. Atveriet termināli šajā mapē un ierakstiet `pip install -e .`. Tiek uzstādītas divas
    komandas: `heat3d-wt-replay` (atkārtojumi) un `heat3d-wt-level` (līmeņi).
-3. Pārbaudi: `heat3d-wt-replay --version`. Vajadzētu redzēt
+3. Pārbaudiet: `heat3d-wt-replay --version`. Vajadzētu redzēt
    `heat3d-wt-replay 0.2.0`. `heat3d-wt-replay --help` parāda iespējas:
 
 ![heat3d-wt-replay --help](../assets/img/help.svg)
@@ -28,10 +28,10 @@ uzstādīti kopā ar to.
 Bez uzstādīšanas: `python -m heat3d_ext_warthunder ...` un
 `python -m heat3d_ext_warthunder.levelcli ...` rīka mapē.
 
-## Nosaukumi no tavas instalācijas {#names-from-your-install}
+## Nosaukumi no jūsu instalācijas {#names-from-your-install}
 
 Transportlīdzekļi, ieroči un munīcija saņem angļu nosaukumus no spēles pašas
-teksta failiem, ko konvertēšanas laikā nolasa no tavas instalācijas. Instalāciju
+teksta failiem, ko konvertēšanas laikā nolasa no jūsu instalācijas. Instalāciju
 atrod caur Steam vai launcher noklusētajām mapēm; `--game <mape>` vai vides
 mainīgais `HEAT3D_WT_GAME` norāda, kur tā atrodas citādi. Šajā repozitorijā nav
 nekāda spēles teksta; bez instalācijas nosaukumi ir transportlīdzekļu ID

@@ -10,7 +10,7 @@ search_exclude: true
 # Com llegeix una repetició {#how-it-reads-a-replay}
 
 Aquesta pàgina és per a qui vol saber què llegeix el convertidor, com es va comprovar, i
-per tant com de fiable és cada columna. No cal per convertir repeticions.
+per tant com de fiable és cada columna. No cal per a convertir repeticions.
 
 La lectura es va comprovar amb repeticions de client de batalles arcade aèries, de
 simulador aeri i navals, amb repeticions de servidor de batalles terrestres, i, per als
@@ -31,7 +31,7 @@ aquí només es donen el mètode i l'acord.
 | Salts de l'estimació per navegació | un salt fora d'un recorregut estimat es mesura des de l'últim estat rebut, de manera que les correccions del client ja no tallen les trajectòries ([Estimació per navegació](aircraft.md#dead-reckoning-and-the-smoother)) |
 | Teletransports | una trajectòria es talla on la seva unitat es mou més lluny del que pot: primer contra el seu tipus (avió 750 m/s, terrestre i vaixells 40 m/s, armes 1800 m/s), després contra el seu propi ritme. Cada tall es llista a `trackBreaks` amb la seva causa probable (reaparició, el joc movent el jugador, una correcció d'una unitat llunyana). Després dels talls, cap pas entre files d'una trajectòria no és més ràpid del que permet el seu tipus (`selfCheck.stepSpeed`) |
 | Posicions terrestres i de vaixells (0xF073 / 0xF074) | cap paquet sense llegir. Heading, pitch i roll de l'actitud de 16 bits: el heading coincideix amb la direcció del moviment a uns 2 graus (mediana); el pitch compta 180/65536 graus per pas; amb el signe del roll girat, la direcció del canó des del casc i la torreta apunta a la unitat impactada en gairebé cada tret de tanc. Els vaixells estan al nivell de l'aigua |
-| Torretes | el guinyol de torreta dels tancs i l'elevació del canó: vegeu [Torretes](ground.md#turrets) |
+| Torretes | el guinyol de torreta dels tancs i l'elevació del canó: mira [Torretes](ground.md#turrets) |
 | Alçades del terreny empaquetades | les posicions empaquetades en 64 bits compten la seva alçada des de -100 m a la majoria de nivells, i des del nivell de l'aigua en alguns; el desplaçament es mesura a cada repetició a partir d'unitats vistes en les dues formes (`selfCheck.packedGroundHeight`) |
 | Flux d'entitats (creació, destrucció) | cada creació llegida. La disposició ve del codi font publicat del Dagor Engine; els tipus de component propis de War Thunder se salten trobant on comença el component següent. La ranura de vehicle i de jugador de cada unitat són les mateixes que nomenen els registres de mort i d'impacte, per a cada registre comprovat |
 | Qui manejava quina unitat, unitats IA, vaixells, objectius terrestres | del flux d'entitats: cada unitat té el seu vehicle i equip, i la unitat de cada jugador té el seu jugador |
@@ -73,7 +73,7 @@ Per als especialistes, els missatges que es llegeixen:
 | 0xF04B OnUnitDead | files `dead`: cada víctima d'un registre de mort en té una dins 2 s |
 | 0xD047 FmwRpm | les rpm dels motors (`rpm`); coincideix amb l'indicador de rpm de la cabina |
 | 0xF0B1, 0xF0A0 | files `gun_shot`: trets individuals d'antiaeri pesant i d'artilleria |
-| 0xF01B, 0xF01C | files `fire_start`, `fire_stop`: ràfegues de canons antiaeris de 40 mm (un canó que dispara; un foc en un vehicle és `fire_on`, vegeu [Focs als vehicles](hits.md#vehicle-fires)) |
+| 0xF01B, 0xF01C | files `fire_start`, `fire_stop`: ràfegues de canons antiaeris de 40 mm (un canó que dispara; un foc en un vehicle és `fire_on`, mira [Focs als vehicles](hits.md#vehicle-fires)) |
 | 0xF050, 0xF033, 0xF054, 0xF0BD, 0xD046 | files `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` |
 | 0xD0FE ProjectileHitReplay | els impactes propis del jugador que grava i els que rep, amb arma i munició, nomenats des de la instal·lació (`projectileHitReplays`) |
 | 0xF13E, 0xF031 | l'efecte visual d'un impacte i un efecte reproduït sobre la unitat; vénen amb un impacte a la mateixa unitat |
@@ -91,7 +91,7 @@ Els noms són els de la comunitat (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`)
   l'annex de missatges.
 - **Accions del guió de la missió** (0xF028) i **indicacions** (0xF0EC): `triggers`, `hints`.
   **Progrés de la missió** (0xF07A, 0xF07C): `missionProgress`.
-- **La càmera de repetició** (0xD043): vegeu [La càmera](ground.md#the-camera).
+- **La càmera de repetició** (0xD043): mira [La càmera](ground.md#the-camera).
 
 ## No llegit, i per què {#not-read-and-why}
 

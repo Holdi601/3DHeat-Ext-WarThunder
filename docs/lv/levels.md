@@ -3,7 +3,7 @@ title: Līmeņi
 nav_order: 9
 lang: lv
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -13,13 +13,13 @@ search_exclude: true
 
 ## Soli pa solim {#step-by-step}
 
-1. Uzskaiti savas instalācijas līmeņus: `heat3d-wt-level list`. Tas izdrukā vienu rindu katram līmenim: tā nosaukumu, reljefu un kartes, tad skaitu. Piemērs (izdomāts līmenis):
+1. Uzskaitiet savas instalācijas līmeņus: `heat3d-wt-level list`. Tas izdrukā vienu rindu katram līmenim: tā nosaukumu, reljefu un kartes, tad skaitu. Piemērs (izdomāts līmenis):
 
    ```text
    99_testmap    heightmap 2048x2048 @ 2 m, land mesh    maps: 99_testmap_map, 99_testmap_tankmap
    1 levels in C:\Games\War Thunder
    ```
-2. Izvelc vienu, vairākus (aizstājējzīmes atļautas) vai visus:
+2. Izvelciet vienu, vairākus (aizstājējzīmes atļautas) vai visus:
 
    ```bash
    heat3d-wt-level extract <level> -o levels
@@ -27,9 +27,9 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Ielādē `levels/<level>/<level>.glb` skatītāja Līmeņa panelī, zem tās kartes kaujām.
+3. Ielādējiet `levels/<level>/<level>.glb` skatītāja Līmeņa panelī, zem tās kartes kaujām.
 
-Līmeņi, ko tu raksti, paliek tavā datorā: nekad tos nepublicē (skat. [Noteikumi un licence](terms.md)).
+Līmeņi, ko jūs rakstāt, paliek jūsu datorā: nekad tos nepublicējiet (skat. [Noteikumi un licence](terms.md)).
 
 ## Iespējas {#options}
 

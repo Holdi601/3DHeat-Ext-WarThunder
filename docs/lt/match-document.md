@@ -54,7 +54,7 @@ skaito jį.
 | `entityMessages` | esybių pranešimai (0x20) pagal klasės numerį: kiekis, taikinių šablonai, dydžiai |
 | `chat` | kiekviena pokalbio eilutė |
 | `triggers`, `hints`, `missionProgress` | misijos scenarijaus veiksmai (RunTriggerAction), jos patarimai, jos eigos pranešimai |
-| `camera` | įrašančiojo žaidėjo replėjaus kameros laukai kas 0,25 s, kaip jie buvo siųsti (lentelėje ji yra trajektorija) |
+| `camera` | įrašančiojo žaidėjo įrašo kameros laukai kas 0,25 s, kaip jie buvo siųsti (lentelėje ji yra trajektorija) |
 | `projectileHitReplays` | įrašančiojo žaidėjo paties pataikymai ir jo pataikymai į jį, su ginklu ir šaudmenimis bei jų angliškais vardais |
 | `results` | visas rezultatų blk, kaip jį įrašė žaidimas |
 | `counts` | eilutės, įvykiai, gyvybės, rūšys, pavyzdžiai, esybės pagal šabloną, ginklai, perskaityti ir neperskaityti paketai, kiekvienas matytas pranešimo id ir tie, kurių neskaitoma, praleisti pavyzdžiai |

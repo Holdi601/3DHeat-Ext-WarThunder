@@ -70,7 +70,7 @@ Cada batalla esdevé un fitxer,
 `out/<mapa>/<mapa>_<AB|RB|SB>_<mode>_<inici, UTC>_<id de sessió>.3dheat`. AB, RB
 i SB són les formes curtes que fa servir el joc per a les batalles arcade, realistes
 i de simulador; `<mode>` és el mode de la missió tal com el marca el joc (`Conq4`
-Conquesta #4, `Dom` Dominació, `Bttl` Batalla; vegeu
+Conquesta #4, `Dom` Dominació, `Bttl` Batalla; mira
 [Mode de batalla](ground.md#battle-mode)); qualsevol de les dues parts es deixa fora
 quan la repetició no en diu cap. Les parts d'una repetició de servidor (`0000.wrpl`,
 `0001.wrpl`, ...) es llegeixen juntes com una sola batalla; una repetició de client i

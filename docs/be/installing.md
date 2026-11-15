@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Усталёўка {#installing}
 
-Вы новічок у каманднай радку? Спачатку прачытайце [Перад пачаткам](before-you-start.md).
+Вы новічок у камандным радку? Спачатку прачытайце [Перад пачаткам](before-you-start.md).
 Патрэбны Python 3.10 або навейшы; pyarrow, numpy, zstandard і Pillow
 усталёўваюцца разам з ім.
 
@@ -18,7 +18,7 @@ search_exclude: true
 1. Атрымайце код: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`
    або спампуйце zip з [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
    і распакуйце яго.
-2. Адкрыйце тэрмінал у гэтай тэчцы і ўвядзіце `pip install -e .`. Гэта
+2. Адкрыйце тэрмінал у гэтай папцы і ўвядзіце `pip install -e .`. Гэта
    ўсталёўвае дзве каманды: `heat3d-wt-replay` (запісы) і `heat3d-wt-level`
    (узроўні).
 3. Праверце: `heat3d-wt-replay --version`. Вы павінны ўбачыць
@@ -27,13 +27,13 @@ search_exclude: true
 ![heat3d-wt-replay --help](../assets/img/help.svg)
 
 Без усталёўкі: `python -m heat3d_ext_warthunder ...` і
-`python -m heat3d_ext_warthunder.levelcli ...` у тэчцы інструмента.
+`python -m heat3d_ext_warthunder.levelcli ...` у папцы інструмента.
 
 ## Назвы з вашай усталёўкі {#names-from-your-install}
 
 Машыны, зброя і боепрыпасы атрымліваюць англійскія назвы з уласных тэкставых
 файлаў гульні, якія чытаюцца з вашай усталёўкі пры канвертаванні.
-Усталёўка знаходзіцца праз Steam або стандартныя тэчкі лаунчара; калі не, то
+Усталёўка знаходзіцца праз Steam або стандартныя папкі лаунчара; калі не, то
 `--game <folder>` або зменная асяроддзя `HEAT3D_WT_GAME` кажуць, дзе яна.
 Нічога з тэксту гульні ў гэтым рэпазіторыі няма; без усталёўкі назвамі
 з'яўляюцца id машын (канвертар кажа пра гэта ў радку `note:`).

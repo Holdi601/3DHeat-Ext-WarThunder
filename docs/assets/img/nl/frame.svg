@@ -10,6 +10,6 @@
 <text x="256" y="128" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">z: noord</text>
 <text x="430" y="100" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">Meters, in de eigen wereld van het spel</text>
 <text x="430" y="124" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">x oost, y omhoog, z noord (linkshandig).</text>
-<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">De voettekst van de tabel vertelt de viewer z te spiegelen.</text>
+<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">De tabelvoet laat de viewer z spiegelen.</text>
 <text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Levels worden ook gespiegeld, zodat beide passen.</text>
 </svg>

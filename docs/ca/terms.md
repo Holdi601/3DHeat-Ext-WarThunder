@@ -60,7 +60,7 @@ d'entitats, armes en vol) segons la disposició que documenten els lectors; cap 
 
 ## Llicència {#licence}
 
-MIT - vegeu [`LICENSE`](https://github.com/Holdi601/3DHeat-Ext-WarThunder/blob/main/LICENSE). Usa pyarrow
+MIT - mira [`LICENSE`](https://github.com/Holdi601/3DHeat-Ext-WarThunder/blob/main/LICENSE). Usa pyarrow
 (Apache-2.0), numpy (BSD-3-Clause), zstandard (BSD-3-Clause) i Pillow (MIT-CMU). Els lectors de nivells
 s'han escrit a partir del codi font del Dagor Engine, Copyright (c) 2023 Gaijin Entertainment, llicència BSD
 3-Clause; no s'hi copia cap codi seu, i les constants de format usades (la clau XOR de vromfs, els

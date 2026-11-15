@@ -67,7 +67,7 @@ Go réamhshocraithe (cuireann `--no-smoothing` as é) cuirtear rianta gach aonai
 
 ## Dearcadh, seiceáilte {#attitude-checked}
 
-Ar aerárthach an imreora taifeadta féin luíonn an heading laistigh de chéim (airmheán) de threo an taistil, an pitch laistigh de chúpla céim d'uillinn an dreapadh, agus i gcasadh soiléir tá comhartha an chasta ag an roll do bheagnach gach sampla: tá roll an mhúnla eitilte sciathán clé síos dearfach, agus casann an tábla é go sciathán deas síos dearfach (`selfCheck.aircraftAttitude`). Céimníonn na huillinneacha 10-bit 0.18 céim. Seiceáiltear dearcadh aonad talún i gcoinne a lámhaigh ([Tuirlingtí](ground.md#turrets)).
+Ar aerárthach an imreora taifeadta féin luíonn an treo (`heading`) laistigh de chéim (airmheán) de threo an taistil, an pitch laistigh de chúpla céim d'uillinn an dreapadh, agus i gcasadh soiléir tá comhartha an chasta ag an roll do bheagnach gach sampla: tá roll an mhúnla eitilte sciathán clé síos dearfach, agus casann an tábla é go sciathán deas síos dearfach (`selfCheck.aircraftAttitude`). Céimníonn na huillinneacha 10-bit 0.18 céim. Seiceáiltear dearcadh aonad talún i gcoinne a lámhaigh ([Tuirlingtí](ground.md#turrets)).
 
 ---
 

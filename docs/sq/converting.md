@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Konvertimi i riluajtjeve {#converting-replays}
 
-Rezultati: një skedar `.3dheat` për çdo betejë (e paracaktuara), ose skedarë të
+Rezultati: një skedar `.3dheat` për çdo betejë (parazgjedhja), ose skedarë të
 shkëputur me `--loose`.
 
 ## Hap pas hapi {#step-by-step}
@@ -49,7 +49,7 @@ riluajtje e vërtetë, nuk ka instalim):
 
 ## Opsionet {#options}
 
-| Opsioni | I paracaktuar | Çfarë bën |
+| Opsioni | Parazgjedhja | Çfarë bën |
 |---|---|---|
 | `replays` (një ose më shumë) | - | skedarë `.wrpl`, dosje me ta (vetë dosja, jo nëndosjet e saj), ose zip me ta (një riluajtje e serverit: pjesët e saj `.wrpl` shpaketohen në një dosje të përkohshme) |
 | `-o`, `--out` | i detyrueshëm | ku të shkruhet: brenda tij një dosje për çdo hartë |

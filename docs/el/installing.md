@@ -18,10 +18,10 @@ search_exclude: true
 
 1. Πάρτε τον κώδικα: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
    ή κατεβάστε ένα zip από τις [Κυκλοφορίες](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
-   και αποσυμπίεσέ το.
+   και αποσυμπιέστε το.
 2. Ανοίξτε ένα τερματικό σε αυτόν τον φάκελο και γράψτε `pip install -e .`. Εγκαθιστά
    δύο εντολές: `heat3d-wt-replay` (replays) και `heat3d-wt-level` (επίπεδα).
-3. Έλεγξέ το: `heat3d-wt-replay --version`. Πρέπει να δείτε
+3. Ελέγξτε το: `heat3d-wt-replay --version`. Πρέπει να δείτε
    `heat3d-wt-replay 0.2.0`. Το `heat3d-wt-replay --help` δείχνει τις επιλογές:
 
 ![heat3d-wt-replay --help](../assets/img/help.svg)

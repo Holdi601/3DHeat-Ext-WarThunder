@@ -67,7 +67,7 @@ un visualitzador en 3D, en temps real, de telemetria i repeticions
 ([documentació](https://holdi601.github.io/3DHeat/)). El visualitzador obre el fitxer
 `.3dheat`: la taula a la seva pestanya Mapa de calor, el document de partida a la
 seva pestanya Partida ([Un fitxer per partida](https://holdi601.github.io/3DHeat/container.html)).
-Què ha de conservar tot convertidor: [Els convertidors ho guarden tot](https://holdi601.github.io/3DHeat/converters.html).
+La regla que ha de complir tot convertidor: [Els convertidors ho guarden tot](https://holdi601.github.io/3DHeat/converters.html).
 
 **Per què és una eina a part.** El format `.wrpl` no està documentat, i l'EULA de
 Gaijin (3.2.2, 3.2.9) prohibeix la enginyeria inversa del joc i la mineria de

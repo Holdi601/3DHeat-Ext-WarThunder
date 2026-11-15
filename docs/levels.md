@@ -26,7 +26,7 @@ nav_order: 9
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Load `levels/<level>/<level>.glb` in the viewer's Background / Background / level panel, under the
+3. Load `levels/<level>/<level>.glb` in the viewer's Background / level panel, under the
    battles of that map.
 
 The levels you write stay on your machine: never publish them (see

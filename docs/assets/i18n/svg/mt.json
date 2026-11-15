@@ -11,7 +11,7 @@
  "<match>.objectives.parquet": "<match>.objectives.parquet",
  "<match>.parquet": "<match>.parquet",
  "<match>.parquet, <match>.match.json, ...": "<match>.parquet, <match>.match.json, ...",
- "Background / level: levels from heat3d-wt-level": "Panew Livell: livelli minn heat3d-wt-level",
+ "Background / level: levels from heat3d-wt-level": "Sfond / livell: livelli minn heat3d-wt-level",
  "From a replay to the 3DHeat viewer": "Minn ripetizzjoni għad-3DHeat viewer",
  "Heatmap tab: the table": "Tab Heatmap: it-tabella",
  "Levels are mirrored too, so both fit.": "Il-livelli huma mirjin ukoll, biex it-tnejn jaqblu.",

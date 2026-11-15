@@ -16,8 +16,8 @@ Gaijin'in Hizmet Koşulları (2026-08-17 güncellemesi), EULA (Ek 2):
 disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
 the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
 permitted to store, download, modify, or otherwise use any part of the Game(s)"
-istemcinin ötesinde. Kendi kopyanızın harita dosyalarını yerel bir 3B görünüme okumak
-kullanıcının bunu bilerek verdiği bir karardır. Yazılan haritalar makinenizde kalır:
+istemcinin ötesinde. Kendi kopyanızın seviye dosyalarını yerel bir 3B görünüme okumak
+kullanıcının bunu bilerek verdiği bir karardır. Yazılan seviyeler makinenizde kalır:
 **bunları asla yayımlamayın** ve burada hiçbir oyun verisi dağıtılmaz.
 
 ## Kaynaklar {#sources}
@@ -62,7 +62,7 @@ uçuştaki silahlar), okuyucuların belgelediği düzende; depoda hiçbir tekrar
 
 MIT - bkz. [`LICENSE`](https://github.com/Holdi601/3DHeat-Ext-WarThunder/blob/main/LICENSE). Kullanılan
 kitaplıklar: pyarrow (Apache-2.0), numpy (BSD-3-Clause), zstandard (BSD-3-Clause) ve Pillow
-(MIT-CMU). Harita okuyucuları Dagor Engine kaynağından yazılmıştır, Telif (c) 2023 Gaijin
+(MIT-CMU). Seviye okuyucuları Dagor Engine kaynağından yazılmıştır, Telif (c) 2023 Gaijin
 Entertainment, BSD 3-Clause lisansı; ondan hiçbir kod kopyalanmamıştır ve kullanılan biçim
 sabitleri (vromfs XOR anahtarı, yükseklik aralığı ızgara ofsetleri) göründükleri yerde gösterilir.
 

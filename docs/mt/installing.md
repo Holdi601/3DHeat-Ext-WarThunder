@@ -9,11 +9,11 @@ search_exclude: true
 ---
 # Installazzjoni {#installing}
 
-Ġdid fil-linja tal-kmandi? Aqra [Qabel ma tibda](before-you-start.md) l-ewwel.
+Ġdid mal-linja tal-kmandi? Aqra [Qabel ma tibda](before-you-start.md) l-ewwel.
 Teħtieġ Python 3.10 jew aktar ġdid; pyarrow, numpy, zstandard u Pillow jiġu
 installati miegħu.
 
-## Pass pass {#step-by-step}
+## Pass b'pass {#step-by-step}
 
 1. Ġib il-kodiċi: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
    jew niżżel zip minn [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)

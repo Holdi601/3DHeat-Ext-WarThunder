@@ -34,7 +34,7 @@ a `--loose` kapcsolóval.
    Az `out` a terminálod mappájában jön létre.
 4. **Olvasd el, mit ír ki.** Csatánként egy sort kell látnod.
 5. **Nyisd meg:** töltsd be az `out/<map>/<match>.3dheat` fájlt a 3DHeat
-   nézegetőben ([Betöltés](https://holdi601.github.io/3DHeat/container.html#loading-one)).
+   megjelenítőben ([Betöltés](https://holdi601.github.io/3DHeat/container.html#loading-one)).
 
 ![Futtatás szintetikus visszajátszáson: egy .3dheat, --loose, egy sérült fájl, egy üres mappa](../assets/img/convert.svg)
 

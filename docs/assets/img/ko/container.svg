@@ -22,5 +22,5 @@
 <text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">매니페스트</text>
 <text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">게임, 맵, 매치, 변환기,</text>
 <text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">전투의 경제</text>
-<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">뷰어는 이것을 낱개 파일처럼 열어요. --loose를 쓰면 이 파일들이 하나씩 나와요.</text>
+<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">뷰어는 이것을 낱개 파일과 같이 엽니다. --loose를 쓰면 이 파일들이 낱개로 나옵니다.</text>
 </svg>

@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # 附屬檔案與完整性 {#sidecars-and-completeness}
 
-回放中沒有任何東西會被丟棄。轉換器讀取的內容會放入表格與對應文件；其餘一切都會完整保留在表格旁的三個附屬檔案中（位於 `.3dheat` 檔案內，或使用 `--loose` 時為獨立檔案）。這是所有 3DHeat 轉換器共同遵守的規則：[轉換器保留一切](https://holdi601.github.io/3DHeat/converters.html)。
+回放中沒有任何東西會被丟棄。轉換器讀取的內容會放入表格與對戰文件；其餘一切都會完整保留在表格旁的三個附屬檔案中（位於 `.3dheat` 檔案內，或使用 `--loose` 時為獨立檔案）。這是所有 3DHeat 轉換器共同遵守的規則：[轉換器保留一切](https://holdi601.github.io/3DHeat/converters.html)。
 
 ## 附屬檔案 {#the-sidecars}
 
@@ -19,7 +19,7 @@ search_exclude: true
 
 ## 計數所保證的內容 {#what-the-counts-guarantee}
 
-對應文件中的 `counts` 說明回放包含了什麼，以及它們的去向：
+對戰文件中的 `counts` 說明回放包含了什麼，以及它們的去向：
 
 | 鍵 | 內容 |
 |---|---|
@@ -29,7 +29,7 @@ search_exclude: true
 | `entities`、`entityTemplates`、`entityMessages` | 實體串流所建立與送出的內容 |
 | `droppedSamples` | 刻意略去的取樣（實體消失後的地面單位殘骸），依原因列出 |
 
-除此之外沒有其他內容被略去：回放中的每一項，要麼讀入表格或對應文件，要麼完整保存在附屬檔案中。對應文件中的 `selfCheck` 保存了已讀取內容的檢查結果（[讀取回放的方式](how-it-reads.md)）。
+除此之外沒有其他內容被略去：回放中的每一項，要麼讀入表格或對戰文件，要麼完整保存在附屬檔案中。對戰文件中的 `selfCheck` 保存了已讀取內容的檢查結果（[讀取回放的方式](how-it-reads.md)）。
 
 ---
 

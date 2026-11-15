@@ -10,6 +10,6 @@
 <text x="256" y="128" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">z: nord</text>
 <text x="430" y="100" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">Metri, nel mondo del gioco</text>
 <text x="430" y="124" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">x est, y su, z nord (sinistrorso).</text>
-<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Il piè di pagina della tabella dice al visualizzatore di specchiare z.</text>
+<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Il piè di tabella fa specchiare z al visualizzatore.</text>
 <text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">Anche i livelli sono specchiati, così combaciano.</text>
 </svg>

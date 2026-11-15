@@ -40,7 +40,7 @@ vaihdettuna tehtävän `t1_` / `t2_` suhteen).
 
 Kenttä voi sijoittaa omia yksiköitään: palvelinreplayn `unit_loader+rail_wagon`-kokonaisuudet ovat kentän kohtaustiedoston
 raitiovaunuja (`gamedata/scenes/<level>_objects.blk` tiedostossa `aces.vromfs.bin`: `setting__unit_class`, sen muunnos ja
-`setting__isDead`). Niiden kokonaisuuksissa ei ole luettavaa tunnusta, joten maarata ilman yksikköä, jonka ensimmäinen
+`setting__isDead`). Niiden kokonaisuuksissa ei ole luettavaa tunnusta, joten yksikkö ilman tunnusta, jonka ensimmäinen
 näyte on 2 m:n sisällä kohtausyksiköstä, on tuo yksikkö: sen luokka `Vehicle`-kenttänä, tyyppi `train`, tyyppi `tram`,
 `locomotive` tai `wagon`, ei joukkuetta; yksikkö, jonka kohtaus sijoittaa kuolleena (kuten palaneet raitiovaunut), on hylky
 (`alive` 0) ensimmäisestä rivistä alkaen. Peli ei anna niille englanninkielistä nimeä; `VehicleName` on tunnus luettuna sanoina

@@ -19,7 +19,7 @@ með `--loose`.
    dæmis `C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays`.
    Þjónsupptöku sem vistuð er af upptökusíðu leiksins (zip með `0000.wrpl`,
    `0001.wrpl`, ...) er líka hægt að breyta.
-2. **Opnaðu skipanaglugga** í möppu þar sem niðurstöðurnar mega fara
+2. **Opnaðu skipanalínu** í möppu þar sem niðurstöðurnar mega fara
    ([Áður en þú byrjar](before-you-start.md)).
 3. **Breyttu:**
 
@@ -30,7 +30,7 @@ með `--loose`.
    heat3d-wt-replay a.wrpl -o out --loose          # separate files instead of one .3dheat
    ```
 
-   `out` er búin til í möppunni sem skipanagluggi þinn er í.
+   `out` er búin til í möppunni sem skipanalínan þín er í.
 4. **Lestu það sem hún segir.** Þú ættir að sjá eina línu fyrir hvern bardaga.
 5. **Opnaðu það:** hladdu `out/<map>/<match>.3dheat` í 3DHeat-skoðaranum
    ([Að hlaða einni](https://holdi601.github.io/3DHeat/container.html#loading-one)).

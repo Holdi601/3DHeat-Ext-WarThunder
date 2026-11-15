@@ -33,7 +33,7 @@ Kif ġie kkontrollat:
   mal-yaw tat-turret jinsab fi ħdan nofs grad (medjan) mill-aim.
 
 **Ripetizzjonijiet tas-server** (0xF074) jibagħtu l-istat ta' kull tank bl-istess layout, segwit
-minn data tagħhom stess, għalhekk kull turret li ż-żewġ angoli tagħha jinsabu ġewwa l-istat tinqara
+minn dejta tagħhom stess, għalhekk kull turret li ż-żewġ angoli tagħha jinsabu ġewwa l-istat tinqara
 (għall-inqas dik ewlenija għal kważi kull ringiela ta' tank). Hija t-turret, mhux il-kamera:
 
 - **Kontra s-sparaturi**, kif hawn fuq: għal kull battalja 'l fuq minn 90 % fi ħdan 3 gradi

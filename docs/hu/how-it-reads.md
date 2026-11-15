@@ -42,7 +42,7 @@ visszajátszás második, független módon mond el; itt csak a módszer és az 
 | Repülő fegyverek (0xF0DB) | rakéták, rakéták és bombák, mindegyik a saját entitásához kötve |
 | Repülési rekord nélküli bombák | a repülési rekord nélküli bomba esését a kilövéstől a becsapódásig kiszámítjuk (gravitáció és légellenállás, 0,1 s-onként egy minta, `extrapolated` igaz). Tengeren ellenőrizve, ahol a becsapódási magasság ismert: a kiszámolt esések körülbelül 15 m-en belül érnek a vízbe. A meccsdokumentumban az ilyen fegyvernek `ballisticImpact` van; a `counts.bombsBallistic` megszámolja őket |
 | Játékos-helyek, csevegés | minden fájl |
-| Robbanások, légvédelmi robbanások, díjak, felderítések, időjárás, küldetésobjektumok | olvasva; a helyzeteket szemmel ellenőriztük a nézegetőben |
+| Robbanások, légvédelmi robbanások, díjak, felderítések, időjárás, küldetésobjektumok | olvasva; a helyzeteket szemmel ellenőriztük a megjelenítőben |
 | A felvevő játékos műszerei (0xD04A) | a tevékenységük szerint nevezve el: [Fedélzeti műszerek](aircraft.md#cockpit-instruments); a többi a `notNamed` alatt |
 | A repülési bejegyzések többi mezője | sebesség, lőszer, vezérlők, motorok: [Repülési bejegyzések](aircraft.md#flight-entries) |
 | Eseménysorok állása | minden eseménysor tartalmazza az egysége irányát, billenését, dőlését és nézési vektorát abban a pillanatban |

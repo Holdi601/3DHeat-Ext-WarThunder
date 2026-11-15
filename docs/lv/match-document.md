@@ -28,20 +28,20 @@ search_exclude: true
 | `author`, `authorUserId` | ieraksta spēlētājs un viņa Gaijin ID (klienta atkārtojumi) |
 | `teams` | kaujas komandas (`1`, `2`) |
 | `result` | `winner`, `status` (`success` vai `fail`, autora iznākums), `authorTeam`, `teams` ([Ekonomika](economy.md)) |
-| `vehicleNames` | no kurienes nākuši transportlīdzekļu nosaukumi (tava instalācija) un to valoda |
+| `vehicleNames` | no kurienes nākuši transportlīdzekļu nosaukumi (jūsu instalācija) un to valoda |
 | `conventions` | tabulas vienības un zīmes: asis, laiks, dzīve, celiņš, `alive`, sānu sašķiebums un vēl |
 
 ## Viss pārējais {#everything-else}
 
 | Atslēga | Ko tā nozīmē |
 |---|---|
-| `battle`, `difficulty`, `gameMode` | kaujas režīms: `difficulty` `AB` / `RB` / `SB` (un tā nosaukums un galvenes baits), `gameMode` `ground` / `air` / `naval`, misijas režīms (`Dom`, `Conq`, `Bttl`, `I2M`, ...) un tā angļu nosaukums no tavas instalācijas (`Domination`, `Enduring Confrontation`), atļautie vienību tipi (skat. [Kaujas režīms](ground.md#battle-mode)) |
+| `battle`, `difficulty`, `gameMode` | kaujas režīms: `difficulty` `AB` / `RB` / `SB` (un tā nosaukums un galvenes baits), `gameMode` `ground` / `air` / `naval`, misijas režīms (`Dom`, `Conq`, `Bttl`, `I2M`, ...) un tā angļu nosaukums no jūsu instalācijas (`Domination`, `Enduring Confrontation`), atļautie vienību tipi (skat. [Kaujas režīms](ground.md#battle-mode)) |
 | `settings` | misijas blk aiz galvenes: režīms, vide, laika apstākļi, punktu un laika robežas, valstis, atļautie vienību tipi, vējš un `stars` (platums, garums, datums, vietējais laiks) |
 | `sky` | pirmais `CustomWeatherParams`: saules un mēness virziens, vējš, debesu krāsas, mākoņu nobīdes |
 | `players`, `slots` | rezultātu rinda katram spēlētājam (nogalinājumi, sauszemes nogalinājumi, nāves, palīdzības, punkti, iekarotās zonas, komanda, klans, valsts, sastāvs, uid, ar kuriem tie vadīja); atkārtojuma spēlētāju slots (vārds, lietotāja ID, komanda) |
 | `units` | katra vienības entītija, ko atkārtojums izveidoja: eid, uid, šablons, transportlīdzeklis, veids, tips, komanda, spēlētājs, misijas nosaukums, kad izveidota un noņemta, kur izveidota, kuras komponentes nevarēja nolasīt |
 | `objects` | misijas nosauktie objekti: kapitāla zonas un aerodromi ar pozīciju un izmēru, aerodromu kontūras kā punkti, dzimšanas zonas |
-| `objectives` | kaujas mērķi, katrs ar `type` (`capture_zone`, `airfield`, `helipad`, `base`, `spawn`, `convoy_spawn`, `battle_area`, `bombing_target`, `exit_zone`, `kill_area`, `rearm_zone`), `team` (atkārtojuma 1 vai 2, tukšs abiem), `name` (kapitāla zonai tās burts, `A`), `shape` (`sphere`, `cylinder`, `box`, `point`, `points`, `outline`) ar `position`, `radius` / `height` / `size` un `heading`, `source` (`replay` vai `mission`) un ko vēl zina (skat. [Mērķi](objectives.md)) |
+| `objectives` | kaujas mērķi, katrs ar `type` (`capture_zone`, `airfield`, `helipad`, `base`, `spawn`, `convoy_spawn`, `battle_area`, `bombing_target`, `exit_zone`, `kill_area`, `rearm_zone`), `team` (atkārtojuma 1 vai 2, tukšs abiem), `name` (kapitāla zonas burts, `A`), `shape` (`sphere`, `cylinder`, `box`, `point`, `points`, `outline`) ar `position`, `radius` / `height` / `size` un `heading`, `source` (`replay` vai `mission`) un ko vēl zina (skat. [Mērķi](objectives.md)) |
 | `kills`, `hits`, `modulesDestroyed` | ar abu pušu nosaukumiem un transportlīdzekļiem; nogalinājumi ar ieroča angļu nosaukumu |
 | `weapons` | katra raķete, rakete, bumba, torpēda, nomešanas tvertne un atmests krava: kad, kur izlaista (pozīcija, orientācija, ātrums), ar kuru vienību (tuvākā 300 m un 1,5 s laikā), cik lidojuma paraugu, kur pēdējo reizi redzēta, kad noņemta |
 | `explosions`, `flak` | `PlayExplosionVisual` (pozīcija, virziens, veids) un `PlayFlakExplosionVisual` (pozīcija) |

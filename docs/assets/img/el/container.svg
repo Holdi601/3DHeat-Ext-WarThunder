@@ -22,5 +22,5 @@
 <text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">manifest</text>
 <text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">παιχνίδι, χάρτης, αγώνας, μετατροπέας,</text>
 <text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">η οικονομία της μάχης</text>
-<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Ο προβολέας το ανοίγει όπως τα χωριστά αρχεία. Με --loose παίρνεις αυτά τα αρχεία ένα ένα.</text>
+<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Ο προβολέας το ανοίγει όπως τα χωριστά αρχεία. Με --loose παίρνετε αυτά τα αρχεία ένα ένα.</text>
 </svg>

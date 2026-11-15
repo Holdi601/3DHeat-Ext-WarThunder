@@ -10,6 +10,6 @@
 <text x="256" y="128" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">z: 北</text>
 <text x="430" y="100" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="600" text-anchor="start" fill="#1d2330">メートル、ゲーム自身の世界での</text>
 <text x="430" y="124" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">x は東、y は上、z は北（左手系）。</text>
-<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">テーブルのフッターは、ビューアに z を反転するよう伝えます。</text>
+<text x="430" y="148" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">表のフッターがビューアに z の反転を指示します。</text>
 <text x="430" y="172" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="start" fill="#394150">レベルも反転されるので、両方が合います。</text>
 </svg>

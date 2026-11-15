@@ -63,7 +63,7 @@ släckta: flygplan- och fartygsträffar har inget utfall.
   signatur kan ha; annars huvudkanonens i fordonet. Utan installationen (`--game`) finns ingen typ,
   inget namn och ingen kaliber utöver `explosive` / `kinetic`.
 
-Inte funnet: rikoschetter. Flera andra meddelanden bär träffens skytt och nummer (0xF0C2, troligen
+Inte hittat: rikoschetter. Flera andra meddelanden bär träffens skytt och nummer (0xF0C2, troligen
 träffkamerans väg genom fordonet; 0xF117, 0xF13C, 0xF13E); de behålls i sidofilen, inte avkodade.
 Ett icke-genomslag förblir `nonpenetration`.
 

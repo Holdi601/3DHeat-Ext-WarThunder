@@ -17,7 +17,7 @@
  "Levels are mirrored too, so both fit.": "Nivelurile sunt oglindite și ele, deci se potrivesc.",
  "Match tab: the match document": "Fila Meci: documentul meciului",
  "Metres, in the game's own world": "Metri, în lumea jocului",
- "The table's footer tells the viewer to mirror z.": "Subsolul tabelului îi spune vizualizatorului să oglindească z.",
+ "The table's footer tells the viewer to mirror z.": "Subsolul tabelului face ca z să fie oglindit.",
  "The viewer opens it like the loose files. With --loose you get these files one by one instead.": "Vizualizatorul îl deschide ca pe fișierele separate. Cu --loose primiți aceste fișiere una câte una.",
  "What one .3dheat file holds": "Ce conține un fișier .3dheat",
  "Where x, y and z point": "Unde indică x, y și z",

@@ -11,7 +11,7 @@ search_exclude: true
 
 Sjálfgefið er hver bardagi **ein skrá**, `out/<map>/<match>.3dheat`: taflan,
 leikjaskjalið og hliðarskrárnar pakkaðar saman, með lýsingu (manifest) sem
-nefnir leikinn, kortið, leikinn, bardagahaminn, upphafstímann og breytinn (og
+nefnir leikinn, kortið, leikinn, bardagahaminn, upphafstímann og umbreytinn (og
 hagkerfi bardagans undir `extensions["heat3d/economy"]`). Sniðið er skoðarans:
 [Ein skrá á leik (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
 

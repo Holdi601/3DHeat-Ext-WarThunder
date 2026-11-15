@@ -34,7 +34,7 @@ måde; kun metoden og overensstemmelsen gives her.
 | Tårne | stridsvognes tårndrejning og kanonhævning: se [Tårne](ground.md#turrets) |
 | Pakkede jordhøjder | positioner pakket i 64 bit tæller deres højde fra -100 m på de fleste baner og fra vandets niveau på nogle; forskydningen måles i hvert replay ud fra enheder set i begge former (`selfCheck.packedGroundHeight`) |
 | Entitetsstrøm (oprettelse, nedlæggelse) | hver oprettelse læst. Layoutet kommer fra Dagor Engines offentliggjorte kildekode; War Thunders egne komponenttyper springes over ved at finde, hvor den næste komponent starter. Hver enheds køretøjs- og spillerplads er lig dem, drab- og træfrekorderne nævner, for hver rekord kontrolleret |
-| Hvem der kørte hvilken enhed, AI-enheder, skibe, landmål | fra entitetsstrømmen: hver enhed har sit køretøj og hold, hver spillers enhed sin spiller |
+| Hvem der kørte hvilken enhed, AI-enheder, skibe, mål på land | fra entitetsstrømmen: hver enhed har sit køretøj og hold, hver spillers enhed sin spiller |
 | Drab mod resultaterne | dødsfaldene pr. spiller er lig resultaternes; resultaterne tæller flere drab, da klienten ikke får sendt hvert drab. Et replay, der starter, efter kampen er begyndt, indeholder kun drabene efter det |
 | Drab, kritiske træf, alvorlig skade | hver fil |
 | Ødelagte moduler (0xF118) | enheden og delens nummer; delens navn kræver køretøjets skademodel, som ikke er i replayet |

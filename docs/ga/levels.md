@@ -3,13 +3,13 @@ title: Leibhéil
 nav_order: 9
 lang: ga
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
 # Leibhéil (heat3d-wt-level) {#levels-heat3d-wt-level}
 
-Tiontaíonn `heat3d-wt-level` leibhéil do shuiteála War Thunder féin ina leibhéil `.glb` don fhaire, sa fhráma céanna le táblaí na n-athsheinmeanna.
+Tiontaíonn `heat3d-wt-level` leibhéil do shuiteála War Thunder féin ina leibhéil `.glb` don amharcán, sa fhráma céanna le táblaí na n-athsheinmeanna.
 
 ## Céim ar chéim {#step-by-step}
 
@@ -27,7 +27,7 @@ Tiontaíonn `heat3d-wt-level` leibhéil do shuiteála War Thunder féin ina leib
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Luchtaigh `levels/<level>/<level>.glb` i bpainéal Leibhéal na faire, faoi na cathanna den léarscáil sin.
+3. Luchtaigh `levels/<level>/<level>.glb` i bpainéal Cúlra / leibhéal an amharcáin, faoi na cathanna den léarscáil sin.
 
 Fanann na leibhéil a scríobhann tú ar do mheaisín: ná foilsigh choíche iad (féach [Téarmaí agus ceadúnas](terms.md)).
 
@@ -66,9 +66,9 @@ Fanann na leibhéil a scríobhann tú ar do mheaisín: ná foilsigh choíche iad
 | `structure:<level> buildings` | gach réad cuirthe nach planda é: tithe, fothracha, ballaí, fálta, droichid, iarnróid, carraigeacha, props. Na cinn seasta (`RIGz`) agus, thar léarscáil na dtancanna, iad siúd a ghineann na haicmí talún (bloic bhailte, clocha). Tarraingítear gach ceann lena mhogall rindreála (ballaí, díonta, oscailtí fuinneoige, bíomaí), ag an LOD a cheadaíonn an buiséad triantán, daite in aghaidh an ábhair ag meán a uigeachta scaipthe |
 | `structure:<level> trees` | crainn agus tomóga, seasta agus ginte (foraoisí, fálta sceach): a mogall rindreála nuair a cheadaíonn an buiséad, ar shlí eile stoc agus coróin (cón do chonaipéir) i ndath duille féin an chrainn, thar fhíormhéid an chrainn |
 
-Titeann réada gan mogall rindreála siar ar a gcruth imbhuailte; crainn gan ceann ar an gcoróin. Coinníonn dathanna rinn (`COLOR_0`) luachanna ionchódaithe sRGB, rud a léann faire 3DHeat.
+Titeann réada gan mogall rindreála siar ar a gcruth imbhuailte; crainn gan ceann ar an gcoróin. Coinníonn dathanna rinn (`COLOR_0`) luachanna ionchódaithe sRGB, rud a léann amharcán 3DHeat.
 
-**Comhordanáidí** is iad méadair an chluiche le z scáthánaithe: glb (x, y, z) = cluiche (x, y, -z). Tá saol an chluiche láimh chlé (x soir, y suas, z ó thuaidh); tá glTF láimh dheas. Coinníonn `heat3d-wt-replay` z an chluiche agus deir leis an bhfaire é a scáthánú, mar sin luíonn athsheinm agus leibhéal a léarscáile ar a chéile gan aon chéim socraithe. Tugann an JSON dronuilleog gach léarscáile taicticiúla i méadair an chluiche agus a coirnéil i spás an ghlb, chun an PNG a luchtú mar íomhá léarscáile.
+**Comhordanáidí** is iad méadair an chluiche le z scáthánaithe: glb (x, y, z) = cluiche (x, y, -z). Tá saol an chluiche láimh chlé (x soir, y suas, z ó thuaidh); tá glTF láimh dheas. Coinníonn `heat3d-wt-replay` z an chluiche agus deir leis an amharcán é a scáthánú, mar sin luíonn athsheinm agus leibhéal a léarscáile ar a chéile gan aon chéim socraithe. Tugann an JSON dronuilleog gach léarscáile taicticiúla i méadair an chluiche agus a coirnéil i spás an ghlb, chun an PNG a luchtú mar íomhá léarscáile.
 
 **Mionsonraí.** Socraíonn `--detail low|medium|high` (réamhshocrú medium), thar léarscáil na dtancanna:
 

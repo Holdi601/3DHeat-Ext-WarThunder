@@ -86,7 +86,7 @@ Vardai - bendruomenės (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.py`).
   `counts.replicatedComponents`; reikšmės - pranešimų papildomame faile.
 - **Misijos scenarijaus veiksmai** (0xF028) ir **patarimai** (0xF0EC): `triggers`, `hints`. **Misijos eiga**
   (0xF07A, 0xF07C): `missionProgress`.
-- **Replėjaus kamera** (0xD043): žr. [Kamera](ground.md#the-camera).
+- **Įrašo kamera** (0xD043): žr. [Kamera](ground.md#the-camera).
 
 ## Neskaitoma ir kodėl {#not-read-and-why}
 

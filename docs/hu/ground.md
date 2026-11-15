@@ -52,7 +52,7 @@ meg, 45 és 20 fok másodpercenként). A fő ágyú minden találatánál a toro
 vonalára kerül, és egy visszafelé haladó menet időben odaér (`selfCheck.turretLimit`). A
 `shot` sor is tartalmazza ezt a `turretYaw` / `gunPitch` értéket. Az elküldött érték a
 `turretYawRaw` / `gunPitchRaw` oszlopokban marad meg. Az a tank, amelynek állapota nem
-tartalmaz tornyot, üres toronyoszlopokat kap (a nézegető visszaeshet a `viewYaw` értékre).
+tartalmaz tornyot, üres toronyoszlopokat kap (a megjelenítő visszaeshet a `viewYaw` értékre).
 A `gunPitch` távolságnál kissé a `viewPitch` fölött van: az ágyú emelkedése a lövedék
 ejtéséhez.
 

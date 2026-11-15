@@ -3,13 +3,13 @@ title: "Pályák"
 nav_order: 9
 lang: hu
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
 # Pályák (heat3d-wt-level) {#levels-heat3d-wt-level}
 
-A `heat3d-wt-level` a saját War Thunder-telepítésed pályáit a nézegető számára `.glb`
+A `heat3d-wt-level` a saját War Thunder-telepítésed pályáit a megjelenítő számára `.glb`
 pályákká alakítja, ugyanabban a koordinátarendszerben, mint a visszajátszások táblázatai.
 
 ## Lépésről lépésre {#step-by-step}
@@ -29,7 +29,7 @@ pályákká alakítja, ugyanabban a koordinátarendszerben, mint a visszajátsz�
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Töltsd be a `levels/<level>/<level>.glb` fájlt a nézegető Pálya paneljébe, annak a
+3. Töltsd be a `levels/<level>/<level>.glb` fájlt a megjelenítő Háttér / pálya paneljébe, annak a
    térképnek a csatái alá.
 
 Az általad írt pályák a gépeden maradnak: soha ne tedd közzé (lásd
@@ -80,11 +80,11 @@ vagy az indító alapértelmezett mappáin keresztül találjuk meg; ha másutt 
 
 Azok az objektumok, amelyeknek nincs renderelő hálójuk, az ütközési alakjukat kapják;
 a fák, ha nincs, a lombkoronájukat. A csúcsszínek (`COLOR_0`) sRGB-kódolt értékeket
-tartalmaznak, így olvassa őket a 3DHeat nézegető.
+tartalmaznak, így olvassa őket a 3DHeat megjelenítő.
 
 **Koordináták:** a játék méterei, a z tükrözve: glb (x, y, z) = játék (x, y, -z). A játék
 világa balkezes (x kelet, y fel, z észak); a glTF jobbkezes. A `heat3d-wt-replay` megtartja
-a játék z-jét, és megmondja a nézegetőnek, hogy tükrözze, így a visszajátszás és a térképének
+a játék z-jét, és megmondja a megjelenítőnek, hogy tükrözze, így a visszajátszás és a térképének
 pályája egymásra esik, lépés nélkül. A JSON minden taktikai térkép téglalapját a játék
 méterében adja meg, a sarkait pedig a glb terében, hogy a PNG térképképként betölthető legyen.
 

@@ -3,7 +3,7 @@ title: "Livelli"
 nav_order: 9
 lang: mt
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -12,7 +12,7 @@ search_exclude: true
 `heat3d-wt-level` ibiddel il-livelli tal-installazzjoni tiegħek stess ta' War Thunder f'livelli
 `.glb` għall-viewer, fl-istess qafas bħat-tabelli tar-ripetizzjonijiet.
 
-## Pass pass {#step-by-step}
+## Pass b'pass {#step-by-step}
 
 1. Elenka l-livelli tal-installazzjoni tiegħek: `heat3d-wt-level list`. Jistampa linja waħda
    għal kull livell: l-isem tiegħu, it-terren tiegħu u l-mapep tiegħu, imbagħad l-għadd. Pereżempju
@@ -30,7 +30,7 @@ search_exclude: true
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Ikkarga `levels/<level>/<level>.glb` fil-panew Livell tal-viewer, taħt il-battaljiet ta'
+3. Ikkarga `levels/<level>/<level>.glb` fil-pannell Sfond / livell tal-viewer, taħt il-battaljiet ta'
    dik il-mappa.
 
 Il-livelli li tikteb jibqgħu fuq il-magna tiegħek: qatt ma tippubblikahom (ara
@@ -40,7 +40,7 @@ Il-livelli li tikteb jibqgħu fuq il-magna tiegħek: qatt ma tippubblikahom (ara
 
 ![heat3d-wt-level extract --help](../assets/img/level-help.svg)
 
-| Kmand / għażla | Tagħmel |
+| Kmand / għażla | X'jagħmel |
 |---|---|
 | `list [--game FOLDER]` | kull livell fl-installazzjoni |
 | `extract <levels...>` / `--all` | il-livelli msemmija (kif jistampahom `list`; wildcards permessi), jew kull livell |

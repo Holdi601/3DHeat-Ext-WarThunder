@@ -35,7 +35,7 @@ kopums, kas parāda, ko trāpījums izdarīja (`selfCheck.unitMessages.outcome_*
 
 `hitOutcome` ņem sliktāko: `kill` (0x04), `critical` (0x02 vai 0x08), `penetration` (0x01), `nonpenetration` (tikai 0x20). Trāpījums tiek
 savienots ar tuvāko nesavienoto 0xF144 ar 0x20 uz tās vienību 5 ms laikā. Spēles trāpījuma kamera atšķir rikošetu no neiekļūšanas, bet
-nevienš šeit atrastais bits vai lauks to nedara: pirmie trīs baiti mainās no trāpījuma uz trāpījumu un nav zināmi. Klientu atkārtojumi sūta
+neviens šeit atrastais bits vai lauks to nedara: pirmie trīs baiti mainās no trāpījuma uz trāpījumu un nav zināmi. Klientu atkārtojumi sūta
 0xF144 tikai paša ieraksta spēlētāja lidmašīnai, visi biti notīrīti: lidmašīnu un kuģu trāpījumiem iznākuma nav.
 
 ## Munīcija {#ammunition}
@@ -49,7 +49,7 @@ nevienš šeit atrastais bits vai lauks to nedara: pirmie trīs baiti mainās no
   sekundes pēc. Šāvēja trāpījumi tiek grupēti pēc transportlīdzekļa, paraksta un sērijas; grupa pieder ieroci, ja tas ielādē šāviņu 20 s laikā
   pēc pusei vai vairāk tās trāpījumu ar nemainīgu aizkavi. `ammoSlot` ir `weapon/slot`, slots, kas ielādēts pirms trāpījuma: visticamāk tas,
   kas tika izšauts, ja vien spēlētājs starplaikā nemainīja munīciju. Ložmetēji nesūta 0xF0BD.
-* **Šāviņš.** Nogalināšanas ierocis ir šāviņa ID (`125mm_3bm46`); slēdzējs pēdējais trāpījums uz upuri piešķir to šāvēja slotam, ja
+* **Šāviņš.** Nogalināšanas ierocis ir šāviņa ID (`125mm_3bm46`); pēdējais trāpījums uz upuri piešķir to šāvēja slotam, ja
   lielgabala kalibrs sakrīt. Tā tips un kalibrs ir ieroča faila (`bulletName`, `bulletType`, `caliber`; `apds_fs_*` APFSDS, `heat_fs_*`
   HEAT-FS, `he_*` HE ...).
 * **Pārējo kalibrs:** slota ieroča; ložmetēja grupas — viens ložmetēja kalibrs, ko tā paraksts var būt; citādi transportlīdzekļa galvenā

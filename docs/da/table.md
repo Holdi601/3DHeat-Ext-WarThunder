@@ -22,7 +22,7 @@ læseinstruktioner, så vieweren ikke behøver at få udfyldt en formular.
 | `x`, `y`, `z` | spillets meter: x øst, y op, z nord (hints spejler z, så nord ikke tegnes som syd) |
 | `player` | spillerens navn; en AI-enhed `<VehicleName> #<uid>` (for eksempel `F-15A #204`); `uid <n>`, når intet navngiver den; for et våben, hvem der affyrede det |
 | `userId`, `team` | spillerens Gaijin-id og holdet (`1`, `2`) |
-| `ai`, `isPlayer` | `ai` er sand for hver enhed, som ingen spilkonto styrer (missionsenheder, AI-fly, landmål, luftværnskanoner, skibe uden spiller, pladsholdere), `isPlayer` er det modsatte: en spiller er en enhed, hvis entitet angiver en spillerplads med et Gaijin-id. Et våben har sin affyrers værdi; tom, når den ikke kendes |
+| `ai`, `isPlayer` | `ai` er sand for hver enhed, som ingen spilkonto styrer (missionsenheder, AI-fly, mål på land, luftværnskanoner, skibe uden spiller, pladsholdere), `isPlayer` er det modsatte: en spiller er en enhed, hvis entitet angiver en spillerplads med et Gaijin-id. Et våben har sin affyrers værdi; tom, når den ikke kendes |
 | `match` | kampens id (kampdokumentets `match`), på hver række; hints kortlægger det som sessionen, så to indlæste replays aldrig sammenføjer spor |
 | `life` | `uid#n`: én enheds spor, skåret, hvor uid'et går over til en anden enhed, enheden bevæger sig hurtigere, end den kan (en genopstandelse, en genbevæbning, spillet flytter den, klienten korrigerer en fjern enhed; se Teleports i [Sådan læses et replay](how-it-reads.md#what-is-read-and-the-check)) eller er længe usynlig; `w<hex>` et våbens flyvning (`w<hex>#n` efter et snit) |
 | `uid` | enhedens id i replayet |

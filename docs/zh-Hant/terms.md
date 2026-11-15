@@ -12,7 +12,7 @@ search_exclude: true
 ## 條款 {#the-terms}
 
 Gaijin 的服務條款（2026-08-17 更新）、使用者授權條款（附件 2）：
-3.2.2「修改、翻譯、創作衍生作品、逆向工程、反組譯或反編譯遊戲」，3.2.9「挖掘或收集並非打算公開顯示的任何遊戲資料」；1.2「不得儲存、下載、修改或以其他方式使用遊戲的任何部分」，客戶端除外。將你自己副本的地圖檔案讀入本機 3D 檢視，是使用者在知情的情況下自行做出的決定。寫出的地圖會留在你的電腦上：**絕對不要公開發布**，而且這裡不附帶任何遊戲資料。
+3.2.2 "modify, translate, create derivative works of, reverse engineer, disassemble, or decompile the Game(s)"，3.2.9 "mine or collect any data from the Game(s) that is not intended to be publicly displayed"；1.2 "are not permitted to store, download, modify, or otherwise use any part of the Game(s)"，客戶端除外。將你自己副本的地圖檔案讀入本機 3D 檢視，是使用者在知情的情況下自行做出的決定。寫出的地圖會留在你的電腦上：**絕對不要公開發布**，而且這裡不附帶任何遊戲資料。
 
 ## 來源 {#sources}
 

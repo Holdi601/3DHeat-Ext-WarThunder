@@ -3,7 +3,7 @@ title: Kentät (heat3d-wt-level)
 nav_order: 9
 lang: fi
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -28,7 +28,7 @@ koordinaatistossa kuin replayjen taulukot.
    heat3d-wt-level extract --all -o levels
    heat3d-wt-level extract <level> -o levels --detail high
    ```
-3. Lataa `levels/<level>/<level>.glb` katselimen Kenttä-paneeliin, sen kartan taistelujen alle.
+3. Lataa `levels/<level>/<level>.glb` katselimen Tausta / kenttä -paneeliin, sen kartan taistelujen alle.
 
 Kirjoittamasi kentät pysyvät omalla koneellasi: älä koskaan julkaise niitä (katso
 [Ehdot ja lisenssi](terms.md)).
@@ -44,7 +44,7 @@ Kirjoittamasi kentät pysyvät omalla koneellasi: älä koskaan julkaise niitä 
 | `-o`, `--out` | tulostuskansio; jokainen kenttä menee kansioon `<out>/<level>/` |
 | `--game FOLDER` | War Thunderin kansio (oletus: löytyy Steamin tai käynnistimen kautta; myös `HEAT3D_WT_GAME`) |
 | `--detail low/medium/high` | maanäytteistys, maanvärit ja objektibudjetti panssarikartan yli (oletus `medium`) |
-| `--max-object-triangles N` | objektibudjetti (oletus: tason mukainen) |
+| `--max-object-triangles N` | objektibudjetti (oletus: kentän mukainen) |
 | `--max-grid N` | korkeuskartan näytteitä sivua kohden, osaa kohden (oletus 1024) |
 | `--no-objects` | jätä pois rakennukset, puut ja muut sijoitetut objektit |
 | `--no-generated` | jätä pois maaluokkien generoimat objektit (metsät, kaupungit) |
@@ -97,7 +97,7 @@ ensin), kunnes ne mahtuvat, joten nekin tulevat noin 2 m:n tarkkuuteen.
 
 Maakartta `high`-tasolla tulee noin 8 miljoonalla kolmiolla (3,5 M maata, 4,5 M objekteja) ja 250 MB;
 `medium`-tasolla noin 4,5 M. Objektien LOD-tasot ovat ne, jotka peli itse piirtäisi yhdestä
-katselu­etäisyydestä: lyhin, jonka kokonaismäärä mahtuu budjettiin. Pienet esineet putoavat
+katseluetäisyydestä: lyhin, jonka kokonaismäärä mahtuu budjettiin. Pienet esineet putoavat
 karkeisiin LOD-tasoihin ensin ja suuret rakennukset viimeisinä, valmistajan antamien
 etäisyyksien mukaan (JSON:n `lodDistance`); mitä askel säästää budjetin ylitse, palautetaan suurimmille
 objekteille. Karkea maaväri (ilmakartat) keskiarvoistaa jokaisen maaluokan kaakeloidut
@@ -121,11 +121,11 @@ maa-alueen merkinnät; `trianglesTotal`, `glbBytes` ja `secondsBy` kokonaissumma
 | Kentän binääri (`levels/<level>.bin`, `DBLD` 3x64): lohkotaulukko | jokainen kenttä tarkistettu |
 | Korkeuskartta (`HM2`, versiot 0-2; versio 2 on 8-bittisiä arvoja lohkoissa, Oodle- tai zstd-paloina) | jokainen kenttä, jonka korkeuskartta on versio 2 Oodle-paloin; tarkistettu silmämääräisesti taktisia karttoja vasten (joet, laaksot, rannikot ja kaupungit osuvat kohdalleen) |
 | Maaverkon törmäys (`lmap`, sen `LTdump`-maasäteenjäljitin) | luetaan kentillä, joilla sellainen on (Oodle-pakattu). Se on pelin törmäyspinta, ei piirretty verkko, joten se on karkeampi tasaisella maalla |
-| Maaväri (`lmap`-maaluokat ja painokartta, `LMp2`-fysiikkakartta, `hspl`-splinet) | maaluokkien värikartat ja yksityiskohtatekstuurit (niiden keskivärit) painotettuna painokartalla, indeksoitujen maaluokkien 1 m:n biomi-indeksi, fysiikkakartan tie- ja maa-alueen muodot niiden splinen tai materiaalin tekstuurin värissä, jyrkillä rinteillä rotkot. Tarkistettu panssarikarttoja vasten: tiet, kaupungit, järvet, metsävyöhykkeet ja kallioulokkeet osuvat kohdalleen. Sotakoneen oman maasävyttimen värikaava ei ole julkisessa lähdekoodissa; käytetään moottorin julkaistua (daNetGame), joka on kylläisempi kuin taktinen kartta |
+| Maaväri (`lmap`-maaluokat ja painokartta, `LMp2`-fysiikkakartta, `hspl`-splinet) | maaluokkien värikartat ja yksityiskohtatekstuurit (niiden keskivärit) painotettuna painokartalla, indeksoitujen maaluokkien 1 m:n biomi-indeksi, fysiikkakartan tie- ja maa-alueen muodot niiden splinen tai materiaalin tekstuurin värissä, jyrkillä rinteillä rotkot. Tarkistettu panssarikarttoja vasten: tiet, kaupungit, järvet, metsävyöhykkeet ja kallioulokkeet osuvat kohdalleen. War Thunderin oman maavarjostimen värikaava ei ole julkisessa lähdekoodissa; käytetään moottorin julkaistua (daNetGame), joka on kylläisempi kuin taktinen kartta |
 | Vedenpinta | `water_level` kentän BLK:sta `aces.vromfs.bin`-tiedostossa (0, jos sitä ei ole) |
 | Vesikorkeuskartta (`WHM`: ruudukko tasaisia soluja ja 130x130 sivua 16-bittisiä korkeuksia) | luetaan kentillä, joilla sellainen on; sen joet kaltevat maan mukana |
 | Taktiset kartat | tiedostosta `content/base/res/locations_maps.dxp.bin`, sijoitettuna BLK:n `mapCoord0/1`- ja `tankMapCoord0/1`-arvoilla; kuvan yläreuna on pohjoinen |
-| Sijoitetut objektit (`RIGz`: renderointi-ilmentymien generaattorin kiinteät ilmentymät) | jokainen ilmentymä, 3x4-matriisina 16-bittisinä arvoina tai joillakin kentillä 32-bittisinä (solun tavumäärä ratkaisee); jokainen solun tavu tili kentillä, jotka tarkistettiin |
+| Sijoitetut objektit (`RIGz`: renderointi-ilmentymien generaattorin kiinteät ilmentymät) | jokainen ilmentymä, 3x4-matriisina 16-bittisinä arvoina tai joillakin kentillä 32-bittisinä (solun tavumäärä ratkaisee); jokainen solun tavu täsmää kentillä, jotka tarkistettiin |
 | Generoidut objektit (`RIGz`:n maaluokkamaskit ja `LandClass`-resurssit) | pelin generaattori, siirrettynä: samat paikat kokeillaan samassa järjestyksessä samoilla satunnaisluvuilla, maaluokka- ja poissulkemismaskit, kussakin paikassa valittu objekti, sen kierto, mittakaava ja korkeusoffset; kaakeloidut (kaupunkikorttelit) ja istutetut (metsät, pensaat, pellot) yksiköt. Generoidaan vain panssarikartan yli. Likimääräisesti: maan korkeus ja normaali (korkeuskartasta; peli jäljittää säteen), ajonaikaiset poissulkemislaatikot ja puiden kääntö (peli kohdistaa sen kuvakkeen kiertopalettiin) |
 | Renderointiverkot (`RendInst`-resurssit `content/*/res/*.grp`-tiedostoissa, materiaalit `riDesc.bin`-tiedostossa) | jokaisen LOD-tason kärkipisteet ja kolmiot (liukulukusijainnit; 16- tai 32-bittiset indeksit, tavallisina tai meshoptimizer-pakattuina), jokaisen elementin materiaali. Kuvan ja impostorin laatta-elementit jätetään pois; läpinäkyvät (lasi) säilytetään |
 | Objektien värit | materiaaleittain diffuusitekstuurin pienen mipin keskiarvo (alfapainotettu lehdille), asennuksen tekstuuripakkauksista: t0 useimmille varjostimille, ensimmäinen yksityiskohtadiffuusi, kun t0 on peite tai maski. Yksi väri materiaalia kohden: objekteilla ei ole tekstuuria |

@@ -32,7 +32,7 @@ Wéi et gepréift gouf:
   (`selfCheck.turretsVsShots`). De Rescht sinn meeschtens Treffer vun engem Maschinnegewier
   an engem anere Turm.
 - **Géint dem opuelende Spiller säin Zil:** säi Panzer schéckt dem Zil säi Welt-
-  Wénkel (géint den Auerzäigersënn vun Osten), Pitch an Distanz. Dem Rumpf säin Heading
+  Wénkel (géint den Auerzäigersënn vun Ouschten), Pitch an Distanz. Dem Rumpf säin Heading
   plus dem Turm säi Yaw läit bannent engem hallwe Grad (Median) vum Zil.
 
 **Server-Replays** (0xF074) schécke vun all Panzer den Zoustand an der selwechter Layout,
@@ -100,7 +100,7 @@ Dem Header säi Byte bei Offset 688 hält d'Schwieregkeet a senge ënneschte vé
 Gefechtsarten, vun deenen een wousst, datt d'Replays se waren. De Spillmodus ass `ground`, wann
 d'Mission Panzer spawnen léisst, soss `naval`, wann se Schëff léisst, soss `air`
 (`allowedUnitTypes`); dem Mission säin eegene Modus kënnt vu sengem Schlëssel
-(`missions/_Dom`), benannt aus der `lang/missions_versus.csv` vun denger Installatioun. Dee
+(`missions/_Dom`), benannt aus der `lang/missions_versus.csv` vun Ärer Installatioun. Dee
 selwechte Schlëssel ass den `<mode>`-Deel vun den Dateinimm an der Match-ID (`Conq4`,
 `Dom`), ewechgelooss, wou den Header keen huet.
 

@@ -12,14 +12,14 @@ search_exclude: true
 ![Egy szintetikus visszajátszás táblázata, összefoglalva](../assets/img/table.svg)
 
 Mintánként vagy eseményenként egy sor, 105 oszloppal ([Oszloplista](../columns.md), a kódból generálva); a
-láblécben, a `heat3d` alatt találhatók a nézegető olvasási utasításai, így a nézegetőnek nem kell semmit
+láblécben, a `heat3d` alatt találhatók a megjelenítő olvasási utasításai, így a megjelenítőnek nem kell semmit
 kitöltenie.
 
 | Oszlop | Mi |
 |---|---|
 | `time` | másodpercek a visszajátszás saját órája szerint |
 | `event` | `position`; az eseménysorok a pályán vannak a pillanatukban (két minta között, a közöttük húzódó vonalon); `kill` (a gyilkosnál), `death` (az áldozatnál), `hit_critical` / `hit_severe` (az eltalált egységnél), `module_destroyed` (az egységnél), `launch` (az egységnél, amely fegyvert indított), `impact` (egy fegyver utolsó mintája, ha azonnal a találat után eltávolították); `explosion` és `flak` (0xD08E, 0xD01F) a helyükön, `effect` fajtával, pálya nélkül, ahol van, a robbanás irányával; `shot` (egy találó lövedék, a lövőnél), `gun_shot`, `fire_start`, `fire_stop` (egy ágyú sorozata, nem égő jármű), `fire_on`, `fire_off` (egy égő jármű, lásd [Járműtüzek](hits.md#vehicle-fires)), `reward` (megszerzett ezüstoroszlánok és kutatási pontok, lásd [Gazdaság](economy.md)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (lásd [Üzenetek egységeknek](how-it-reads.md#messages-to-units)); `despawn`: egy pálya utolsó sora, amelynek egysége még a visszajátszás vége előtt eltűnt (lásd [Egy pálya vége](ground.md#end-of-a-track)) |
-| `track` | amit a nézegető egy egységként rajzol: egy egység egy élete, vagy egy fegyver repülése – `<player or vehicle> #<hex>` (a nézegető a `#` rész nélkül mutatja a nevet) |
+| `track` | amit a megjelenítő egy egységként rajzol: egy egység egy élete, vagy egy fegyver repülése – `<player or vehicle> #<hex>` (a megjelenítő a `#` rész nélkül mutatja a nevet) |
 | `x`, `y`, `z` | a játék méterei: x kelet, y fel, z észak (a súgók tükrözik a z-t, így az észak nem délre rajzolódik) |
 | `player` | a játékos neve; egy MI-egység `<VehicleName> #<uid>` (például `F-15A #204`); `uid <n>`, ha semmi sem nevezi meg; fegyvernél az, aki kilőtte |
 | `userId`, `team` | a játékos Gaijin-azonosítója és a csapat (`1`, `2`) |
@@ -29,7 +29,7 @@ kitöltenie.
 | `uid` | az egység azonosítója a visszajátszásban |
 | `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`, `train` (a pálya által elhelyezett villamos vagy sínkocsi, lásd [Jelenetegységek](objectives.md#scene-units-trams-and-rail-wagons)); fegyverek: `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned`; `camera` a felvevő játékos visszajátszás-kamerája (lásd [A kamera](ground.md#the-camera)) |
 | `type` | a játék saját típusa, ahol az eredmények megnevezik (`fighter`, `assault`, `destroyer`, `gun_boat`), különben mint a `kind` |
-| `Vehicle` | a játék járműazonosítója (`f_15a`, `germ_flakpz_I_Gepard`), amelyhez a nézegető alakjai illeszkednek |
+| `Vehicle` | a játék járműazonosítója (`f_15a`, `germ_flakpz_I_Gepard`), amelyhez a megjelenítő alakjai illeszkednek |
 | `VehicleName`, `VehicleShortName`, `VehicleNameKey` | a jármű angol neve a telepítésed lokalizációjából (`Pz.Kpfw. III Ausf. J1`, rövid alakja `Pz.III J1`), és a kulcsa (`germ_pzkpfw_III_ausf_J_0`); a játék betűtípusának országjelei kimaradnak. Ahol a játék nem nevez meg semmit, vagy nincs telepítés, a név az azonosító, a kulcs pedig üres |
 | `mission` | az egység neve a küldetésben (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | amerre az egység néz (a nézési vektor): a repülőgépeknél a repülési modell állásából, a földi egységeknél és hajóknál a sajátjukból, a fegyvereknél a repülési pályájuk mentén |

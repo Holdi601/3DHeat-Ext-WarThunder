@@ -17,7 +17,7 @@
  "Levels are mirrored too, so both fit.": "Anche i livelli sono specchiati, così combaciano.",
  "Match tab: the match document": "Scheda Partita: il documento della partita",
  "Metres, in the game's own world": "Metri, nel mondo del gioco",
- "The table's footer tells the viewer to mirror z.": "Il piè di pagina della tabella dice al visualizzatore di specchiare z.",
+ "The table's footer tells the viewer to mirror z.": "Il piè di tabella fa specchiare z al visualizzatore.",
  "The viewer opens it like the loose files. With --loose you get these files one by one instead.": "Il visualizzatore lo apre come i file separati. Con --loose ottieni invece questi file uno per uno.",
  "What one .3dheat file holds": "Cosa contiene un file .3dheat",
  "Where x, y and z point": "Dove puntano x, y e z",

@@ -29,7 +29,7 @@ B'`--loose` l-istess fajls jinkitbu ħdejn xulxin minflok:
 | `<match>.objectives.parquet` | iż-żoni tal-qbid maż-żmien | [Sidecars](sidecars.md) |
 | `<match>.flight.parquet` | kull daħla tal-flight model ta' kull ajruplan, sħiħa | [Sidecars](sidecars.md) |
 
-Jekk il-ppakkjar jfalli, il-fajls separati jinżammu u l-linja tgħid hekk.
+Jekk l-ippakkjar jfalli, il-fajls separati jinżammu u l-linja tgħid hekk.
 
 ## Ismijiet {#names}
 

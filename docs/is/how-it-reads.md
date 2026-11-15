@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Hvernig upptaka er lesin {#how-it-reads-a-replay}
 
-Þessi síða er fyrir fólk sem vill vita hvað breytirinn les, hvernig það var
+Þessi síða er fyrir fólk sem vill vita hvað umbreytirinn les, hvernig það var
 athugað, og þar með hversu mikið má treysta hverjum dálki. Þú þarft hana ekki
 til að breyta upptökum.
 

@@ -11,7 +11,7 @@ search_exclude: true
 
 Vaikimisi on iga lahing **üks fail**, `out/<map>/<match>.3dheat`: tabel, mängu
 dokument ja lisafailid koos pakitud, koos manifestiga, mis nimetab mängu, kaardi,
-mängu, lahingurežiimi, algusaja ja konverteerija (ning lahingu majanduse jaotises
+mängu, lahingurežiimi, algusaja ja konverter (ning lahingu majanduse jaotises
 `extensions["heat3d/economy"]`). Formaat on vaaturi oma:
 [Üks fail mängu kohta (.3dheat)](https://holdi601.github.io/3DHeat/container.html).
 

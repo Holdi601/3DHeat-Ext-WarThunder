@@ -12,7 +12,7 @@ search_exclude: true
 ![合成したマッチドキュメントの冒頭と、そのキー](../assets/img/match-document.svg)
 
 `<match>.match.json` には、テーブルの行にはならない、リプレイが伝えるすべてのことが入っています。
-ビューアの Match タブがこれを読みます。
+ビューアの マッチ タブがこれを読みます。
 
 ## 戦闘 {#the-battle}
 

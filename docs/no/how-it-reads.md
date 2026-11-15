@@ -44,7 +44,7 @@ bare metoden og samsvaret er oppgitt her.
 | Spillerplasser, chat | hver fil |
 | Eksplosjoner, luftvernsprengninger, utmerkelser, oppdagelser, vær, oppdragsobjekter | lest; posisjonene kontrollert med øyet i visningsprogrammet |
 | Opptakspilotens instrumenter (0xD04A) | navngitt etter hva de gjør: [Cockpit-instrumenter](aircraft.md#cockpit-instruments); resten under `notNamed` |
-| Flygeinngangenes andre felt | hastighet, runder, kontroller, motorer: [Flyinngangene](aircraft.md#flight-entries) |
+| Flyinngangenes andre felt | hastighet, runder, kontroller, motorer: [Flyinngangene](aircraft.md#flight-entries) |
 | Hendelsesrader sin holdning | hver hendelsesrad bærer sin enhets retning, stigning, rull og sikteretning på det øyeblikket |
 | Spillerstatistikk og lagpoengsummer | ved slutten av slaget er hver statistikk lik resultatenes for hver spiller: [Refleksjonsdata](aircraft.md#reflection-data) |
 | Våpen- og kjøretøynavn | fra din installasjons engelske lokalisering; noen skips standardbelter og flyplassradarer har ingen navn i spillet |

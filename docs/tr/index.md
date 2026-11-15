@@ -51,7 +51,7 @@ Her savaş için bir satır görmelisiniz: `ok out/<map>/<match>.3dheat`. Bu dos
 | [Tablo](table.md) | her sütun ve olay |
 | [Maç belgesi](match-document.md) | `<maç>.match.json` dosyasının her anahtarı |
 | [Yan dosyalar ve tamlık](sidecars.md) | tablonun yanında tam tutulan şeyler ve sayılar |
-| [Haritalar](levels.md) | `heat3d-wt-level`: kurulumunuzdaki haritalar `.glb` olarak |
+| [Seviyeler](levels.md) | `heat3d-wt-level`: kurulumunuzdaki seviyeler `.glb` olarak |
 | [Tekrarı nasıl okur](how-it-reads.md) | neyin okunduğu ve nasıl sınandığı |
 | [Uçaklar](aircraft.md), [Kara birimleri ve kamera](ground.md), [İsabetler, ateş ve yangınlar](hits.md) | sütunların ardındaki ayrıntılar |
 | [Ekonomi](economy.md), [Hedefler](objectives.md) | Gümüş Aslanlar ve araştırma puanları; ele geçirme bölgeleri, hava alanları |

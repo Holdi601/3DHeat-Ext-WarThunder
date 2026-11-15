@@ -1,5 +1,5 @@
 ---
-title: "Sidecars a Vollstännegkeet"
+title: "Niewendateien a Vollstännegkeet"
 nav_order: 8
 lang: lb
 source: sidecars.md
@@ -7,15 +7,15 @@ source_hash: "e9982dbb930b"
 nav_exclude: true
 search_exclude: true
 ---
-# Sidecars a Vollstännegkeet {#sidecars-and-completeness}
+# Niewendateien a Vollstännegkeet {#sidecars-and-completeness}
 
 Näischt an engem Replay gëtt ewechgeheit. Wat de Konverter liest, kënnt an d'
 Tabell an d'Match-Dokument; alles anescht gëtt ganz an dräi
-Sidecar-Dateien niewent der Tabell behalen (an der `.3dheat`-Datei, oder lass mat
+Niewendateien niewent der Tabell behalen (an der `.3dheat`-Datei, oder lass mat
 `--loose`). Dat ass d'Regel, déi all 3DHeat-Konverter deelen:
 [Konverteren behalen alles](https://holdi601.github.io/3DHeat/converters.html).
 
-## D'Sidecars {#the-sidecars}
+## D'Niewendateien {#the-sidecars}
 
 - `<match>.messages.parquet`: all Message un eng Eenheet (Zäit, Message-ID an
   Numm, uid, eid, Template, Gefier, hir ID-Felder als Hex, `decoded` (wat
@@ -43,14 +43,14 @@ D'`counts` vum Match-Dokument soen, wat de Replay gehalen huet a wat doraus ginn
 
 | Schlëssel | Wat |
 |---|---|
-| `packets`, `unreadPackets` | all Pakettyp, deen ugetraff gouf, an déi, déi kee Reader hëlt (ganz am Messages-Sidecar behalen) |
+| `packets`, `unreadPackets` | all Pakettyp, deen ugetraff gouf, an déi, déi kee Reader hëlt (ganz an der Messages-Niewendatei behalen) |
 | `messageIds`, `messageIdsNotRead` | all Message-ID, déi ugetraff gouf, a wéi dacks, an déi, déi nëmmen behalen, net gelies goufen |
 | `replicatedComponents`, `replicatedNotRead` | Komponentewäerter, déi gelies goufen, an déi, déi nëmmen behalen goufen |
 | `entities`, `entityTemplates`, `entityMessages` | wat de Entitéit-Stroum erstallt a geschéckt huet |
 | `droppedSamples` | Echantillonen, déi absichtlech ewechgelooss goufen (dem Buedemeenheet säi Wrack, nodeems seng Entitéit fort ass), no Grond |
 
 Näischt anescht gëtt ewechgelooss: e Stéck vum Replay gëtt entweder an
-d'Tabell oder d'Match-Dokument gelies, oder ganz an engem Sidecar behalen. Dem Match-
+d'Tabell oder d'Match-Dokument gelies, oder ganz an enger Niewendatei behalen. Dem Match-
 Dokument säin `selfCheck` hält d'Kontrolle vun deem, wat gelies gouf
 ([Wéi e Replay gelies gëtt](how-it-reads.md)).
 

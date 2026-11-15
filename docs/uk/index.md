@@ -66,7 +66,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 Цей конвертер — один з інструментів [3DHeat](https://github.com/Holdi601/3DHeat),
 переглядача 3D-телеметрії й повторів у реальному часі
 ([документація](https://holdi601.github.io/3DHeat/)). Переглядач відкриває файл
-`.3dheat`: таблицю — на його вкладці Heatmap, документ матчу — на вкладці Match
+`.3dheat`: таблицю — на його вкладці «Теплова карта», документ матчу — на вкладці «Матч»
 ([Один файл на матч](https://holdi601.github.io/3DHeat/container.html)).
 Що має зберігати кожен конвертер:
 [Конвертери зберігають усе](https://holdi601.github.io/3DHeat/converters.html).

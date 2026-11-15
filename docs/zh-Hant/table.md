@@ -22,7 +22,7 @@ search_exclude: true
 | `player` | 玩家的名稱；AI 單位為 `<VehicleName> #<uid>`（例如 `F-15A #204`）；若沒有任何名稱，則為 `uid <n>`；對武器而言，為釋放它的人 |
 | `userId`、`team` | 玩家的 Gaijin id，以及隊伍（`1`、`2`） |
 | `ai`、`isPlayer` | 對於沒有任何玩家帳號駕駛的每個單位（任務單位、AI 飛機、地面目標、防空砲、沒有玩家的船艦、佔位單位），`ai` 為 true；`isPlayer` 則相反：玩家是指其實體命名了一個帶有 Gaijin id 的玩家槽位的單位。武器與其發射者相同；不明時為空 |
-| `match` | 對戰 id（對應文件中的 `match`），每一列都有；提示會將其對應為工作階段，因此兩個載入的回放不會把航跡接在一起 |
+| `match` | 對戰 id（對戰文件中的 `match`），每一列都有；提示會將其對應為工作階段，因此兩個載入的回放不會把航跡接在一起 |
 | `life` | `uid#n`：一個單位的航跡，在 uid 轉移到另一個單位時切斷、單位移動速度超過其可能（重生、重新裝填、遊戲移動它、客戶端修正遠處單位；見[讀取回放的方式](how-it-reads.md#what-is-read-and-the-check)中的瞬移）或長時間未被看到時也會切斷；`w<hex>` 為一枚武器的飛行（切斷後為 `w<hex>#n`） |
 | `uid` | 該單位在回放中的 id |
 | `kind` | `aircraft`、`helicopter`、`tank`、`apc`、`spaa`、`truck`、`ship`、`boat`、`structure`、`train`（地圖所放置的電車或鐵路車廂，見[場景單位](objectives.md#scene-units-trams-and-rail-wagons)）；武器為 `missile`、`rocket`、`bomb`、`torpedo`、`payload`、`jettisoned`；`camera` 為錄製玩家的回放攝影機（見[攝影機](ground.md#the-camera)） |

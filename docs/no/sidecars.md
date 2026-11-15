@@ -11,8 +11,8 @@ search_exclude: true
 
 Ingenting i en replay kastes. Det konverteren leser, går inn i tabellen og
 kampdokumentet; alt annet beholdes helt i tre sidefiler ved siden av tabellen (inne i
-`.3dheat`-filen, eller løst med `--loose`). Dette er regelen alle 3DHeat-konverterere deler:
-[Konverterere beholder alt](https://holdi601.github.io/3DHeat/converters.html).
+`.3dheat`-filen, eller løst med `--loose`). Dette er regelen alle 3DHeat-konvertere deler:
+[Konvertere beholder alt](https://holdi601.github.io/3DHeat/converters.html).
 
 ## Sidefilene {#the-sidecars}
 

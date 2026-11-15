@@ -3,7 +3,7 @@ title: Nivells (heat3d-wt-level)
 nav_order: 9
 lang: ca
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -33,7 +33,7 @@ nivells `.glb` per al visualitzador, en el mateix marc que les taules de les rep
 3. Carrega `levels/<nivell>/<nivell>.glb` al panell de Nivell del visualitzador, sota les
    batalles d'aquell mapa.
 
-Els nivells que escrius es queden a la teva màquina: no els publiquis mai (vegeu
+Els nivells que escrius es queden a la teva màquina: no els publiquis mai (mira
 [Condicions i llicència](terms.md)).
 
 ## Opcions {#options}
@@ -104,7 +104,7 @@ l'anell exterior) fins que hi caben, de manera que surten també a uns 2 m.
 
 Un mapa terrestre a `high` surt a uns 8 milions de triangles (3,5 M de terreny, 4,5 M
 d'objectes) i 250 MB; a `medium`, a uns 4,5 M. Els nivells de detall dels objectes són els
-que el mateix joc dibuixaria des d'una sola distància de visió: el més curt que cap al
+que el mateix joc dibuixaria des d'una sola distància de visió: el més curt que hi càpiga al
 pressupost; els petits objectes baixen primer a nivells gruixuts, i els edificis grans
 l'últim, segons els rangs que va donar el seu autor a cada nivell (el `lodDistance` del JSON);
 allò que l'estalvi d'aquest pas deixa per sobre del pressupost es torna als objectes més
@@ -133,7 +133,7 @@ carreteres i les calcomanies de terreny; `trianglesTotal`, `glbBytes` i `seconds
 | Binari del nivell (`levels/<nivell>.bin`, `DBLD` 3x64): taula de blocs | cada nivell comprovat |
 | Mapa d'alçades (`HM2`, versions 0-2; la versió 2 són valors de 8 bits en blocs, en trossos Oodle o zstd) | cada nivell amb mapa d'alçades de versió 2 i trossos Oodle; comprovat a ull contra els seus mapes tàctics (rius, valls, costes i pobles casen) |
 | Col·lisió de la malla del terreny (`lmap`, el seu traçador de rajos `LTdump`) | llegida on un nivell en té una (empaquetada en Oodle). És la superfície de col·lisió del joc, no la malla renderitzada, de manera que és més gruixuda on el terreny és pla |
-| Color del terreny (classes de terreny i mapa de pesos de `lmap`, mapa de física `LMp2`, splines `hspl`) | els mapes de color de les classes de terreny i les seves textures de detall (els seus colors mitjans) ponderats pel mapa de pesos, l'índex de biomes d'1 m de les classes de terreny indexades, les formes de carretera i de calcomanies de terreny del mapa de física al color de la textura del seu spline o material, penya-segats a les pendents fortes. Comprovat amb els mapes de tancs: les carreteres, els pobles, els llacs, els cinturons de bosc i les aflorament de roca casen. La fórmula de color del shader del terreny propi de War Thunder no és al codi font públic; s'usa la publicada pel motor (daNetGame), que surt més saturada que el mapa tàctic |
+| Color del terreny (classes de terreny i mapa de pesos de `lmap`, mapa de física `LMp2`, splines `hspl`) | els mapes de color de les classes de terreny i les seves textures de detall (els seus colors mitjans) ponderats pel mapa de pesos, l'índex de biomes d'1 m de les classes de terreny indexades, les formes de carretera i de calcomanies de terreny del mapa de física al color de la textura del seu spline o material, penya-segats a les pendents fortes. Comprovat amb els mapes de tancs: les carreteres, els pobles, els llacs, els cinturons de bosc i els afloraments de roca casen. La fórmula de color del shader del terreny propi de War Thunder no és al codi font públic; s'usa la publicada pel motor (daNetGame), que surt més saturada que el mapa tàctic |
 | Nivell de l'aigua | `water_level` del BLK del nivell a `aces.vromfs.bin` (0 quan no en té) |
 | Mapa d'alçades de l'aigua (`WHM`: una graella de cel·les planes i pàgines de 130x130 d'alçades de 16 bits) | llegit on un nivell en té un; els seus rius s'inclinen amb el terreny |
 | Mapes tàctics | de `content/base/res/locations_maps.dxp.bin`, col·locats segons `mapCoord0/1` i `tankMapCoord0/1` del BLK; la part superior de la imatge és el nord |

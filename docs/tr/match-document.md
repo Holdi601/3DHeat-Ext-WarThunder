@@ -19,7 +19,7 @@ onu okur.
 | Anahtar | Ne |
 |---|---|
 | `format`, `version` | `heat3d-wt-replay-match`, `2` |
-| `match`, `map`, `level` | maç kimliği (dosya adındaki gibi); haritanın kimliği; kullandığı harita dosyası |
+| `match`, `map`, `level` | maç kimliği (dosya adındaki gibi); haritanın kimliği; kullandığı seviye dosyası |
 | `mission`, `missionKey` | görevin adı ve oyunun metin dosyalarındaki anahtarı |
 | `battleClass`, `environment`, `weather` | başlığın verdiği gibi |
 | `sessionId`, `server` | savaşın oturum kimliği; sunucu |

@@ -89,7 +89,7 @@ kjøretøyet, med `fireId` (`første:node`), `fireKind` og, for branner et treff
 ikke igjen: dets branner ender med vraket, ellers med dens entitet, ellers med
 replayen (`selfCheck.fires`).
 
-Kontrollert: hver gang en tanks antall brannslukkere falt, forsvant en brann fra listen
+Kontrollert: hver gang en stridsvogns antall brannslukkere falt, forsvant en brann fra listen
 innen en brøkdel av et sekund; de fleste brannpunkter ligger på samme side av kjøretøyet
 som treffet som tente dem. Typene er tall; hva de betegner, er ikke kjent, og heller
 ikke hvilken del en node er. Fly sender ingen slik liste: et fly i brann leses ikke.

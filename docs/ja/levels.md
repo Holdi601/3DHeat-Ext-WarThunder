@@ -3,7 +3,7 @@ title: レベル（heat3d-wt-level）
 nav_order: 9
 lang: ja
 source: levels.md
-source_hash: "1f750f25303d"
+source_hash: "8fd5f4d94b76"
 nav_exclude: true
 search_exclude: true
 ---
@@ -26,7 +26,7 @@ search_exclude: true
    heat3d-wt-level extract --all -o levels
    heat3d-wt-level extract <level> -o levels --detail high
    ```
-3. `levels/<level>/<level>.glb` を、そのマップの戦闘の下にあるビューアの「レベル」パネルに読み込みます。
+3. `levels/<level>/<level>.glb` を、そのマップの戦闘の下にあるビューアの「背景/レベル」パネルに読み込みます。
 
 書き出したレベルはお使いのマシンに残ります。決して公開しないでください（[用語とライセンス](terms.md) を参照）。
 

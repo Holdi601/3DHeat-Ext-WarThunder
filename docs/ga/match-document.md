@@ -11,7 +11,7 @@ search_exclude: true
 
 ![Tús cáipéise cluiche sintéisigh, agus a heochracha](../assets/img/match-document.svg)
 
-Coinníonn `<match>.match.json` gach rud a deir an athsheinm nach sraith den tábla é. Léann cluaisín Cluiche na faire é.
+Coinníonn `<match>.match.json` gach rud a deir an athsheinm nach sraith den tábla é. Léann cluaisín Cluiche an amharcáin é.
 
 ## An cath {#the-battle}
 
@@ -59,7 +59,7 @@ Coinníonn `<match>.match.json` gach rud a deir an athsheinm nach sraith den tá
 | `results` | an blk torthaí ar fad mar a scríobh an cluiche é |
 | `counts` | sraitheanna, imeachtaí, lives, kinds, samplaí, eintitis de réir teimpléid, airm, paicéid léite agus nár léadh, gach id teachtaireachta a chonacthas agus iad nár léadh, samplaí a thit |
 | `trackBreaks` | gach gearradh rian le haghaidh céim níos tapúla ná mar is féidir leis an aonad dul: cá háit, cé chomh fada, cé chomh tapa, agus cad is dóichí é |
-| `selfCheck` | na seiceálacha atá liostaithe in [Conas a léann sé athsheinm](how-it-reads.md), ríofa ar gach tiontú; tugann `stepSpeed` de réir kind an luas idir sraitheanna as a chéile de rian mar a cheanglaíonn an fhaire iad (airmheán, 99ú ceatadán, an ceann is airde, agus céimeanna níos tapúla ná is féidir, ar gá 0 a bheith ann) |
+| `selfCheck` | na seiceálacha atá liostaithe in [Conas a léann sé athsheinm](how-it-reads.md), ríofa ar gach tiontú; tugann `stepSpeed` de réir kind an luas idir sraitheanna as a chéile de rian mar a cheanglaíonn an t-amharcán iad (airmheán, 99ú ceatadán, an ceann is airde, agus céimeanna níos tapúla ná is féidir, ar gá 0 a bheith ann) |
 
 ---
 

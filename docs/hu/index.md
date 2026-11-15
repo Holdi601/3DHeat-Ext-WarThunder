@@ -12,7 +12,7 @@ permalink: /hu/
 
 **Mi ez?** A War Thunder a csatákat visszajátszás-fájlként rögzíti. Ez az eszköz a felvételt
 olyan fájllá alakítja, amelyet felülről nézhetsz meg a
-[3DHeat nézegetőben](https://holdi601.github.io/3DHeat/), minden géppel, tankkal és hajóval,
+[3DHeat megjelenítőben](https://holdi601.github.io/3DHeat/), minden géppel, tankkal és hajóval,
 minden rakétával és bombával, és minden találattal ott, ahol történt. Egy második parancs a
 saját játéktelepítésed pályáit 3D-s pályákká alakítja, amelyeken a csatákat megmutathatod.
 
@@ -23,7 +23,7 @@ A kimenet sima Parquet és JSON, így más eszközök is olvashatják.
 
 **Példa:** egy `.wrpl` visszajátszás be, egy `<match>.3dheat` fájl ki:
 
-![A visszajátszástól a 3DHeat nézegetőig](../assets/img/hu/pipeline.svg)
+![A visszajátszástól a 3DHeat megjelenítőig](../assets/img/hu/pipeline.svg)
 
 ## Gyors kezdés {#quick-start}
 
@@ -37,7 +37,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 ```
 
 Csatánként egy sort kell látnod: `ok out/<map>/<match>.3dheat`. Nyisd meg ezt a fájlt a
-3DHeat nézegetőben.
+3DHeat megjelenítőben.
 
 ## Ez a dokumentáció {#this-documentation}
 
@@ -60,8 +60,8 @@ Csatánként egy sort kell látnod: `ok out/<map>/<match>.3dheat`. Nyisd meg ezt
 ## A 3DHeat része {#part-of-3dheat}
 
 Ez a konverter a [3DHeat](https://github.com/Holdi601/3DHeat) eszközei egyike, egy valós
-idejű 3D telemetria- és visszajátszás-nézegető ([dokumentáció](https://holdi601.github.io/3DHeat/)).
-A nézegető megnyitja a `.3dheat` fájlt: a táblázatot a Hőtérkép fülön, a meccsdokumentumot a
+idejű 3D telemetria- és visszajátszás-megjelenítő ([dokumentáció](https://holdi601.github.io/3DHeat/)).
+A megjelenítő megnyitja a `.3dheat` fájlt: a táblázatot a Hőtérkép fülön, a meccsdokumentumot a
 Meccs fülön ([Egy fájl egy meccshez](https://holdi601.github.io/3DHeat/container.html)).
 Amit minden konverternek meg kell őriznie: [A konverterek mindent megtartanak](https://holdi601.github.io/3DHeat/converters.html).
 
@@ -73,7 +73,7 @@ van: a Watcher telepítve futtatja új visszajátszásokon, de működik nélkü
 
 | Eszköz | Mit csinál | Forrás | Dokumentáció |
 |---|---|---|---|
-| 3DHeat nézegető | 3D-ben mutatja az adatokat: hőtérképek, visszajátszások, versenyelemzés | [3DHeat](https://github.com/Holdi601/3DHeat) | [oldal](https://holdi601.github.io/3DHeat/) |
+| 3DHeat megjelenítő | 3D-ben mutatja az adatokat: hőtérképek, visszajátszások, versenyelemzés | [3DHeat](https://github.com/Holdi601/3DHeat) | [oldal](https://holdi601.github.io/3DHeat/) |
 | GameFiles | pályák és versenypályák a játékok fájljaiból | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [oldal](https://holdi601.github.io/3DHeat-GameFiles/) |
 | GameCapture | körtelemetria, és játékvideóból újjáépített pályák | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [oldal](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | egy Unreal Editor-bővítmény, amely egy pályát exportál | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [oldal](https://holdi601.github.io/3DHeat-UnrealExporter/) |

@@ -9,11 +9,11 @@ search_exclude: true
 ---
 # Hliðarskrár og heilleiki {#sidecars-and-completeness}
 
-Ekkert í upptöku er hent. Það sem breytirinn les fer í töfluna og
+Ekkert í upptöku er hent. Það sem umbreytirinn les fer í töfluna og
 leikjaskjalið; allt annað er varðveitt í heild í þremur hliðarskrám við hlið
 töflunnar (inni í `.3dheat` skránni, eða lausar með `--loose`). Þetta er
-reglan sem allir 3DHeat breytar deila:
-[Breytar varðveita allt](https://holdi601.github.io/3DHeat/converters.html).
+reglan sem allir 3DHeat umbreytar deila:
+[Umbreytar varðveita allt](https://holdi601.github.io/3DHeat/converters.html).
 
 ## Hliðarskrárnar {#the-sidecars}
 

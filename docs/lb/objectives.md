@@ -17,7 +17,7 @@ search_exclude: true
   all Objet, dat net geréckelt gëtt, läit genau do, wou 0xD039 en huet, wat d'Reiefolleg préift. Eng Eroberungszon kritt d'
   Form an de Radius vum Missiounsgebitt op hirer Plaz (`area`, bannent 2 m) a säi Buschtaf vu sengem eegenen Index (Aart
   5 Feld 69: 0 = A); d'Buschtafereiefolleg ass déi vum Replay, net géint dem Spill seng Kaart gepréift.
-- **D'Mission** (`mission`): d'Missiounsdatei `<mission>.blk` an der `mis.vromfs.bin` vun denger Installatioun an d'
+- **D'Mission** (`mission`): d'Missiounsdatei `<mission>.blk` an der `mis.vromfs.bin` vun Ärer Installatioun an d'
   Templates, déi se importéiert (nëmme gelies, beim Émwandele): hir Gebidder, no Numm klasséiert - Spawns (d'nummeréiert
   Punkte `..._spawnareaNN` vun engem Spawn als een `points`-Spawn), Kampfgebidder, Bombenziler (`bomb_zone`), Konvoi-Spawn-
   Punkten (`road_NN_spawn`), Exit- a Kill-Gebidder. Gebidder vun engem anere Modus vun der selwechter Kaart (`conq_`, `dom_`, `bttl_`,
@@ -28,7 +28,7 @@ search_exclude: true
   anescht ronderëm weisen, gëtt all `team` getauscht an d'Säit vum Numm als `missionTeam` behalen. Konvoi-Routen sinn
   net an de Wegpunkte vun de Missioune, sou wéi se gelies ginn; et gëtt nëmmen, wou Konvoien opdauchen.
 
-D'Eroberungszone iwwer d'Zäit sinn de Sidecar `<match>.objectives.parquet`: d'replizéiert Objete vun der Aart 5, ee
+D'Eroberungszone iwwer d'Zäit sinn d'Niewendatei `<match>.objectives.parquet`: d'replizéiert Objete vun der Aart 5, ee
 pro Zon - Feld 2 säin Besëtzer (0, 1, 2), Feld 67 säi Eroberungsfortschrëtt, e signéierte Byte vun -100 bis 100 (positiv
 a Richtung Team 2), Feld 69 säin Index. Gepréift (`selfCheck.objectives`) op Buedem-Server-Replays vu Conquest- an Domination-Gefechter: all Besëtzerwiessel
 kënnt zesumme mat engem Spiller vum erobernden Team, deen am selwechten Ament (bannent
