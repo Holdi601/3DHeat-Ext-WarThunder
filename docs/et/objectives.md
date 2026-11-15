@@ -1,7 +1,7 @@
 ---
 title: Eesmärgid
 nav_order: 15
-lang: et
+lang: "et"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

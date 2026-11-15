@@ -1,7 +1,7 @@
 ---
 title: "Come legge un replay"
 nav_order: 10
-lang: it
+lang: "it"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

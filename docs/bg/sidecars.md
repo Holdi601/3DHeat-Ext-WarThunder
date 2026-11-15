@@ -1,7 +1,7 @@
 ---
 title: Придружаващи файлове и пълнота
 nav_order: 8
-lang: bg
+lang: "bg"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

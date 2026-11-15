@@ -1,7 +1,7 @@
 ---
 title: 사이드카와 완전성
 nav_order: 8
-lang: ko
+lang: "ko"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

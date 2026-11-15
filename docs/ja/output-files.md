@@ -1,7 +1,7 @@
 ---
 title: 出力ファイル
 nav_order: 5
-lang: ja
+lang: "ja"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

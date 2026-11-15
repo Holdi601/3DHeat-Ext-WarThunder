@@ -1,7 +1,7 @@
 ---
 title: 문서 관리
 nav_order: 99
-lang: ko
+lang: "ko"
 source: maintaining.md
 source_hash: "f969a2d994d5"
 nav_exclude: true

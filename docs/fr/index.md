@@ -1,7 +1,7 @@
 ---
 title: Accueil
 nav_order: 1
-lang: fr
+lang: "fr"
 source: index.md
 source_hash: "5266a64b1c30"
 nav_exclude: true

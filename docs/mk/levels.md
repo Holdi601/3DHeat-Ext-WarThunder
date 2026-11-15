@@ -1,7 +1,7 @@
 ---
 title: "Нивоа"
 nav_order: 9
-lang: mk
+lang: "mk"
 source: levels.md
 source_hash: "8fd5f4d94b76"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Sidecars und Vollständigkeit
 nav_order: 8
-lang: de
+lang: "de"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

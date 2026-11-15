@@ -1,7 +1,7 @@
 ---
 title: "Lietadlá"
 nav_order: 11
-lang: sk
+lang: "sk"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

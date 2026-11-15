@@ -1,7 +1,7 @@
 ---
 title: "Умови і ліцензія"
 nav_order: 16
-lang: uk
+lang: "uk"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

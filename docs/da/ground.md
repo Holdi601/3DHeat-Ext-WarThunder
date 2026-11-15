@@ -1,7 +1,7 @@
 ---
 title: Landenheder og kamera
 nav_order: 12
-lang: da
+lang: "da"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

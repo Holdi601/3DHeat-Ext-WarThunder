@@ -1,7 +1,7 @@
 ---
 title: "Daqqiet, sparar u nirien"
 nav_order: 13
-lang: mt
+lang: "mt"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

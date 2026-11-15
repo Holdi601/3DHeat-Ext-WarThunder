@@ -1,7 +1,7 @@
 ---
 title: Cele
 nav_order: 15
-lang: pl
+lang: "pl"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

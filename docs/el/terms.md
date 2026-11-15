@@ -1,7 +1,7 @@
 ---
 title: "Όροι και άδεια"
 nav_order: 16
-lang: el
+lang: "el"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

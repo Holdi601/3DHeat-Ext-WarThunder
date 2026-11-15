@@ -1,7 +1,7 @@
 ---
 title: "Buedemeenheeten a Kamera"
 nav_order: 12
-lang: lb
+lang: "lb"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

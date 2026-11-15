@@ -1,7 +1,7 @@
 ---
 title: "Наземні юніти і камера"
 nav_order: 12
-lang: uk
+lang: "uk"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

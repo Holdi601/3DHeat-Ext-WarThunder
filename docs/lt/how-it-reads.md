@@ -1,7 +1,7 @@
 ---
 title: Kaip įrankis skaito įrašą
 nav_order: 10
-lang: lt
+lang: "lt"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

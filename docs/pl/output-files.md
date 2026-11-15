@@ -1,7 +1,7 @@
 ---
 title: Pliki wyjściowe
 nav_order: 5
-lang: pl
+lang: "pl"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "表格"
 nav_order: 6
-lang: zh-Hant
+lang: "zh-Hant"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

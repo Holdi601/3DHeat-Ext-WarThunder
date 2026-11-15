@@ -1,7 +1,7 @@
 ---
 title: "Ziler"
 nav_order: 15
-lang: lb
+lang: "lb"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

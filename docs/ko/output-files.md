@@ -1,7 +1,7 @@
 ---
 title: 출력 파일
 nav_order: 5
-lang: ko
+lang: "ko"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

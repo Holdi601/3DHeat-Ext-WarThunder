@@ -1,7 +1,7 @@
 ---
 title: "Maç belgesi"
 nav_order: 7
-lang: tr
+lang: "tr"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

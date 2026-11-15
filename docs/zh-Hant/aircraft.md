@@ -1,7 +1,7 @@
 ---
 title: "飛機"
 nav_order: 11
-lang: zh-Hant
+lang: "zh-Hant"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

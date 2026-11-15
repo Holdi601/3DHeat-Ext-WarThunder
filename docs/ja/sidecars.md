@@ -1,7 +1,7 @@
 ---
 title: サイドカーと完全性
 nav_order: 8
-lang: ja
+lang: "ja"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

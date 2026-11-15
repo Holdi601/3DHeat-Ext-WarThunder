@@ -1,7 +1,7 @@
 ---
 title: "A táblázat"
 nav_order: 6
-lang: hu
+lang: "hu"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

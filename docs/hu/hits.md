@@ -1,7 +1,7 @@
 ---
 title: "Találatok, lövések és tüzek"
 nav_order: 13
-lang: hu
+lang: "hu"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

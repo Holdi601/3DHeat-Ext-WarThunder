@@ -1,7 +1,7 @@
 ---
 title: "命中、射击与火灾"
 nav_order: 13
-lang: zh
+lang: "zh"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

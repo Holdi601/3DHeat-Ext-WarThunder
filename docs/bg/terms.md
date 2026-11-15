@@ -1,7 +1,7 @@
 ---
 title: Условия и лиценз
 nav_order: 16
-lang: bg
+lang: "bg"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

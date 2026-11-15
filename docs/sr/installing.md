@@ -1,7 +1,7 @@
 ---
 title: Инсталација
 nav_order: 3
-lang: sr
+lang: "sr"
 source: installing.md
 source_hash: "3a4218d952bc"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Перетворення повторів"
 nav_order: 4
-lang: uk
+lang: "uk"
 source: converting.md
 source_hash: "43232a83420d"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Sivutiedostot ja täydellisyys
 nav_order: 8
-lang: fi
+lang: "fi"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

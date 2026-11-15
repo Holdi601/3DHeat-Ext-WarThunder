@@ -1,7 +1,7 @@
 ---
 title: "Sidecar datoteke i potpunost"
 nav_order: 8
-lang: bs
+lang: "bs"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

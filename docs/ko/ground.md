@@ -1,7 +1,7 @@
 ---
 title: 지상 유닛과 카메라
 nav_order: 12
-lang: ko
+lang: "ko"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

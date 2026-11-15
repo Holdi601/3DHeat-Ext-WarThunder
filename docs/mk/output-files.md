@@ -1,7 +1,7 @@
 ---
 title: "Излезни датотеки"
 nav_order: 5
-lang: mk
+lang: "mk"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

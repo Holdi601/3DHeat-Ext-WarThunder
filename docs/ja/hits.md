@@ -1,7 +1,7 @@
 ---
 title: 命中、射撃、火災
 nav_order: 13
-lang: ja
+lang: "ja"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

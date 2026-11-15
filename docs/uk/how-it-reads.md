@@ -1,7 +1,7 @@
 ---
 title: "Як читається повтор"
 nav_order: 10
-lang: uk
+lang: "uk"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

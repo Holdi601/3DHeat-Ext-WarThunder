@@ -1,7 +1,7 @@
 ---
 title: "Nivåer (heat3d-wt-level)"
 nav_order: 9
-lang: sv
+lang: "sv"
 source: levels.md
 source_hash: "8fd5f4d94b76"
 nav_exclude: true

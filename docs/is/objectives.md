@@ -1,7 +1,7 @@
 ---
 title: "Markmið"
 nav_order: 15
-lang: is
+lang: "is"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

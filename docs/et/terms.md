@@ -1,7 +1,7 @@
 ---
 title: Tingimused ja litsents
 nav_order: 16
-lang: et
+lang: "et"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

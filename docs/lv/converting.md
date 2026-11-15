@@ -1,7 +1,7 @@
 ---
 title: Atkārtojumu pārvēršana
 nav_order: 4
-lang: lv
+lang: "lv"
 source: converting.md
 source_hash: "43232a83420d"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Colpi, fuoco sparato e incendi"
 nav_order: 13
-lang: it
+lang: "it"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

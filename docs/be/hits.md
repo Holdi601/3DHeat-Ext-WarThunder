@@ -1,7 +1,7 @@
 ---
 title: "Трапленні, стрэльба і пажары"
 nav_order: 13
-lang: be
+lang: "be"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

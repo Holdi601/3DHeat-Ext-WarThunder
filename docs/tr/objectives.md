@@ -1,7 +1,7 @@
 ---
 title: "Hedefler"
 nav_order: 15
-lang: tr
+lang: "tr"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

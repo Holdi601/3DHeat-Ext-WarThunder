@@ -1,7 +1,7 @@
 ---
 title: "Repülőgépek"
 nav_order: 11
-lang: hu
+lang: "hu"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

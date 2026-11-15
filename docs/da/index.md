@@ -1,7 +1,7 @@
 ---
 title: Startside
 nav_order: 1
-lang: da
+lang: "da"
 source: index.md
 source_hash: "5266a64b1c30"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "对局文档"
 nav_order: 7
-lang: zh
+lang: "zh"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Эканоміка"
 nav_order: 14
-lang: be
+lang: "be"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Tablo"
 nav_order: 6
-lang: tr
+lang: "tr"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

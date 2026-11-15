@@ -1,7 +1,7 @@
 ---
 title: "Goditjet, të shtënat dhe zjarret"
 nav_order: 13
-lang: sq
+lang: "sq"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Gazdaság"
 nav_order: 14
-lang: hu
+lang: "hu"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

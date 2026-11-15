@@ -1,7 +1,7 @@
 ---
 title: "命中、射擊與火勢"
 nav_order: 13
-lang: zh-Hant
+lang: "zh-Hant"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

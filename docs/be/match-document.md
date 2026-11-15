@@ -1,7 +1,7 @@
 ---
 title: "Дакумент матча"
 nav_order: 7
-lang: be
+lang: "be"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

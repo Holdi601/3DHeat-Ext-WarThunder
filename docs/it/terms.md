@@ -1,7 +1,7 @@
 ---
 title: "Condizioni e licenza"
 nav_order: 16
-lang: it
+lang: "it"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

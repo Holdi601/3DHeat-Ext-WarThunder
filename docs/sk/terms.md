@@ -1,7 +1,7 @@
 ---
 title: "Podmienky a licencia"
 nav_order: 16
-lang: sk
+lang: "sk"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

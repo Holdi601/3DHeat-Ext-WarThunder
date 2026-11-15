@@ -1,7 +1,7 @@
 ---
 title: "Uvjeti i licenca"
 nav_order: 16
-lang: bs
+lang: "bs"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

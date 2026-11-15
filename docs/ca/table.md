@@ -1,7 +1,7 @@
 ---
 title: La taula
 nav_order: 6
-lang: ca
+lang: "ca"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

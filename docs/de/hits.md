@@ -1,7 +1,7 @@
 ---
 title: Treffer, Feuer und Brände
 nav_order: 13
-lang: de
+lang: "de"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

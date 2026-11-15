@@ -1,7 +1,7 @@
 ---
 title: Flugzeuge
 nav_order: 11
-lang: de
+lang: "de"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

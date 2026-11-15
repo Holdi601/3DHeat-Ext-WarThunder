@@ -1,7 +1,7 @@
 ---
 title: "安裝"
 nav_order: 3
-lang: zh-Hant
+lang: "zh-Hant"
 source: installing.md
 source_hash: "3a4218d952bc"
 nav_exclude: true

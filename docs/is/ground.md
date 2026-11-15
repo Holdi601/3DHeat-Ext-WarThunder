@@ -1,7 +1,7 @@
 ---
 title: "Landfarartæki og myndavél"
 nav_order: 12
-lang: is
+lang: "is"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

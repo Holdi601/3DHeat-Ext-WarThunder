@@ -1,7 +1,7 @@
 ---
 title: Impacts, tirs et incendies
 nav_order: 13
-lang: fr
+lang: "fr"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Файлы вываду"
 nav_order: 5
-lang: be
+lang: "be"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

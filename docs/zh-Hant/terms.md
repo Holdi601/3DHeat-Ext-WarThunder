@@ -1,7 +1,7 @@
 ---
 title: "名詞與授權"
 nav_order: 16
-lang: zh-Hant
+lang: "zh-Hant"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

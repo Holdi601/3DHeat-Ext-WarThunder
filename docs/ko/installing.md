@@ -1,7 +1,7 @@
 ---
 title: 설치
 nav_order: 3
-lang: ko
+lang: "ko"
 source: installing.md
 source_hash: "3a4218d952bc"
 nav_exclude: true

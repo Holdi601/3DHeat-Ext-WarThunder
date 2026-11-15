@@ -1,7 +1,7 @@
 ---
 title: "Kako čita replay"
 nav_order: 10
-lang: bs
+lang: "bs"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

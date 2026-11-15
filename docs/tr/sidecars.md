@@ -1,7 +1,7 @@
 ---
 title: "Yan dosyalar ve tamlık"
 nav_order: 8
-lang: tr
+lang: "tr"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

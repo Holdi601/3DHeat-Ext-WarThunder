@@ -1,7 +1,7 @@
 ---
 title: "Så läser den en repris"
 nav_order: 10
-lang: sv
+lang: "sv"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

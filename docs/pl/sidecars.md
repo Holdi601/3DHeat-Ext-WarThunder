@@ -1,7 +1,7 @@
 ---
 title: Pliki towarzyszące i kompletność
 nav_order: 8
-lang: pl
+lang: "pl"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

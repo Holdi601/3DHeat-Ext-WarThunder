@@ -1,7 +1,7 @@
 ---
 title: Unidades terrestres e câmera
 nav_order: 12
-lang: pt
+lang: "pt"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

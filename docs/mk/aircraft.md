@@ -1,7 +1,7 @@
 ---
 title: "Авиони"
 nav_order: 11
-lang: mk
+lang: "mk"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

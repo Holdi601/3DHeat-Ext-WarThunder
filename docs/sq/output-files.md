@@ -1,7 +1,7 @@
 ---
 title: "Skedarët e daljes"
 nav_order: 5
-lang: sq
+lang: "sq"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

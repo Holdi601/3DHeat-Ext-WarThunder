@@ -1,7 +1,7 @@
 ---
 title: Kopenske enote in kamera
 nav_order: 12
-lang: sl
+lang: "sl"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

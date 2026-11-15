@@ -1,7 +1,7 @@
 ---
 title: Noteikumi un licence
 nav_order: 16
-lang: lv
+lang: "lv"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

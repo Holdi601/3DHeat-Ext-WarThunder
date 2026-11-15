@@ -1,7 +1,7 @@
 ---
 title: Pojmovi i licenca
 nav_order: 16
-lang: hr
+lang: "hr"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

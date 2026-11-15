@@ -1,7 +1,7 @@
 ---
 title: "Treffer, Schéiss a Brand"
 nav_order: 13
-lang: lb
+lang: "lb"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

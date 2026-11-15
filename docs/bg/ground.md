@@ -1,7 +1,7 @@
 ---
 title: Наземни единици и камера
 nav_order: 12
-lang: bg
+lang: "bg"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

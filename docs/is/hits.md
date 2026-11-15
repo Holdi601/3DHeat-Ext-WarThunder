@@ -1,7 +1,7 @@
 ---
 title: "Högg, skothríð og eldar"
 nav_order: 13
-lang: is
+lang: "is"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

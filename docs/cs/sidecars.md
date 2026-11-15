@@ -1,7 +1,7 @@
 ---
 title: "Doplňky a úplnost"
 nav_order: 8
-lang: cs
+lang: "cs"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: A tabela
 nav_order: 6
-lang: pt
+lang: "pt"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

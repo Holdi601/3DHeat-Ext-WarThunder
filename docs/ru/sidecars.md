@@ -1,7 +1,7 @@
 ---
 title: Вспомогательные файлы и полнота
 nav_order: 8
-lang: ru
+lang: "ru"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

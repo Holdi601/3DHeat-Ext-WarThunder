@@ -1,7 +1,7 @@
 ---
 title: "Sidofiler och fullständighet"
 nav_order: 8
-lang: sv
+lang: "sv"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

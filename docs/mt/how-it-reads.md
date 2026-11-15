@@ -1,7 +1,7 @@
 ---
 title: "Kif taqra ripetizzjoni"
 nav_order: 10
-lang: mt
+lang: "mt"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

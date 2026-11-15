@@ -1,7 +1,7 @@
 ---
 title: "Ajruplani"
 nav_order: 11
-lang: mt
+lang: "mt"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

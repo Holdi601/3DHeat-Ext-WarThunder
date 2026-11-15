@@ -1,7 +1,7 @@
 ---
 title: Unités au sol et caméra
 nav_order: 12
-lang: fr
+lang: "fr"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Conversió de repeticions
 nav_order: 4
-lang: ca
+lang: "ca"
 source: converting.md
 source_hash: "43232a83420d"
 nav_exclude: true

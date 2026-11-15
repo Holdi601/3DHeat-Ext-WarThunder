@@ -1,7 +1,7 @@
 ---
 title: Spremljevalne datoteke in popolnost
 nav_order: 8
-lang: sl
+lang: "sl"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

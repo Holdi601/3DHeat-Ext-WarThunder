@@ -1,7 +1,7 @@
 ---
 title: O documento da partida
 nav_order: 7
-lang: pt
+lang: "pt"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Kuidas tööriist kordust loeb
 nav_order: 10
-lang: et
+lang: "et"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

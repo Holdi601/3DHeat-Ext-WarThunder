@@ -1,7 +1,7 @@
 ---
 title: Arquivos auxiliares e completude
 nav_order: 8
-lang: pt
+lang: "pt"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

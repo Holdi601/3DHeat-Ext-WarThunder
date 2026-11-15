@@ -1,7 +1,7 @@
 ---
 title: Aviones
 nav_order: 11
-lang: es
+lang: "es"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

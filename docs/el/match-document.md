@@ -1,7 +1,7 @@
 ---
 title: "Το έγγραφο αγώνα"
 nav_order: 7
-lang: el
+lang: "el"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

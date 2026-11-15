@@ -1,7 +1,7 @@
 ---
 title: "Zásahy, streľba a požiare"
 nav_order: 13
-lang: sk
+lang: "sk"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

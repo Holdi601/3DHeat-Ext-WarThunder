@@ -1,7 +1,7 @@
 ---
 title: "Njësitë tokësore dhe kamera"
 nav_order: 12
-lang: sq
+lang: "sq"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

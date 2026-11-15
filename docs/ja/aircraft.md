@@ -1,7 +1,7 @@
 ---
 title: 飛行機
 nav_order: 11
-lang: ja
+lang: "ja"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

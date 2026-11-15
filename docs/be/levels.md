@@ -1,7 +1,7 @@
 ---
 title: "Узроўні"
 nav_order: 9
-lang: be
+lang: "be"
 source: levels.md
 source_hash: "8fd5f4d94b76"
 nav_exclude: true

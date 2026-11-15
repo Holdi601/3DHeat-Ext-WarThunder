@@ -1,7 +1,7 @@
 ---
 title: "Hagkerfi"
 nav_order: 14
-lang: is
+lang: "is"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

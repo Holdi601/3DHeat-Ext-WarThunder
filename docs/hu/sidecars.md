@@ -1,7 +1,7 @@
 ---
 title: "Kísérőfájlok és teljesség"
 nav_order: 8
-lang: hu
+lang: "hu"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

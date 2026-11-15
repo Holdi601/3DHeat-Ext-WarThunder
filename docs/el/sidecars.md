@@ -1,7 +1,7 @@
 ---
 title: "Βοηθητικά αρχεία και πληρότητα"
 nav_order: 8
-lang: el
+lang: "el"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

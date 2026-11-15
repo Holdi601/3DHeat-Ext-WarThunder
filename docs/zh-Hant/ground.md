@@ -1,7 +1,7 @@
 ---
 title: "地面單位與攝影機"
 nav_order: 12
-lang: zh-Hant
+lang: "zh-Hant"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

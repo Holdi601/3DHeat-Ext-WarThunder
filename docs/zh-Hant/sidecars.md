@@ -1,7 +1,7 @@
 ---
 title: "附屬檔案與完整性"
 nav_order: 8
-lang: zh-Hant
+lang: "zh-Hant"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Hliðarskrár og heilleiki"
 nav_order: 8
-lang: is
+lang: "is"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

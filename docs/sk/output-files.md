@@ -1,7 +1,7 @@
 ---
 title: "Výstupné súbory"
 nav_order: 5
-lang: sk
+lang: "sk"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

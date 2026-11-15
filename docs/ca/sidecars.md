@@ -1,7 +1,7 @@
 ---
 title: Annexos i completesa
 nav_order: 8
-lang: ca
+lang: "ca"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

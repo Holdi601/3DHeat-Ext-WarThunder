@@ -1,7 +1,7 @@
 ---
 title: "Στόχοι"
 nav_order: 15
-lang: el
+lang: "el"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

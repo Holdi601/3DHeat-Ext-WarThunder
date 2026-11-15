@@ -1,7 +1,7 @@
 ---
 title: "File di output"
 nav_order: 5
-lang: it
+lang: "it"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

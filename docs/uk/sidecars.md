@@ -1,7 +1,7 @@
 ---
 title: "Супутні файли і повнота"
 nav_order: 8
-lang: uk
+lang: "uk"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

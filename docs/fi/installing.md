@@ -1,7 +1,7 @@
 ---
 title: Asennus
 nav_order: 3
-lang: fi
+lang: "fi"
 source: installing.md
 source_hash: "3a4218d952bc"
 nav_exclude: true

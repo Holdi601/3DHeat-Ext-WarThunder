@@ -1,7 +1,7 @@
 ---
 title: Warunki i licencja
 nav_order: 16
-lang: pl
+lang: "pl"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

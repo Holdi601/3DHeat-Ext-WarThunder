@@ -1,7 +1,7 @@
 ---
 title: Lovituri, tragere și incendii
 nav_order: 13
-lang: ro
+lang: "ro"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

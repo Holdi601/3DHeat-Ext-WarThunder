@@ -1,7 +1,7 @@
 ---
 title: "Nivoi"
 nav_order: 9
-lang: bs
+lang: "bs"
 source: levels.md
 source_hash: "8fd5f4d94b76"
 nav_exclude: true

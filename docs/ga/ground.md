@@ -1,7 +1,7 @@
 ---
 title: Aonaid talún agus ceamara
 nav_order: 12
-lang: ga
+lang: "ga"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

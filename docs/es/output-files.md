@@ -1,7 +1,7 @@
 ---
 title: Archivos de salida
 nav_order: 5
-lang: es
+lang: "es"
 source: output-files.md
 source_hash: "f9f2d3941019"
 nav_exclude: true

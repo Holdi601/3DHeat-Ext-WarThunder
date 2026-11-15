@@ -1,7 +1,7 @@
 ---
 title: Наземная техника и камера
 nav_order: 12
-lang: ru
+lang: "ru"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Mängu dokument
 nav_order: 7
-lang: et
+lang: "et"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "工具如何读取录像"
 nav_order: 10
-lang: zh
+lang: "zh"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

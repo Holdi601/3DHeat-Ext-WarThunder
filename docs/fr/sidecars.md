@@ -1,7 +1,7 @@
 ---
 title: Fichiers annexes et complétude
 nav_order: 8
-lang: fr
+lang: "fr"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

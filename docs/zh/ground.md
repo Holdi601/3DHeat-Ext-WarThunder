@@ -1,7 +1,7 @@
 ---
 title: "地面单位与相机"
 nav_order: 12
-lang: zh
+lang: "zh"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

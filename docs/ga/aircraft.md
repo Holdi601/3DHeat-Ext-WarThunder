@@ -1,7 +1,7 @@
 ---
 title: Aerárthaigh
 nav_order: 11
-lang: ga
+lang: "ga"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Pogoji in licenca
 nav_order: 16
-lang: sl
+lang: "sl"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

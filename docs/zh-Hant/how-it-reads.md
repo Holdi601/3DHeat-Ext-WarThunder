@@ -1,7 +1,7 @@
 ---
 title: "讀取回放的方式"
 nav_order: 10
-lang: zh-Hant
+lang: "zh-Hant"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

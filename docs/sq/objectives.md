@@ -1,7 +1,7 @@
 ---
 title: "Objektivat"
 nav_order: 15
-lang: sq
+lang: "sq"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Comment le replay est lu
 nav_order: 10
-lang: fr
+lang: "fr"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

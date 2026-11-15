@@ -1,7 +1,7 @@
 ---
 title: Comhaid chliatháin agus iomláine
 nav_order: 8
-lang: ga
+lang: "ga"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

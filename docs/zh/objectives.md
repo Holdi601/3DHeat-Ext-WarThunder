@@ -1,7 +1,7 @@
 ---
 title: "目标"
 nav_order: 15
-lang: zh
+lang: "zh"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

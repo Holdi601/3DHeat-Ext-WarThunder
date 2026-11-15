@@ -1,7 +1,7 @@
 ---
 title: 地上ユニットとカメラ
 nav_order: 12
-lang: ja
+lang: "ja"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

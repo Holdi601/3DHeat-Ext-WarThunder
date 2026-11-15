@@ -1,7 +1,7 @@
 ---
 title: "File accessori e completezza"
 nav_order: 8
-lang: it
+lang: "it"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

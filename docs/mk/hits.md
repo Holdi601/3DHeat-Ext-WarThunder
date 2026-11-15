@@ -1,7 +1,7 @@
 ---
 title: "Погодоци, пукање и пожари"
 nav_order: 13
-lang: mk
+lang: "mk"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Treffers, beschieting en branden"
 nav_order: 13
-lang: nl
+lang: "nl"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

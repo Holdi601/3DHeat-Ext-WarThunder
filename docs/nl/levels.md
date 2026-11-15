@@ -1,7 +1,7 @@
 ---
 title: "Levels"
 nav_order: 9
-lang: nl
+lang: "nl"
 source: levels.md
 source_hash: "8fd5f4d94b76"
 nav_exclude: true

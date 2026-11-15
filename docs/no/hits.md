@@ -1,7 +1,7 @@
 ---
 title: "Treff, skuddild og branner"
 nav_order: 13
-lang: no
+lang: "no"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

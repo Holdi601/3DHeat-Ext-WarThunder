@@ -1,7 +1,7 @@
 ---
 title: Gospodarstvo
 nav_order: 14
-lang: sl
+lang: "sl"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

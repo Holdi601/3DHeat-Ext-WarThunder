@@ -1,7 +1,7 @@
 ---
 title: Termeni și licență
 nav_order: 16
-lang: ro
+lang: "ro"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

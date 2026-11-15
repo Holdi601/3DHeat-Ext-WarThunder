@@ -1,7 +1,7 @@
 ---
 title: Tavoitteet
 nav_order: 15
-lang: fi
+lang: "fi"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

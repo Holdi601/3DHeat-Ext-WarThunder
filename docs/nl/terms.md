@@ -1,7 +1,7 @@
 ---
 title: "Voorwaarden en licentie"
 nav_order: 16
-lang: nl
+lang: "nl"
 source: terms.md
 source_hash: "87615c2f7602"
 nav_exclude: true

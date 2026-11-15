@@ -1,7 +1,7 @@
 ---
 title: Das Match-Dokument
 nav_order: 7
-lang: de
+lang: "de"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

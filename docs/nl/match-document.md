@@ -1,7 +1,7 @@
 ---
 title: "Het wedstrijddocument"
 nav_order: 7
-lang: nl
+lang: "nl"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

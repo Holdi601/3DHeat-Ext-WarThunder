@@ -1,7 +1,7 @@
 ---
 title: Unitats terrestres i càmera
 nav_order: 12
-lang: ca
+lang: "ca"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

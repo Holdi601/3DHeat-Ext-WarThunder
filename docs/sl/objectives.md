@@ -1,7 +1,7 @@
 ---
 title: Cilji
 nav_order: 15
-lang: sl
+lang: "sl"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

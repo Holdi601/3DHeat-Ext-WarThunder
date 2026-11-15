@@ -1,7 +1,7 @@
 ---
 title: "İsabetler, ateş ve yangınlar"
 nav_order: 13
-lang: tr
+lang: "tr"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

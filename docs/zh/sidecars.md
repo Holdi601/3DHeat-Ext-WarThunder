@@ -1,7 +1,7 @@
 ---
 title: "附属文件与完整性"
 nav_order: 8
-lang: zh
+lang: "zh"
 source: sidecars.md
 source_hash: "e9982dbb930b"
 nav_exclude: true

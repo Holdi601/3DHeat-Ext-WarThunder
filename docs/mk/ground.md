@@ -1,7 +1,7 @@
 ---
 title: "Копнени единици и камера"
 nav_order: 12
-lang: mk
+lang: "mk"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

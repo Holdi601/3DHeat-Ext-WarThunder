@@ -1,7 +1,7 @@
 ---
 title: "Leikjaskjalið"
 nav_order: 7
-lang: is
+lang: "is"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

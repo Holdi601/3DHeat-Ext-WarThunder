@@ -1,7 +1,7 @@
 ---
 title: "Влучання, стрільба і пожежі"
 nav_order: 13
-lang: uk
+lang: "uk"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

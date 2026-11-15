@@ -1,7 +1,7 @@
 ---
 title: "Heim"
 nav_order: 1
-lang: is
+lang: "is"
 source: index.md
 source_hash: "5266a64b1c30"
 nav_exclude: true

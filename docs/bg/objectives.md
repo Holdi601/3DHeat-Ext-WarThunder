@@ -1,7 +1,7 @@
 ---
 title: Цели
 nav_order: 15
-lang: bg
+lang: "bg"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

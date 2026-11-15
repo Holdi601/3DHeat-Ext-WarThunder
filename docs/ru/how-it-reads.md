@@ -1,7 +1,7 @@
 ---
 title: Как читается реплей
 nav_order: 10
-lang: ru
+lang: "ru"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

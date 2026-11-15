@@ -1,7 +1,7 @@
 ---
 title: Economia
 nav_order: 14
-lang: ca
+lang: "ca"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Avioni"
 nav_order: 11
-lang: bs
+lang: "bs"
 source: aircraft.md
 source_hash: "2073f74a8bad"
 nav_exclude: true

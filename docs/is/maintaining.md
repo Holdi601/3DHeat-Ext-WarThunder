@@ -1,7 +1,7 @@
 ---
 title: "Viðhald skjölunar"
 nav_order: 99
-lang: is
+lang: "is"
 source: maintaining.md
 source_hash: "f969a2d994d5"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Економија
 nav_order: 14
-lang: sr
+lang: "sr"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

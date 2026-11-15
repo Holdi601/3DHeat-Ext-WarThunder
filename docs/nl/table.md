@@ -1,7 +1,7 @@
 ---
 title: "De tabel"
 nav_order: 6
-lang: nl
+lang: "nl"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

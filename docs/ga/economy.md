@@ -1,7 +1,7 @@
 ---
 title: Geilleagar
 nav_order: 14
-lang: ga
+lang: "ga"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

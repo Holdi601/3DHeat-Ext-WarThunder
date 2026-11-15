@@ -1,7 +1,7 @@
 ---
 title: "Unitajiet tal-art u kamera"
 nav_order: 12
-lang: mt
+lang: "mt"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

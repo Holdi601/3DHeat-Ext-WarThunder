@@ -1,7 +1,7 @@
 ---
 title: 테이블
 nav_order: 6
-lang: ko
+lang: "ko"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

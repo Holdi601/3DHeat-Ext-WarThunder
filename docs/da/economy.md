@@ -1,7 +1,7 @@
 ---
 title: Økonomi
 nav_order: 14
-lang: da
+lang: "da"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

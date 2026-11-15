@@ -1,7 +1,7 @@
 ---
 title: 리플레이 변환하기
 nav_order: 4
-lang: ko
+lang: "ko"
 source: converting.md
 source_hash: "43232a83420d"
 nav_exclude: true

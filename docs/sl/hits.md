@@ -1,7 +1,7 @@
 ---
 title: Zadetki, streljanje in požari
 nav_order: 13
-lang: sl
+lang: "sl"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

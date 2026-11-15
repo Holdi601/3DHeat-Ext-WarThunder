@@ -1,7 +1,7 @@
 ---
 title: Ottelun asiakirja
 nav_order: 7
-lang: fi
+lang: "fi"
 source: match-document.md
 source_hash: "665622673174"
 nav_exclude: true

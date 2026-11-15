@@ -1,7 +1,7 @@
 ---
 title: "Obiettivi"
 nav_order: 15
-lang: it
+lang: "it"
 source: objectives.md
 source_hash: "ed52ae9e8231"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: "Ekonomia"
 nav_order: 14
-lang: sq
+lang: "sq"
 source: economy.md
 source_hash: "870b7f982c6d"
 nav_exclude: true

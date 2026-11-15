@@ -1,7 +1,7 @@
 ---
 title: Acertos, tiros e incêndios
 nav_order: 13
-lang: pt
+lang: "pt"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

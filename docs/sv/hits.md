@@ -1,7 +1,7 @@
 ---
 title: "Träffar, beskjutning och bränder"
 nav_order: 13
-lang: sv
+lang: "sv"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

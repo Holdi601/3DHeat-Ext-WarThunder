@@ -1,7 +1,7 @@
 ---
 title: Tabelul
 nav_order: 6
-lang: ro
+lang: "ro"
 source: table.md
 source_hash: "eb510866a208"
 nav_exclude: true

@@ -1,7 +1,7 @@
 ---
 title: Cómo lee una repetición
 nav_order: 10
-lang: es
+lang: "es"
 source: how-it-reads.md
 source_hash: "ff0f78605bd1"
 nav_exclude: true

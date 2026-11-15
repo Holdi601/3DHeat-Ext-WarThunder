@@ -1,7 +1,7 @@
 ---
 title: Maapealsed üksused ja kaamera
 nav_order: 12
-lang: et
+lang: "et"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true

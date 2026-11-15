@@ -1,7 +1,7 @@
 ---
 title: Tabamused, tulistamine ja tulekahjud
 nav_order: 13
-lang: et
+lang: "et"
 source: hits.md
 source_hash: "201975b2f443"
 nav_exclude: true

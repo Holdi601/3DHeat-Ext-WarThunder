@@ -1,7 +1,7 @@
 ---
 title: Sauszemes vienības un kamera
 nav_order: 12
-lang: lv
+lang: "lv"
 source: ground.md
 source_hash: "b5eb495b1d3a"
 nav_exclude: true
