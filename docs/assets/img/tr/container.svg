@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="454" viewBox="0 0 880 454" role="img" aria-label="What one .3dheat file holds"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect width="880" height="454" rx="10" fill="#f7f8fa"/>
+<text x="440" y="30" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle" fill="#1d2330">.3dheat dosyasının içeriği</text>
+<rect x="20" y="48" width="840" height="356" rx="8" fill="#eef4ff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="440" y="72" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.3dheat</text>
+<text x="440" y="92" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">savaş başına bir dosya; manifesti oyunu, haritayı, maçı, modu ve başlangıcı adlandırır</text>
+<rect x="40" y="108" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="132" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.parquet</text>
+<text x="235" y="154" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">tablo: izler ve olaylar</text>
+<rect x="450" y="108" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="132" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.match.json</text>
+<text x="645" y="154" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">maç belgesi</text>
+<rect x="40" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.messages.parquet</text>
+<text x="235" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">yan dosya: her ileti, tam</text>
+<rect x="450" y="206" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="230" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.objectives.parquet</text>
+<text x="645" y="252" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">yan dosya: zamana göre ele geçirme bölgeleri</text>
+<rect x="40" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="235" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.flight.parquet</text>
+<text x="235" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">yan dosya: uçuş modeli girdileri</text>
+<rect x="450" y="304" width="390" height="82" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
+<text x="645" y="328" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">manifest</text>
+<text x="645" y="350" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">oyun, harita, maç, dönüştürücü,</text>
+<text x="645" y="370" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">savaşın ekonomisi</text>
+<text x="440" y="434" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Görüntüleyici onu ayrı dosyalar gibi açar. --loose ile bu dosyaları tek tek alırsınız.</text>
+</svg>
