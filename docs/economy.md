@@ -21,13 +21,20 @@ values go into your own output only. Without the install's `char.vromfs.bin` no 
 | `currency` | every row with a `cost_*` or `earn_sl` | `SL` (`earn_rp` is research points) |
 | `econ_basis` | the same | `install` (a price read from the install) or `inferred` (worked out, below) |
 
-**Who won.** `won` (0/1) on every row of a team's, where the replay says: a client
-replay's results carry the author's own outcome (`status`: `success` or `fail`), so the
-author's team won or lost and the other team the reverse; `result` in the match document
-says which (`winner`, `status`, `authorTeam`). Server replays and replays left before the
-end carry no outcome (a server replay's `status` is always `success` and names no author),
-and neither kind holds installed modifications: the results list each player's vehicles by
-name and type only. There `won` stays empty.
+**Who won.** `won` and `matchWon` (0/1, the same in a battle: one battle is one round) on
+every row of a team's, `roundEndReason` on every row, and `round` 1 - the viewer's outcome
+columns. A client replay's results carry the author's own outcome (`status`: `success` or
+`fail`), so the author's team won or lost and the other team the reverse. A server replay's
+`status` is always `success` and names no author; there the tickets decide: the battle is
+over for the team whose tickets are 0 at the end while the other's are not (the scoreboard's
+field 3; every client replay with a status agrees, and every server replay sampled ends that
+way). `result` in the match document says which (`winner`, `source`: `results.status` or
+`tickets`, `status`, `authorTeam`) and how the battle ended (`endReason`, also
+`roundEndReason` on the rows): `destruction` (the loser's tickets fell to 0 in one step, its
+last vehicles lost), `capture` (bled out while the winner held zones), `tickets` (lost to
+kills), `time` (a status winner with both teams' tickets left, the winner's the more). A
+client replay left before the end says neither; there the columns stay empty. No replay holds
+installed modifications: the results list each player's vehicles by name and type only.
 
 The viewer's cost model reads the columns `cost_*` (and `earn_*`) with `currency`; summing `cost_fired_sl +
 cost_lost_sl` gives where Silver Lions were spent and lost, `earn_sl` where they were earned (a kill's reward is

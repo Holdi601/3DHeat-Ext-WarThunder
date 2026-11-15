@@ -52,7 +52,7 @@ reading instructions, so the viewer needs no form filled in.
 | `otherVehicle`, `otherLife` | a `shot`'s victim: its vehicle and its `life` |
 | `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | a `shot`'s hit point in the victim's own frame (m; x forward, y up, z left; see [Messages to units](how-it-reads.md#messages-to-units)) and the way the shot came, turned into that frame by the victim's attitude then |
 | `hitPart`, `hitFlag` | a `shot`'s hit message: its part word as sent, and its high byte |
-| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won` | what the battle cost and earned, and who won: see [Economy](economy.md) |
+| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won`, `matchWon`, `round`, `roundEndReason` | what the battle cost and earned, who won and how it ended: see [Economy](economy.md) |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
 
 ---

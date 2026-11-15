@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Server replays say who won: the team whose tickets are 0 at the end lost (checked against every client
+  replay with a status). Every row carries the viewer's outcome columns: `won`, `matchWon`, `round` (1) and
+  `roundEndReason` (`destruction`, `capture`, `tickets`, `time`); the match document's `result` adds
+  `source` and `endReason`.
 - `heat3d-wt-level extract --help`: the object budget's fallback is named
   as it works (a crown or the collision shape, then left out; never a box).
 - Documentation: a page for beginners, plain openers, the match document's

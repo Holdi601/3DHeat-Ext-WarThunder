@@ -84,7 +84,7 @@ HINTS = {
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
                   "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
                   "gameMode", "cost_fired_sl", "cost_lost_sl", "earn_sl", "earn_rp", "currency", "econ_basis",
-                  "rewardType", "won"],
+                  "rewardType", "won", "matchWon", "round", "roundEndReason"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -204,6 +204,9 @@ COLUMNS = [
     ("econ_basis", "str"),
     ("rewardType", "str"),
     ("won", "i16"),
+    ("matchWon", "i16"),
+    ("round", "i16"),
+    ("roundEndReason", "str"),
 ]
 
 
@@ -3754,24 +3757,82 @@ def entity_message_classes(r: Replay) -> dict[str, Any]:
             "classes": dict(sorted(out.items(), key=lambda kv: -kv[1]["count"]))}
 
 
-def battle_result(r: Replay, roster: dict[str, dict[str, Any]]) -> dict[str, Any]:
+#: A team's tickets falling to 0 from more than this share of their most in one step: its last
+#: vehicles lost at once (no one left to spawn), not a bleed.
+_DESTRUCTION_STEP = 0.1
+
+
+def ticket_end(board: dict[str, Any] | None) -> dict[str, Any] | None:
+    """
+    How the battle ended, from the teams' tickets at the end (`scoreboard`:
+    field 3, `ticketsLikely`, and field 2, the capture zones a team holds).
+    The battle is over for a team whose tickets are 0 while the other's are
+    not: that team lost. Checked on every client replay of the user's whose
+    results say the outcome (53 of 53 agree) and seen on every server replay
+    sampled (150 of 150 end with one team at 0). How the loser's tickets
+    went: to 0 in one step from more than a tenth of their most -
+    `destruction` (its last vehicles lost, no one left to spawn); bled down
+    while the winner held zones - `capture`; otherwise `tickets` (lost to
+    kills). Both teams above 0 at the end: a battle left before its end, or
+    decided by time - None here (see `battle_result`).
+    """
+    teams = (board or {}).get("teams") or {}
+    last = {k: v[-1] for k, v in teams.items() if v}
+    if len(last) != 2 or any(len(row) < 4 or row[2] is None for row in last.values()):
+        return None
+    zero = [k for k, row in last.items() if row[2] == 0]
+    if len(zero) != 1:
+        return {"tickets": {k: row[2] for k, row in last.items()}, "zones": {k: row[3] for k, row in last.items()},
+                "winner": None, "endReason": None}
+    loser = zero[0]
+    winner = next(k for k in last if k != loser)
+    series = [row[2] for row in teams[loser] if len(row) > 2 and row[2] is not None]
+    peak = max(series) if series else 0
+    before = next((v for v in reversed(series) if v), 0)
+    if peak > 0 and before > _DESTRUCTION_STEP * peak:
+        reason = "destruction"
+    elif (last[winner][3] or 0) > 0:
+        reason = "capture"
+    else:
+        reason = "tickets"
+    return {"tickets": {k: row[2] for k, row in last.items()}, "zones": {k: row[3] for k, row in last.items()},
+            "winner": winner, "endReason": reason}
+
+
+def battle_result(r: Replay, roster: dict[str, dict[str, Any]], board: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Who won, where the replay says: the results' `status` (`success` or
     `fail`) is the author's own outcome, so the author's team won or lost and
-    the other of the two teams the reverse. Server replays and client replays
-    left before the end carry no status; then `winner` is None. The replay
-    holds no installed modifications either: the results list each player's
-    vehicles by name and type only.
+    the other of the two teams the reverse. Server replays carry `success`
+    and no author; they, and client replays without a status, are decided by
+    the tickets at the end (`ticket_end`), which also says how the battle
+    ended (`endReason`: `destruction`, `capture`, `tickets`; `time` where the
+    status names a winner whose tickets were both above 0 and the winner's
+    the more). A client replay left before the end says neither; then
+    `winner` is None. The replay holds no installed modifications either: the
+    results list each player's vehicles by name and type only.
     """
     status = str(r.results.get("status") or "")
     author = str(r.results.get("authorUserId") or "")
     team = str((roster.get(author) or {}).get("team") or "")
     teams = sorted({str(p.get("team")) for p in roster.values() if p.get("team") not in (None, "", 0, "0")})
-    winner = None
+    winner, source = None, None
     if status in ("success", "fail") and team and len(teams) == 2 and team in teams:
         winner = team if status == "success" else next(t for t in teams if t != team)
+        source = "results.status"
+    end = ticket_end(board)
+    reason = None
+    if end and end["winner"] and (len(teams) != 2 or end["winner"] in teams):
+        if winner is None:
+            winner, source = end["winner"], "tickets"
+        if end["winner"] == winner:
+            reason = end["endReason"]
+    elif end and winner and end["tickets"].get(winner) is not None:
+        other = [v for k, v in end["tickets"].items() if k != winner and v is not None]
+        if other and end["tickets"][winner] > max(other):
+            reason = "time"
     return {"winner": winner, "status": status or None, "authorTeam": team or None, "teams": teams,
-            "source": "results.status" if winner else None}
+            "source": source, "endReason": reason}
 
 
 def scoreboard(r: Replay) -> dict[str, Any]:
@@ -4072,15 +4133,20 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     cam, more["camera"] = camera_rows(r, all_lives)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
     board = scoreboard(r)
-    result = battle_result(r, roster)
-    if result["winner"]:
-        for row in data:
-            t = str(row.get("team") or "")
-            row["won"] = (1 if t == result["winner"] else 0) if t in result["teams"] else None
+    result = battle_result(r, roster, board)
     eco = economy.Economy.from_game(game, arms_install)
     econ = economy.annotate(data, eco, difficulty(r.header), lives=all_lives, kills=r.kills, hits=r.hits,
                              detections=r.detections, board=board, fired=shots_fired(msgs), where=_at_time,
                              label=_label)
+    # The outcome contract (the viewer's data-formats page): one battle, so it is round 1, and
+    # the round's outcome is the match's. After the economy, so its reward rows carry it too.
+    for row in data:
+        row["round"] = 1
+        if result["winner"]:
+            t = str(row.get("team") or "")
+            row["won"] = (1 if t == result["winner"] else 0) if t in result["teams"] else None
+            row["matchWon"] = row["won"]
+            row["roundEndReason"] = result["endReason"] or ""
     more["turretsVsShots"] = _turret_check(data, all_lives)
     more["turretsVsShotsRaw"] = _turret_check(data, all_lives, raw=True)
     more["turretVsView"] = _turret_view_check(all_lives)

@@ -24,7 +24,7 @@ the table. The viewer's Match tab reads it.
 | `started`, `timePlayed`, `replayEnd` | start time (ISO, UTC); seconds played, from the results; seconds of the replay's last packet |
 | `author`, `authorUserId` | the recording player and their Gaijin id (client replays) |
 | `teams` | the teams in the battle (`1`, `2`) |
-| `result` | `winner`, `status` (`success` or `fail`, the author's outcome), `authorTeam`, `teams` ([Economy](economy.md)) |
+| `result` | `winner`, `source` (`results.status` or `tickets`), `status` (`success` or `fail`, the author's outcome), `authorTeam`, `teams`, `endReason` (`destruction`, `capture`, `tickets`, `time`) ([Economy](economy.md)) |
 | `vehicleNames` | where the vehicle names came from (your install) and their language |
 | `conventions` | the units and signs of the table: axes, time, life, track, alive, roll, and more |
 

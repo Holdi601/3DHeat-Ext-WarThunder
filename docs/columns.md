@@ -6,7 +6,7 @@ nav_order: 91
 # Column list
 
 This page is generated from the code by `tools/gen_docs_reference.py`; do not edit it by hand.
-What each column means is on [The table](table.md). The table has **105 columns**:
+What each column means is on [The table](table.md). The table has **108 columns**:
 
 | # | Column | Type |
 |---|---|---|
@@ -115,3 +115,6 @@ What each column means is on [The table](table.md). The table has **105 columns*
 | 103 | `econ_basis` | text |
 | 104 | `rewardType` | text |
 | 105 | `won` | whole number |
+| 106 | `matchWon` | whole number |
+| 107 | `round` | whole number |
+| 108 | `roundEndReason` | text |

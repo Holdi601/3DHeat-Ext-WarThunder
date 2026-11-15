@@ -429,3 +429,40 @@ def test_battle_result_from_the_authors_status():
     # A server replay: always `success`, no author - no winner.
     server = SimpleNamespace(results={"status": "success"})
     assert convert.battle_result(server, roster)["winner"] is None
+
+
+def _board(loser_tail, winner_tickets=13600, winner_zones=2):
+    """Two teams' scoreboard series: team 2 ends at `winner_tickets`, team 1's tickets run `loser_tail`."""
+    one = [[10.0 + i, 0.0, v, 0] for i, v in enumerate([14000, *loser_tail])]
+    two = [[10.0, 0.0, 14000, 0], [300.0, 900.0, winner_tickets, winner_zones]]
+    return {"teams": {"1": one, "2": two}}
+
+
+def test_the_battle_end_from_the_tickets():
+    # Bled out while the other team held zones; lost to kills; all lost at once.
+    assert convert.ticket_end(_board([900, 120, 60, 0]))["endReason"] == "capture"
+    assert convert.ticket_end(_board([900, 120, 60, 0], winner_zones=0))["endReason"] == "tickets"
+    assert convert.ticket_end(_board([9000, 6000, 0]))["endReason"] == "destruction"
+    assert convert.ticket_end(_board([900, 0]))["winner"] == "2"
+    # Both above 0: no winner from the tickets.
+    end = convert.ticket_end(_board([900, 500]))
+    assert end["winner"] is None and end["tickets"] == {"1": 500, "2": 13600}
+    assert convert.ticket_end({"teams": {}}) is None
+
+
+def test_a_server_replay_is_decided_by_the_tickets():
+    from types import SimpleNamespace
+    roster = {"7": {"team": 1}, "8": {"team": 2}}
+    server = SimpleNamespace(results={"status": "success"})
+    res = convert.battle_result(server, roster, _board([900, 120, 60, 0]))
+    assert (res["winner"], res["source"], res["endReason"]) == ("2", "tickets", "capture")
+    # A client replay's own status wins; the tickets still say how it ended where they agree.
+    lost = SimpleNamespace(results={"status": "fail", "authorUserId": "7"})
+    assert convert.battle_result(lost, roster, _board([900, 0]))["endReason"] == "capture"
+    # Decided with both teams' tickets left, the winner holding more: time.
+    won = SimpleNamespace(results={"status": "success", "authorUserId": "8"})
+    assert convert.battle_result(won, roster, _board([900, 500]))["endReason"] == "time"
+    # Left before the end: neither.
+    left = SimpleNamespace(results={"authorUserId": "8"})
+    res = convert.battle_result(left, roster, _board([900, 500]))
+    assert res["winner"] is None and res["endReason"] is None
