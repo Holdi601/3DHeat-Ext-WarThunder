@@ -54,7 +54,7 @@ Csatánként egy sort kell látnod: `ok out/<map>/<match>.3dheat`. Nyisd meg ezt
 | [Hogyan olvassa a visszajátszást](how-it-reads.md) | mi van beolvasva, és hogyan ellenőriztük |
 | [Repülőgépek](aircraft.md), [Földi egységek és kamera](ground.md), [Találatok, lövések és tüzek](hits.md) | az oszlopok mögötti részletek |
 | [Gazdaság](economy.md), [Célok](objectives.md) | ezüstoroszlánok és kutatási pontok; elfoglalható zónák, repülőterek |
-| [Feltételek és licenc](terms.md) | a Gaijin feltételei, források, tesztek, licenc |
+| [Feltételek és licenc](terms.md) | mit olvas, források, tesztek, licenc |
 | [Parancsreferencia](../cli-reference.md), [Oszloplista](../columns.md) | a kódból generálva |
 
 ## A 3DHeat része {#part-of-3dheat}
@@ -65,11 +65,8 @@ A megjelenítő megnyitja a `.3dheat` fájlt: a táblázatot a Hőtérkép fül�
 Meccs fülön ([Egy fájl egy meccshez](https://holdi601.github.io/3DHeat/container.html)).
 Amit minden konverternek meg kell őriznie: [A konverterek mindent megtartanak](https://holdi601.github.io/3DHeat/converters.html).
 
-**Miért külön eszköz.** A `.wrpl` formátum nincs dokumentálva, a Gaijin felhasználási feltételei
-(3.2.2, 3.2.9) pedig tiltják a játék visszafejtését és olyan adatok kinyerését, amelyeket nem
-szánnak megjelenítésre; a visszajátszásokat nem nevezik meg, a játék maga mutatja meg a
-játékosnak. Hogy egy licenckérdés csak ezt a konvertert érintse, az a 3DHeat Watcheren kívül
-van: a Watcher telepítve futtatja új visszajátszásokon, de működik nélküle is.
+Minden játékolvasó önálló kis projekt saját licencfájllal, kiadásokkal és hibakövetővel, így külön telepíthető, frissíthető, karbantartható - vagy egy jogtulajdonos kérésére visszavonható - anélkül, hogy a megjelenítőt vagy a többi eszközt érintené.
+A 3DHeat Watcher telepítve lefuttatja ezt a konvertert az új visszajátszásokon, de nélküle is működik.
 
 | Eszköz | Mit csinál | Forrás | Dokumentáció |
 |---|---|---|---|

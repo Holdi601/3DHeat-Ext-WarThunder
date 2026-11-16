@@ -46,14 +46,15 @@ Ba cheart duit líne amháin a fheiceáil do gach cath: `ok out/<map>/<match>.3d
 | [Conas a léann sé athsheinm](how-it-reads.md) | cad a léitear, agus conas a seiceáladh é |
 | [Aerárthaí](aircraft.md), [Aonaid talún agus ceamara](ground.md), [Buillí, tine ghunnaí agus tinte](hits.md) | na sonraí taobh thiar de na colúin |
 | [Geilleagar](economy.md), [Cuspóirí](objectives.md) | Silver Lions agus pointí taighde; criosanna gabhála, aerpháirceanna |
-| [Téarmaí agus ceadúnas](terms.md) | téarmaí Gaijin, foinsí, tástálacha, ceadúnas |
+| [Téarmaí agus ceadúnas](terms.md) | cad a léitear, foinsí, tástálacha, ceadúnas |
 | [Tagairt orduithe](../cli-reference.md), [Liosta colún](../columns.md) | ginte ón gcód |
 
 ## Cuid de 3DHeat {#part-of-3dheat}
 
 Is ceann d'uirlisí [3DHeat](https://github.com/Holdi601/3DHeat) an tiontaire seo, amharcán teiliméadrachta agus athsheinm 3T fíor-ama ([doiciméadúchán](https://holdi601.github.io/3DHeat/)). Osclaíonn an t-amharcán an comhad `.3dheat`: an tábla ina cluaisín Léarscáil teasa, an cháipéis chluiche ina cluaisín Cluiche ([Comhad amháin an cluiche](https://holdi601.github.io/3DHeat/container.html)). An rud a chaithfidh gach tiontaire a choimeád: [Coimeádann tiontairí gach rud](https://holdi601.github.io/3DHeat/converters.html).
 
-**Cén fáth a bhfuil sé ina uirlis ar leith.** Níl formáid `.wrpl` doiciméadaithe, agus toirmisceann EULA Gaijin (3.2.2, 3.2.9) innealtóireacht inbhéartach ar an gcluiche agus sonraí nár ceapadh a thaispeáint a mhianadóireacht; ní ainmníonn sé athsheinmeanna, a thaispeánann an cluiche féin don imreoir. Ionas nach ndéanann ceist cheadúnais teagmháil ach leis an tiontaire seo, tá sé lasmuigh de 3DHeat Watcher: ritheann an Watcher é ar athsheinmeanna nua nuair atá sé suiteáilte, agus oibríonn sé gan é.
+Is tionscadal beag dá chuid féin é gach léitheoir cluiche, lena chomhad ceadúnais, a eisiúintí agus a rianaire fadhbanna féin, ionas gur féidir é a shuiteáil, a nuashonrú, a chothabháil - nó a tharraingt siar ar iarratas ó shealbhóir cearta - leis féin, gan tionchar a imirt ar an amharcán ná ar na huirlisí eile.
+Ritheann 3DHeat Watcher an tiontaire seo ar athsheinmeanna nua nuair atá sé suiteáilte, agus oibríonn sé gan é.
 
 | Uirlis | Cad a dhéanann sí | Foinse | Doiciméadúchán |
 |---|---|---|---|

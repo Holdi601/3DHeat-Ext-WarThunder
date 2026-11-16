@@ -55,7 +55,7 @@ datoteko v 3DHeat pregledovalniku.
 | [Kako bere posnetek](how-it-reads.md) | kaj se prebere in kako je bilo preverjeno |
 | [Letala](aircraft.md), [Kopenske enote in kamera](ground.md), [Zadetki, streljanje in požari](hits.md) | podrobnosti za stolpce |
 | [Gospodarstvo](economy.md), [Cilji](objectives.md) | Silver Lions in točke raziskav; območja zajema, letališča |
-| [Pogoji in licenca](terms.md) | Gaijinovi pogoji, viri, testi, licenca |
+| [Pogoji in licenca](terms.md) | kaj se bere, viri, testi, licenca |
 | [Referenca ukazov](../cli-reference.md), [Seznam stolpcev](../columns.md) | ustvarjeno iz kode |
 
 ## Del 3DHeat {#part-of-3dheat}
@@ -66,11 +66,8 @@ Pregledovalnik odpre datoteko `.3dheat`: tabelo na zavihku Toplotni zemljevid, d
 tekme na zavihku Tekma ([Ena datoteka za tekmo](https://holdi601.github.io/3DHeat/container.html)).
 Kaj mora vsak pretvornik ohraniti: [Pretvorniki ohranijo vse](https://holdi601.github.io/3DHeat/converters.html).
 
-**Zakaj je to ločeno orodje.** Format `.wrpl` ni dokumentiran, Gaijinova licenčna
-pogodba (3.2.2, 3.2.9) pa prepoveduje reverzno inženiringo igre in rudarjenje podatkov,
-ki niso namenjeni prikazu; ne omenja posnetkov, ki jih igra sama prikaže igralcu. Da se
-vprašanje licence dotika samo tega pretvornika, je zunaj 3DHeat Watcherja: Watcher ga
-zažene na novih posnetkih, če je nameščen, in deluje tudi brez njega.
+Vsak bralnik igre je samostojen majhen projekt z lastno licenčno datoteko, izdajami in sledilnikom težav, zato ga je mogoče namestiti, posodobiti, vzdrževati - ali na zahtevo imetnika pravic umakniti - posebej, ne da bi to vplivalo na pregledovalnik ali druga orodja.
+3DHeat Watcher zažene ta pretvornik na novih posnetkih, če je nameščen, in deluje tudi brez njega.
 
 | Orodje | Kaj počne | Vir | Dokumentacija |
 |---|---|---|---|

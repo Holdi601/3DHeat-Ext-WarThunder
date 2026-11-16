@@ -3,7 +3,7 @@ title: Start
 nav_order: 1
 lang: "de"
 source: index.md
-source_hash: "7abbee10da8d"
+source_hash: "4286d0049867"
 nav_exclude: true
 search_exclude: true
 permalink: /de/
@@ -56,7 +56,7 @@ Datei im 3DHeat-Viewer.
 | [So liest es ein Replay](how-it-reads.md) | was gelesen wird und wie es geprüft wurde |
 | [Flugzeuge](aircraft.md), [Bodeneinheiten und Kamera](ground.md), [Treffer, Beschuss und Brände](hits.md) | die Einzelheiten hinter den Spalten |
 | [Wirtschaft](economy.md), [Ziele](objectives.md) | Silberlöwen und Forschungspunkte; Eroberungszonen, Flugplätze |
-| [Begriffe und Lizenz](terms.md) | Bedingungen von Gaijin, Quellen, Tests, Lizenz |
+| [Begriffe und Lizenz](terms.md) | was gelesen wird, Quellen, Tests, Lizenz |
 | [Befehlsreferenz](../cli-reference.md), [Spaltenliste](../columns.md) | aus dem Code erzeugt |
 
 ## Teil von 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Der Viewer öffnet die Datei `.3dheat`: die Tabelle im Heatmap-Tab, das Match-Do
 im Match-Tab ([Eine Datei pro Match](https://holdi601.github.io/3DHeat/container.html)).
 Was jeder Umwandler behalten muss: [Umwandler behalten alles](https://holdi601.github.io/3DHeat/converters.html).
 
-**Warum ein eigenes Werkzeug?** Das Format `.wrpl` ist nicht dokumentiert, und die
-EULA von Gaijin (3.2.2, 3.2.9) verbietet Reverse Engineering am Spiel und das Sammeln
-von Daten, die nicht zur öffentlichen Anzeige gedacht sind; sie nennt Replays nicht,
-die das Spiel dem Spieler selbst zeigt. Damit eine Lizenzfrage nur diesen Umwandler
-betrifft, liegt er außerhalb des 3DHeat-Watchers: Der Watcher startet ihn bei neuen
-Replays, wenn er installiert ist, und arbeitet auch ohne ihn.
+Jeder Spiel-Leser ist ein eigenes kleines Projekt mit eigener Lizenzdatei, eigenen Releases und eigenem Issue-Tracker. So lässt er sich für sich allein installieren, aktualisieren, pflegen - oder auf Wunsch eines Rechteinhabers zurückziehen -, ohne den Viewer oder die anderen Werkzeuge zu berühren.
+Der 3DHeat-Watcher startet diesen Umwandler bei neuen Replays, wenn er installiert ist, und arbeitet auch ohne ihn.
 
 | Werkzeug | Was es tut | Quelle | Dokumentation |
 |---|---|---|---|

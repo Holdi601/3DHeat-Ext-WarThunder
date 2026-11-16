@@ -3,23 +3,19 @@ title: "Podmínky a licence"
 nav_order: 16
 lang: "cs"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Podmínky a licence {#terms-and-licence}
 
-## Podmínky {#the-terms}
+## Co se čte {#what-it-reads}
 
-Podmínky služby Gaijinu (aktualizované 2026-08-17), EULA (příloha 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-nad rámec klienta. Načíst soubory úrovní z vaší vlastní kopie hry do místního
-3D zobrazení je rozhodnutí uživatele, učiněné s tímto vědomím. Zapsané úrovně
-zůstávají na vašem počítači: **nikdy je nezveřejňujte** a nic tady nepřikládá žádná
-herní data.
+Převodník čte replaye, které War Thunder ukládá na váš počítač (nebo replaye vašich bitev, které jste si sami stáhli z warthunder.com), a soubory úrovní z vaší vlastní instalace War Thunder. Nic ze hry tu není obsaženo ani dále šířeno: žádná herní data, žádný herní kód, žádné DLL; Oodle se načítá z vaší vlastní instalace. Co zapíše, zůstává na vašem počítači: **úrovně nikdy nezveřejňujte**.
+
+3DHeat není přidružen ke společnosti Gaijin Entertainment ani jí schválen. War Thunder a související názvy a ochranné známky patří jejich vlastníkům.
+
+Držitelé práv: založte issue na <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - odpovídáme rychle a na požádání cokoli odstraníme.
 
 ## Zdroje {#sources}
 

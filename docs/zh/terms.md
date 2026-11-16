@@ -3,19 +3,19 @@ title: "条款与许可"
 nav_order: 16
 lang: "zh"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # 条款与许可 {#terms-and-licence}
 
-## 条款 {#the-terms}
+## 读取的内容 {#what-it-reads}
 
-Gaijin 的服务条款（2026-08-17 更新）、最终用户许可协议（附件 2）：
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)"（禁止修改、翻译、创作衍生作品、逆向工程、反汇编或反编译游戏），3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"（禁止挖掘或收集游戏中并非打算公开展示的任何数据）；1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"（除客户端外，不得存储、下载、修改或以其他方式使用游戏的任何部分）。把你自己副本中的关卡文件读入本地的 3D 视图，是用户在知情的情况下作出的决定。生成的关卡保存在你自己的电脑上：**绝不要发布它们**，本工具也不会随附任何游戏数据。
+转换器读取 War Thunder 保存在你电脑上的录像（或你自己从 warthunder.com 下载的自己战斗的录像），以及你自己安装的 War Thunder 中的关卡文件。这里不包含也不再分发游戏的任何内容：没有游戏资源，没有游戏代码，没有 DLL；Oodle 从你自己的安装中加载。它写出的内容留在你的电脑上：**绝不要发布这些关卡**。
+
+3DHeat 与 Gaijin Entertainment 无关联，也未获得其认可。War Thunder 及相关名称和商标归其各自所有者所有。
+
+权利人：请在 <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> 提交 issue - 我们会尽快回复，并按要求删除任何内容。
 
 ## 来源 {#sources}
 

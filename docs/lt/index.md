@@ -53,7 +53,7 @@ tą failą 3DHeat žiūryklėje.
 | [Kaip įrankis skaito įrašą](how-it-reads.md) | kas skaitoma ir kaip tai patikrinta |
 | [Orlaiviai](aircraft.md), [Sausumos technika ir kamera](ground.md), [Pataikymai, šaudymas ir gaisrai](hits.md) | detalės už stulpelių |
 | [Ekonomika](economy.md), [Tikslai](objectives.md) | Sidabro liūtai ir tyrimų taškai; kapitalo zonos, aerodromai |
-| [Sąlygos ir licencija](terms.md) | Gaijin sąlygos, šaltiniai, testai, licencija |
+| [Sąlygos ir licencija](terms.md) | kas skaitoma, šaltiniai, testai, licencija |
 | [Komandų nuorodos](../cli-reference.md), [Stulpelių sąrašas](../columns.md) | sugeneruota iš kodo |
 
 ## Dalis 3DHeat {#part-of-3dheat}
@@ -64,11 +64,8 @@ laiko 3D telemetrijos ir įrašų žiūryklės ([dokumentacija](https://holdi601
 Rungtynių skirtuke ([Vienas failas rungtynėms](https://holdi601.github.io/3DHeat/container.html)).
 Ką privalo išsaugoti kiekvienas konverteris: [Konverteriai išsaugo viską](https://holdi601.github.io/3DHeat/converters.html).
 
-**Kodėl tai atskiras įrankis.** `.wrpl` formatas nedokumentuotas, o Gaijin EULA (3.2.2, 3.2.9)
-draudžia atvirkštinę inžineriją ir duomenų kasimą, kurie nėra skirti viešam rodymui; ji
-neįvardija įrašų, kuriuos pats žaidimas rodo žaidėjui. Kad licencijos klausimas liestų tik šį
-konverterį, jis gyvena atskirai: 3DHeat Watcher jį paleidžia naujiems įrašams, kai jis įdiegtas,
-bet veikia ir be jo.
+Kiekvienas žaidimo skaitytuvas yra atskiras nedidelis projektas su savo licencijos failu, leidimais ir problemų sekimo sistema, todėl jį galima įdiegti, atnaujinti, prižiūrėti - arba teisių turėtojo prašymu pašalinti - atskirai, nepaveikiant peržiūros programos ar kitų įrankių.
+Kai šis konverteris įdiegtas, 3DHeat Watcher jį paleidžia naujiems įrašams; be jo Watcher taip pat veikia.
 
 | Įrankis | Ką daro | Šaltinis | Dokumentacija |
 |---|---|---|---|

@@ -3,22 +3,19 @@ title: Sąlygos ir licencija
 nav_order: 16
 lang: "lt"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Sąlygos ir licencija {#terms-and-licence}
 
-## Sąlygos {#the-terms}
+## Kas skaitoma {#what-it-reads}
 
-Gaijin Paslaugų teikimo sąlygos (atnaujintos 2026-08-17), EULA (2 priedas):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-- be kliento kopijos. Savo kopijos lygio failų skaitymas į vietinį 3D vaizdą yra vartotojo sprendimas,
-priimtas žinant tai. Sukurti lygiai lieka jūsų kompiuteryje: **niekada jų neskelbkite**, o čia
-nieko iš žaidimo duomenų nepateikiama.
+Konverteris skaito įrašus, kuriuos War Thunder išsaugo jūsų kompiuteryje (arba savo mūšių įrašus, kuriuos patys atsisiuntėte iš warthunder.com), ir jūsų pačių War Thunder diegimo lygių failus. Nieko iš žaidimo čia nėra ir niekas neplatinama: jokių žaidimo išteklių, jokio žaidimo kodo, jokių DLL; Oodle įkeliamas iš jūsų pačių diegimo. Tai, ką jis įrašo, lieka jūsų kompiuteryje: **niekada neskelbkite lygių**.
+
+3DHeat nėra susijęs su Gaijin Entertainment ir nėra jos patvirtintas. War Thunder ir susiję pavadinimai bei prekių ženklai priklauso jų savininkams.
+
+Teisių turėtojai: sukurkite issue adresu <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - atsakome greitai ir paprašius pašaliname bet ką.
 
 ## Šaltiniai {#sources}
 

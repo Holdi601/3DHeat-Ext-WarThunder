@@ -3,23 +3,19 @@ title: Termeni și licență
 nav_order: 16
 lang: "ro"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Termeni și licență {#terms-and-licence}
 
-## Termenii {#the-terms}
+## Ce se citește {#what-it-reads}
 
-Termenii de serviciu Gaijin (actualizați 2026-08-17), EULA (Anexa 2):
-3.2.2 „modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)” (a modifica, traduce, crea opere derivate, a face inginerie inversă,
-a dezasambla sau a decompila Jocul/Jocurile), 3.2.9 „mine or collect any data from
-the Game(s) that is not intended to be publicly displayed” (a extrage sau colecta orice date din Joc/Jocuri care nu sunt destinate să fie afișate public); 1.2 „are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)”
-(nu aveți voie să stocați, descărcați, modificați sau folosiți în alt fel vreo parte din Joc/Jocuri) dincolo de client. Citirea fișierelor de nivel ale propriei dumneavoastră copii într-o vedere 3D locală
-este decizia utilizatorului, luată cunoscând asta. Nivelurile scrise rămân pe
-calculatorul dumneavoastră: **nu le publicați niciodată**, iar nimic de aici nu livrează date ale jocului.
+Convertorul citește replay-urile pe care War Thunder le salvează pe computerul dumneavoastră (sau replay-uri ale bătăliilor dumneavoastră pe care le-ați descărcat singur de pe warthunder.com) și fișierele de niveluri din propria instalare War Thunder. Nimic din joc nu este inclus aici și nu este redistribuit: niciun asset al jocului, niciun cod al jocului, niciun DLL; Oodle este încărcat din propria instalare. Ce scrie rămâne pe mașina dumneavoastră: **nu publicați niciodată nivelurile**.
+
+3DHeat nu este afiliat cu Gaijin Entertainment și nu este aprobat de Gaijin Entertainment. War Thunder și numele și mărcile asociate aparțin proprietarilor lor.
+
+Deținători de drepturi: deschideți un issue la <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - răspundem repede și eliminăm orice la cerere.
 
 ## Surse {#sources}
 

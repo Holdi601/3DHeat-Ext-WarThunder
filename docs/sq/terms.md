@@ -3,22 +3,19 @@ title: "Kushtet dhe licenca"
 nav_order: 16
 lang: "sq"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Kushtet dhe licenca {#terms-and-licence}
 
-## Kushtet {#the-terms}
+## Çfarë lexohet {#what-it-reads}
 
-Kushtet e Shërbimit të Gaijin (përditësuar 2026-08-17), EULA (Annex 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-përtej klientit. Leximi i skedarëve të niveleve të kopjes tënde në një pamje 3D lokale është
-vendim i përdoruesit, i marrë duke e ditur këtë. Nivelet e shkruara mbeten në
-makinën tënde: **mos i publiko kurrë**, dhe asgjë këtu nuk shpërndan të dhëna loje.
+Konvertuesi lexon riluajtjet që War Thunder ruan në kompjuterin tënd (ose riluajtje të betejave të tua që i ke shkarkuar vetë nga warthunder.com) dhe skedarët e niveleve të instalimit tënd të War Thunder. Asgjë nga loja nuk përfshihet këtu dhe nuk rishpërndahet: asnjë aset i lojës, asnjë kod i lojës, asnjë DLL; Oodle ngarkohet nga instalimi yt. Ajo që shkruan mbetet në kompjuterin tënd: **mos i publiko kurrë nivelet**.
+
+3DHeat nuk është i lidhur me Gaijin Entertainment dhe nuk është i miratuar nga Gaijin Entertainment. War Thunder dhe emrat e markat tregtare përkatëse u përkasin pronarëve të tyre.
+
+Mbajtësit e të drejtave: hapni një issue në <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - përgjigjemi shpejt dhe heqim çdo gjë me kërkesë.
 
 ## Burimet {#sources}
 

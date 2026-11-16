@@ -57,7 +57,7 @@ aquest fitxer al visualitzador de 3DHeat.
 | [Com llegeix una repetició](how-it-reads.md) | què es llegeix, i com es va comprovar |
 | [Aeronaus](aircraft.md), [Unitats terrestres i càmera](ground.md), [Impactes, trets i focs](hits.md) | els detalls que hi ha darrere de les columnes |
 | [Economia](economy.md), [Objectius](objectives.md) | Lleons de plata i punts d'investigació; zones de captura, aeròdroms |
-| [Condicions i llicència](terms.md) | les condicions de Gaijin, les fonts, les proves, la llicència |
+| [Condicions i llicència](terms.md) | què es llegeix, fonts, proves, llicència |
 | [Referència d'ordres](../cli-reference.md), [Llista de columnes](../columns.md) | generades a partir del codi |
 
 ## Part de 3DHeat {#part-of-3dheat}
@@ -69,12 +69,8 @@ un visualitzador en 3D, en temps real, de telemetria i repeticions
 seva pestanya Partida ([Un fitxer per partida](https://holdi601.github.io/3DHeat/container.html)).
 La regla que ha de complir tot convertidor: [Els convertidors ho guarden tot](https://holdi601.github.io/3DHeat/converters.html).
 
-**Per què és una eina a part.** El format `.wrpl` no està documentat, i l'EULA de
-Gaijin (3.2.2, 3.2.9) prohibeix la enginyeria inversa del joc i la mineria de
-dades que no estan pensades per mostrar-se; no esmenta les repeticions, que el
-mateix joc mostra al jugador. Perquè una pregunta de llicència només afecti
-aquest convertidor, viu fora del Watcher de 3DHeat: el Watcher l'executa sobre les
-repeticions noves quan està instal·lat, i funciona sense ell.
+Cada lector de joc és un petit projecte propi, amb el seu fitxer de llicència, les seves versions i el seu gestor d'incidències, de manera que es pot instal·lar, actualitzar, mantenir - o retirar a petició d'un titular de drets - per separat, sense afectar el visor ni les altres eines.
+El Watcher de 3DHeat executa aquest convertidor sobre les repeticions noves quan està instal·lat, i funciona sense ell.
 
 | Eina | Què fa | Font | Documentació |
 |---|---|---|---|

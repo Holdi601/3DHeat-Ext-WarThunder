@@ -3,7 +3,7 @@ title: "Inicio"
 nav_order: 1
 lang: "es"
 source: index.md
-source_hash: "7abbee10da8d"
+source_hash: "4286d0049867"
 nav_exclude: true
 search_exclude: true
 permalink: /es/
@@ -56,7 +56,7 @@ archivo en el visor de 3DHeat.
 | [Cómo lee una repetición](how-it-reads.md) | qué se lee y cómo se comprobó |
 | [Aviones](aircraft.md), [Unidades terrestres y cámara](ground.md), [Impactos, disparos e incendios](hits.md) | los detalles tras las columnas |
 | [Economía](economy.md), [Objetivos](objectives.md) | Leones de Plata y puntos de investigación; zonas de captura, aeródromos |
-| [Términos y licencia](terms.md) | condiciones de Gaijin, fuentes, pruebas, licencia |
+| [Términos y licencia](terms.md) | qué se lee, fuentes, pruebas, licencia |
 | [Referencia de comandos](../cli-reference.md), [Lista de columnas](../columns.md) | generadas a partir del código |
 
 ## Parte de 3DHeat {#part-of-3dheat}
@@ -67,13 +67,8 @@ El visor abre el archivo `.3dheat`: la tabla en su pestaña Mapa de calor, el
 documento de la partida en su pestaña Partida ([Un archivo por partida](https://holdi601.github.io/3DHeat/container.html)).
 Lo que todo convertidor debe conservar: [Los convertidores lo conservan todo](https://holdi601.github.io/3DHeat/converters.html).
 
-**Por qué es una herramienta aparte.** El formato `.wrpl` no está documentado, y
-el EULA de Gaijin (3.2.2, 3.2.9) prohíbe la ingeniería inversa del juego y la
-extracción de datos que no están pensados para mostrarse; no menciona las
-repeticiones, que el propio juego muestra al jugador. Para que una duda de
-licencia afecte solo a este convertidor, vive fuera del Watcher de 3DHeat: el
-Watcher lo ejecuta sobre las repeticiones nuevas cuando está instalado, y
-funciona sin él.
+Cada lector de juego es un pequeño proyecto propio, con su propio archivo de licencia, sus versiones y su gestor de incidencias, así que se puede instalar, actualizar, mantener - o retirar a petición de un titular de derechos - por separado, sin afectar al visor ni a las demás herramientas.
+El Watcher de 3DHeat ejecuta este convertidor sobre las repeticiones nuevas cuando está instalado, y funciona sin él.
 
 | Herramienta | Qué hace | Código | Documentación |
 |---|---|---|---|

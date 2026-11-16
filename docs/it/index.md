@@ -3,7 +3,7 @@ title: "Home"
 nav_order: 1
 lang: "it"
 source: index.md
-source_hash: "7abbee10da8d"
+source_hash: "4286d0049867"
 nav_exclude: true
 search_exclude: true
 permalink: /it/
@@ -53,7 +53,7 @@ file nel visualizzatore 3DHeat.
 | [Come legge un replay](how-it-reads.md) | cosa viene letto, e come è stato verificato |
 | [Aerei](aircraft.md), [Unità di terra e telecamera](ground.md), [Colpi, fuoco sparato e incendi](hits.md) | i dettagli dietro le colonne |
 | [Economia](economy.md), [Obiettivi](objectives.md) | Argento Leoni e punti di ricerca; zone di cattura, aeroporti |
-| [Condizioni e licenza](terms.md) | condizioni di Gaijin, fonti, test, licenza |
+| [Condizioni e licenza](terms.md) | cosa viene letto, fonti, test, licenza |
 | [Riferimento dei comandi](../cli-reference.md), [Elenco delle colonne](../columns.md) | generati dal codice |
 
 ## Parte di 3DHeat {#part-of-3dheat}
@@ -64,11 +64,8 @@ Il visualizzatore apre il file `.3dheat`: la tabella nella sua scheda Mappa di c
 sua scheda Partita ([Un file per partita](https://holdi601.github.io/3DHeat/container.html)).
 Ciò che ogni convertitore deve conservare: [I convertitori conservano tutto](https://holdi601.github.io/3DHeat/converters.html).
 
-**Perché è uno strumento separato.** Il formato `.wrpl` non è documentato, e
-il contratto di licenza di Gaijin (3.2.2, 3.2.9) vieta il reverse engineering del gioco e l'estrazione di
-dati non destinati a essere mostrati; non cita i replay, che il gioco stesso mostra al giocatore. Affinché una questione di licenza tocchi solo questo
-convertitore, vive fuori dal Watcher di 3DHeat: il Watcher lo esegue sui nuovi replay quando è
-installato, e funziona senza di esso.
+Ogni lettore di gioco è un piccolo progetto a sé, con il proprio file di licenza, le proprie release e il proprio issue tracker, così può essere installato, aggiornato, mantenuto - o ritirato su richiesta di un titolare dei diritti - da solo, senza toccare il visualizzatore né gli altri strumenti.
+Il Watcher di 3DHeat esegue questo convertitore sui nuovi replay quando è installato, e funziona anche senza.
 
 | Strumento | Cosa fa | Sorgente | Documentazione |
 |---|---|---|---|

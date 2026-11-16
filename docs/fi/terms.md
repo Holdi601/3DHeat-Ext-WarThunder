@@ -3,22 +3,19 @@ title: Ehdot ja lisenssi
 nav_order: 16
 lang: "fi"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Ehdot ja lisenssi {#terms-and-licence}
 
-## Ehdot {#the-terms}
+## Mitä luetaan {#what-it-reads}
 
-Gaijinin käyttöehdot (päivitetty 2026-08-17), EULA (liite 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-pelin asiakasohjelman lisäksi. Oman pelikopion kenttätiedostojen lukeminen paikalliseksi 3D-näkymäksi on
-käyttäjän päätös, joka tehdään tietäen tämän. Kirjoitetut kentät pysyvät koneellasi: **älä koskaan julkaise niitä**,
-eikä tästä mikään toimita pelin dataa.
+Muunnin lukee replayt, jotka War Thunder tallentaa tietokoneellesi (tai taisteluidesi replayt, jotka olet itse ladannut warthunder.comista), sekä oman War Thunder -asennuksesi tasotiedostot. Pelistä ei ole tässä mitään mukana eikä mitään jaeta eteenpäin: ei pelin resursseja, ei pelin koodia, ei DLL-tiedostoja; Oodle ladataan omasta asennuksestasi. Se, mitä se kirjoittaa, pysyy koneellasi: **älä koskaan julkaise tasoja**.
+
+3DHeat ei ole sidoksissa yhtiöön Gaijin Entertainment, eikä Gaijin Entertainment ole hyväksynyt sitä. War Thunder ja siihen liittyvät nimet ja tavaramerkit kuuluvat omistajilleen.
+
+Oikeudenhaltijat: avatkaa issue osoitteessa <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - vastaamme nopeasti ja poistamme pyynnöstä mitä tahansa.
 
 ## Lähteet {#sources}
 

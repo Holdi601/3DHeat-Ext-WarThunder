@@ -3,16 +3,19 @@ title: 약관과 라이선스
 nav_order: 16
 lang: "ko"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # 약관과 라이선스 {#terms-and-licence}
 
-## 약관 {#the-terms}
+## 읽는 것 {#what-it-reads}
 
-Gaijin의 서비스 약관(2026-08-17 갱신), EULA(부록 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer, disassemble, or decompile the Game(s)"(게임을 수정, 번역, 파생 저작물 작성, 리버스 엔지니어링, 분해, 디컴파일하는 것); 3.2.9 "mine or collect any data from the Game(s) that is not intended to be publicly displayed"(공개 표시를 의도하지 않은 게임 데이터를 채굴하거나 수집하는 것); 1.2 "are not permitted to store, download, modify, or otherwise use any part of the Game(s)"(클라이언트 이외의 목적으로 게임의 어떤 부분도 저장, 내려받기, 수정 또는 달리 사용하는 것이 허용되지 않음). 여러분 자신의 사본의 레벨 파일을 지역 3D 보기로 읽는 것은, 이것을 알고 내리는 사용자의 결정입니다. 만들어진 레벨은 여러분의 컴퓨터에만 두세요. **절대 공개하지 마세요.** 이 저장소는 게임 데이터를 하나도 담지 않습니다.
+변환기는 War Thunder가 여러분의 컴퓨터에 저장한 리플레이(또는 직접 warthunder.com에서 내려받은 자신의 전투 리플레이)와 여러분이 설치한 War Thunder의 레벨 파일을 읽습니다. 게임의 어떤 것도 여기에 포함되거나 재배포되지 않습니다. 게임 애셋도, 게임 코드도, DLL도 없습니다. Oodle은 여러분이 설치한 게임에서 불러옵니다. 출력물은 여러분의 컴퓨터에 남습니다. **레벨은 절대 공개하지 마세요.**
+
+3DHeat는 Gaijin Entertainment의 제휴사가 아니며 Gaijin Entertainment의 승인을 받지 않았습니다. War Thunder 및 관련 이름과 상표는 각 소유자에게 있습니다.
+
+권리자께: <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues>에서 이슈를 열어 주세요. 빠르게 답변하며 요청하시면 무엇이든 삭제합니다.
 
 ## 출처 {#sources}
 

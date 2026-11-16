@@ -56,7 +56,7 @@ acel fișier în vizualizatorul 3DHeat.
 | [Cum citește un replay](how-it-reads.md) | ce se citește și cum a fost verificat |
 | [Avioane](aircraft.md), [Unități terestre și cameră](ground.md), [Lovituri, tragere și incendii](hits.md) | detaliile din spatele coloanelor |
 | [Economie](economy.md), [Obiective](objectives.md) | Silver Lions și puncte de cercetare; zone de capturare, aerodromuri |
-| [Termeni și licență](terms.md) | termenii Gaijin, surse, teste, licență |
+| [Termeni și licență](terms.md) | ce se citește, surse, teste, licență |
 | [Referința comenzilor](../cli-reference.md), [Lista coloanelor](../columns.md) | generate din cod |
 
 ## Parte din 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Vizualizatorul deschide fișierul `.3dheat`: tabelul în fila sa Hartă termică
 meciului în fila sa Meci ([Un fișier pentru un meci](https://holdi601.github.io/3DHeat/container.html)).
 Ce trebuie să păstreze orice convertor: [Convertoarele păstrează tot](https://holdi601.github.io/3DHeat/converters.html).
 
-**De ce este un instrument separat.** Formatul `.wrpl` nu este documentat, iar
-EULA Gaijin (3.2.2, 3.2.9) interzice inversarea jocului și extragerea de date care nu
-sunt făcute să fie afișate; nu menționează replay-urile, pe care jocul însuși
-le arată jucătorului. Ca o întrebare de licență să atingă doar acest convertor, el
-trăiește în afara 3DHeat Watcher: Watcher îl rulează pe replay-urile noi când este
-instalat, și funcționează și fără el.
+Fiecare cititor de joc este un mic proiect de sine stătător, cu propriul fișier de licență, propriile versiuni și propriul sistem de raportare a problemelor, astfel încât poate fi instalat, actualizat, întreținut - sau retras la cererea unui deținător de drepturi - separat, fără a afecta vizualizatorul sau celelalte instrumente.
+3DHeat Watcher rulează acest convertor pe replay-urile noi când este instalat și funcționează și fără el.
 
 | Instrument | Ce face | Sursă | Documentație |
 |---|---|---|---|

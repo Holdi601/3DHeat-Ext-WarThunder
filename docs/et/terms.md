@@ -3,22 +3,19 @@ title: Tingimused ja litsents
 nav_order: 16
 lang: "et"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Tingimused ja litsents {#terms-and-licence}
 
-## Tingimused {#the-terms}
+## Mida loetakse {#what-it-reads}
 
-Gaijini kasutustingimused (uuendatud 2026-08-17), EULA (Lisa 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-väljaspool klienti. Oma koopia tasemefailide lugemine kohaliku 3D-vaate jaoks on
-kasutaja otsus, tehtud seda teades. Kirjutatud tasemed jäävad sinu masinasse:
-**ära avalda neid kunagi**, ja siit ei tule kaasa mingit mängu andmet.
+Konverter loeb kordusi, mille War Thunder sinu arvutisse salvestab (või sinu lahingute kordusi, mille sa ise warthunder.com-ist alla laadisid), ja sinu enda War Thunderi paigalduse tasemefaile. Mängust ei ole siin midagi kaasas ega levitata edasi: ei mänguvarasid, ei mängukoodi ega DLL-e; Oodle laaditakse sinu enda paigaldusest. See, mida ta kirjutab, jääb sinu arvutisse: **ära avalda tasemeid kunagi**.
+
+3DHeat ei ole seotud ettevõttega Gaijin Entertainment ega selle poolt heaks kiidetud. War Thunder ja sellega seotud nimed ning kaubamärgid kuuluvad nende omanikele.
+
+Õiguste omajad: avage issue aadressil <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - vastame kiiresti ja eemaldame soovi korral kõik.
 
 ## Allikad {#sources}
 

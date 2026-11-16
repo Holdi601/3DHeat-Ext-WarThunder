@@ -3,22 +3,19 @@ title: Noteikumi un licence
 nav_order: 16
 lang: "lv"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Noteikumi un licence {#terms-and-licence}
 
-## Noteikumi {#the-terms}
+## Ko nolasa {#what-it-reads}
 
-Gaijin Pakalpojumu noteikumi (atjaunināti 2026-08-17), EULA (2. pielikums):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-beyond the client. Savas kopijas līmeņu failu nolasīšana vietējā 3D skatā ir
-lietotāja lēmums, kas pieņemts, to zinot. Uzrakstītie līmeņi paliek jūsu datorā:
-**nekad tos nepublicējiet**, un šeit nekas nepiegādā spēles datus.
+Konvertētājs nolasa atkārtojumus, ko War Thunder saglabā jūsu datorā (vai jūsu kauju atkārtojumus, ko paši lejupielādējāt no warthunder.com), un jūsu pašu War Thunder instalācijas līmeņu failus. Nekas no spēles šeit nav iekļauts un netiek izplatīts tālāk: nekādi spēles resursi, nekāds spēles kods, nekādi DLL; Oodle tiek ielādēts no jūsu pašu instalācijas. Tas, ko tas ieraksta, paliek jūsu datorā: **nekad nepublicējiet līmeņus**.
+
+3DHeat nav saistīts ar Gaijin Entertainment un nav Gaijin Entertainment apstiprināts. War Thunder un saistītie nosaukumi un preču zīmes pieder to īpašniekiem.
+
+Tiesību īpašnieki: atveriet issue vietnē <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - mēs atbildam ātri un pēc pieprasījuma noņemam jebko.
 
 ## Avoti {#sources}
 

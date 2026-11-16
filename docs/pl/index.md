@@ -55,7 +55,7 @@ plik w przeglądarce 3DHeat.
 | [Jak czytany jest replay](how-it-reads.md) | co jest czytane i jak to sprawdzono |
 | [Samoloty](aircraft.md), [Jednostki naziemne i kamera](ground.md), [Trafienia, ostrzał i pożary](hits.md) | szczegóły stojące za kolumnami |
 | [Ekonomia](economy.md), [Cele](objectives.md) | Srebrne Lwy i punkty badań; strefy przechwytu, lotniska |
-| [Warunki i licencja](terms.md) | warunki Gaijin, źródła, testy, licencja |
+| [Warunki i licencja](terms.md) | co jest odczytywane, źródła, testy, licencja |
 | [Opis poleceń](../cli-reference.md), [Lista kolumn](../columns.md) | generowane z kodu |
 
 ## Część 3DHeat {#part-of-3dheat}
@@ -66,11 +66,8 @@ Przeglądarka otwiera plik `.3dheat`: tabelę na karcie Mapa cieplna, dokument m
 na karcie Mecz ([Jeden plik na mecz](https://holdi601.github.io/3DHeat/container.html)).
 Czego musi dotrzymać każdy konwerter: [Konwertery zachowują wszystko](https://holdi601.github.io/3DHeat/converters.html).
 
-**Dlaczego to osobne narzędzie.** Format `.wrpl` nie jest udokumentowany, a
-EULA Gaijin (3.2.2, 3.2.9) zakazuje inżynierii wstecznej gry i wydobywania danych,
-które nie mają być pokazywane; nie wymienia replayów, które sama gra pokazuje graczowi.
-Żeby pytanie licencyjne dotyczyło tylko tego konwertera, leży on poza 3DHeat Watcher:
-Watcher uruchamia go na nowych replayach, gdy jest zainstalowany, a działa bez niego.
+Każdy czytnik gry to osobny mały projekt z własnym plikiem licencji, wydaniami i systemem zgłoszeń, więc można go instalować, aktualizować, utrzymywać - albo wycofać na prośbę posiadacza praw - osobno, bez wpływu na przeglądarkę i pozostałe narzędzia.
+3DHeat Watcher uruchamia ten konwerter na nowych replayach, gdy jest zainstalowany, a działa także bez niego.
 
 | Narzędzie | Co robi | Źródło | Dokumentacja |
 |---|---|---|---|

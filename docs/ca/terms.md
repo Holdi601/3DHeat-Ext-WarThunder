@@ -3,24 +3,19 @@ title: Condicions i llicència
 nav_order: 16
 lang: "ca"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Condicions i llicència {#terms-and-licence}
 
-## Les condicions {#the-terms}
+## Què es llegeix {#what-it-reads}
 
-Les Condicions del Servei de Gaijin (actualitzades el 2026-08-17), EULA (Annex 2):
-3.2.2 «modify, translate, create derivative works of, reverse engineer, disassemble, or decompile the
-Game(s)» (modificar, traduir, crear obres derivades, fer enginyeria inversa, desmuntar o descompilar els
-Jocs), 3.2.9 «mine or collect any data from the Game(s) that is not intended to be publicly displayed»
-(extreure o recollir qualsevol dada dels Jocs que no estigui pensada per mostrar-se públicament); 1.2 «are
-not permitted to store, download, modify, or otherwise use any part of the Game(s)» (no es permet
-emmagatzemar, descarregar, modificar ni utilitzar de cap altra manera cap part dels Jocs) més enllà del
-client. Llegir els fitxers de nivell de la teva pròpia còpia en una vista 3D local és decisió de l'usuari,
-presa sabent-ho. Els nivells que s'escriuen es queden a la teva màquina: **no els publiquis mai**, i aquí no
-s'envia cap dada del joc.
+El convertidor llegeix les repeticions que War Thunder desa al teu ordinador (o repeticions de les teves batalles que has baixat tu mateix de warthunder.com) i els fitxers de nivells de la teva pròpia instal·lació de War Thunder. Aquí no s'inclou ni es redistribueix res del joc: cap recurs del joc, cap codi del joc, cap DLL; Oodle es carrega des de la teva pròpia instal·lació. El que escriu es queda al teu ordinador: **no publiquis mai els nivells**.
+
+3DHeat no està afiliat a Gaijin Entertainment ni té el seu aval. War Thunder i els noms i marques relacionats pertanyen als seus propietaris.
+
+Titulars de drets: obriu una incidència a <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - responem ràpidament i retirem el que calgui si se'ns demana.
 
 ## Fonts {#sources}
 

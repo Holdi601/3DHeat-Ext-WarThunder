@@ -46,14 +46,14 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 | [讀取回放的方式](how-it-reads.md) | 讀取了什麼，以及如何核對 |
 | [飛機](aircraft.md)、[地面單位與攝影機](ground.md)、[命中、射擊與火勢](hits.md) | 欄位背後的細節 |
 | [經濟](economy.md)、[目標](objectives.md) | 銀獅幣與研究點數；佔領區域、機場 |
-| [名詞與授權](terms.md) | Gaijin 的條款、來源、測試、授權 |
+| [名詞與授權](terms.md) | 讀取的內容、來源、測試、授權 |
 | [指令參考](../cli-reference.md)、[欄位清單](../columns.md) | 由程式碼產生 |
 
 ## 3DHeat 的一部分 {#part-of-3dheat}
 
 這個轉換器是 [3DHeat](https://github.com/Holdi601/3DHeat) 的工具之一。3DHeat 是即時 3D 遙測與回放檢視器（[說明文件](https://holdi601.github.io/3DHeat/)）。檢視器會開啟 `.3dheat` 檔案：表格顯示在熱圖分頁中，對戰文件顯示在對戰分頁中（[每場一個檔案](https://holdi601.github.io/3DHeat/container.html)）。每個轉換器都必須保留的內容：[轉換器保留一切](https://holdi601.github.io/3DHeat/converters.html)。
 
-**為什麼它是獨立的工具。**`.wrpl` 格式沒有公開的說明文件，而 Gaijin 的使用者授權條款（3.2.2、3.2.9）禁止對遊戲進行逆向工程，也禁止挖掘不打算顯示的資料；條款中並未提及回放，而遊戲本身就會向玩家顯示回放。為了讓授權問題只影響這個轉換器，它位於 3DHeat Watcher 之外：安裝 Watcher 時，Watcher 會對新的回放執行它；沒有它，Watcher 也能運作。
+每個遊戲讀取器都是獨立的小專案，有自己的授權檔案、發行版本與問題追蹤，因此可以單獨安裝、更新、維護，也可以應權利人的要求單獨撤下，而不影響檢視器或其他工具。安裝了這個轉換器時，3DHeat Watcher 會對新的回放執行它；沒有它，Watcher 也能運作。
 
 | 工具 | 功能 | 原始碼 | 說明文件 |
 |---|---|---|---|

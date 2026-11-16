@@ -24,6 +24,10 @@ language: choose it at the top of any page there.)
 Part of [3DHeat](https://github.com/Holdi601/3DHeat), the realtime 3D
 telemetry and replay viewer ([documentation](https://holdi601.github.io/3DHeat/)).
 
+Each game reader is its own small project with its own licence file, releases and issue
+tracker, so it can be installed, updated, maintained - or withdrawn on a rights holder's
+request - on its own, without affecting the viewer or the other tools.
+
 ## Install
 
 New to the command line? Read
@@ -140,9 +144,10 @@ how the viewer reads columns and roles:
 
 - How a replay is read and how each part was checked:
   [How it reads a replay](https://holdi601.github.io/3DHeat-Ext-WarThunder/how-it-reads.html).
-- The converter is kept apart from the 3DHeat Watcher on purpose: the
-  `.wrpl` format is undocumented and Gaijin's terms are broad. Using it is
-  your decision: read
+- The 3DHeat Watcher runs this converter on new replays when it is
+  installed, and works without it.
+- It reads the replays War Thunder saves on your computer and the level files
+  of your own install; nothing from the game is included or redistributed:
   [Terms and licence](https://holdi601.github.io/3DHeat-Ext-WarThunder/terms.html).
 
 ## The 3DHeat tools
@@ -180,3 +185,8 @@ no code of it is copied here. Levels use Oodle from your own game install;
 nothing of Oodle is included. Sources and tests:
 [Terms and licence](https://holdi601.github.io/3DHeat-Ext-WarThunder/terms.html).
 For maintainers: [Maintaining](https://holdi601.github.io/3DHeat-Ext-WarThunder/maintaining.html).
+
+3DHeat is not affiliated with or endorsed by Gaijin Entertainment. War Thunder
+and related names and trademarks belong to their owners. Rights holders: open
+an issue at <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - we
+respond quickly and remove anything on request.

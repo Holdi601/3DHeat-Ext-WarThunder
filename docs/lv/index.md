@@ -56,7 +56,7 @@ Katrai kaujai redzēsiet vienu rindu: `ok out/<map>/<match>.3dheat`. Atveriet š
 | [Kā tas nolasa atkārtojumu](how-it-reads.md) | kas tiek nolasīts un kā tas pārbaudīts |
 | [Lidmašīnas](aircraft.md), [Sauszemes vienības un kamera](ground.md), [Trāpījumi, šaušana un ugunsgrēki](hits.md) | detaļas aiz kolonnām |
 | [Ekonomika](economy.md), [Mērķi](objectives.md) | sudraba lauvas un pētniecības punkti; kapitāla zonas, aerodromi |
-| [Noteikumi un licence](terms.md) | Gaijin noteikumi, avoti, testi, licence |
+| [Noteikumi un licence](terms.md) | ko nolasa, avoti, testi, licence |
 | [Komandu atsauce](../cli-reference.md), [Kolonnu saraksts](../columns.md) | ģenerēts no koda |
 
 ## Daļa no 3DHeat {#part-of-3dheat}
@@ -67,11 +67,8 @@ Skatītājs atver `.3dheat` failu: tabulu tā Siltumkartes cilnē, mača dokumen
 tā Mača cilnē ([Viens fails vienam mačam](https://holdi601.github.io/3DHeat/container.html)).
 Ko katram konvertētājam jāsaglabā: [Konvertētāji saglabā visu](https://holdi601.github.io/3DHeat/converters.html).
 
-**Kāpēc tas ir atsevišķs rīks.** `.wrpl` formāts nav dokumentēts, un Gaijin EULA
-(3.2.2, 3.2.9) aizliedz spēles reversēšanu un datu ieguvi, kas nav paredzēta
-publiskai parādīšanai; tajā nav minēti atkārtojumi, ko pati spēle rāda spēlētājam.
-Lai licences jautājums skartu tikai šo konvertētāju, tas atrodas ārpus 3DHeat Watcher:
-Watcher to palaiž jaunajiem atkārtojumiem, ja tas ir uzstādīts, un darbojas arī bez tā.
+Katrs spēļu lasītājs ir atsevišķs neliels projekts ar savu licences failu, laidieniem un problēmu izsekotāju, tāpēc to var instalēt, atjaunināt, uzturēt - vai pēc tiesību īpašnieka lūguma atsaukt - atsevišķi, neietekmējot skatītāju vai citus rīkus.
+3DHeat Watcher palaiž šo konvertētāju jaunajiem atkārtojumiem, ja tas ir uzstādīts, un darbojas arī bez tā.
 
 | Rīks | Ko tas dara | Avots | Dokumentācija |
 |---|---|---|---|

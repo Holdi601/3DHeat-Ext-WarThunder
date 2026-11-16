@@ -55,7 +55,7 @@ Her savaş için bir satır görmelisiniz: `ok out/<map>/<match>.3dheat`. Bu dos
 | [Tekrarı nasıl okur](how-it-reads.md) | neyin okunduğu ve nasıl sınandığı |
 | [Uçaklar](aircraft.md), [Kara birimleri ve kamera](ground.md), [İsabetler, ateş ve yangınlar](hits.md) | sütunların ardındaki ayrıntılar |
 | [Ekonomi](economy.md), [Hedefler](objectives.md) | Gümüş Aslanlar ve araştırma puanları; ele geçirme bölgeleri, hava alanları |
-| [Terimler ve lisans](terms.md) | Gaijin'in koşulları, kaynaklar, testler, lisans |
+| [Terimler ve lisans](terms.md) | neyin okunduğu, kaynaklar, testler, lisans |
 | [Komut başvurusu](../cli-reference.md), [Sütun listesi](../columns.md) | koddan üretilmiştir |
 
 ## 3DHeat'in parçası {#part-of-3dheat}
@@ -67,12 +67,8 @@ Isı haritası sekmesinde tablo, Maç sekmesinde maç belgesi
 ([Bir maç tek dosyada](https://holdi601.github.io/3DHeat/container.html)).
 Her dönüştürücünün tutması gerekenler: [Dönüştürücüler her şeyi tutar](https://holdi601.github.io/3DHeat/converters.html).
 
-**Neden ayrı bir araç?** `.wrpl` biçimi belgelenmemiştir. Gaijin'in lisans sözleşmesi
-(3.2.2, 3.2.9) oyunun tersine mühendisliğini ve gösterilmesi amaçlanmamış verilerin
-madenciliğini yasaklar; tekrarları adıyla anmaz, oyun da tekrarları oyuncuya kendisi
-gösterir. Bir lisans sorusunun yalnızca bu dönüştürücüye dokunması için araç 3DHeat
-Watcher'ın dışında durur: Watcher kuruluysa yeni tekrarlarda bunu çalıştırır, ama
-bu araç olmadan da çalışır.
+Her oyun okuyucu, kendi lisans dosyası, sürümleri ve sorun takipçisi olan ayrı küçük bir projedir; böylece görüntüleyiciyi ya da diğer araçları etkilemeden tek başına kurulabilir, güncellenebilir, bakımı yapılabilir - ya da bir hak sahibinin isteği üzerine geri çekilebilir.
+3DHeat Watcher, bu dönüştürücü kuruluysa yeni tekrarlarda onu çalıştırır; o olmadan da çalışır.
 
 | Araç | Ne yapar | Kaynak | Belgeler |
 |---|---|---|---|

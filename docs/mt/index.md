@@ -53,7 +53,7 @@ il-fajl fid-3DHeat viewer.
 | [Kif taqra ripetizzjoni](how-it-reads.md) | x'jinqara, u kif ġie kkontrollat |
 | [Ajruplani](aircraft.md), [Unitajiet tal-art u kamera](ground.md), [Daqqiet, sparar u nirien](hits.md) | id-dettalji wara l-kolonni |
 | [Ekonomija](economy.md), [Objettivi](objectives.md) | Silver Lions u punti tar-riċerka; żoni tal-qbid, ajrudromi |
-| [Termini u liċenzja](terms.md) | it-termini ta' Gaijin, sorsi, testijiet, liċenzja |
+| [Termini u liċenzja](terms.md) | x'jinqara, sorsi, testijiet, liċenzja |
 | [Referenza tal-kmandi](../cli-reference.md), [Lista tal-kolonni](../columns.md) | iġġenerati mill-kodiċi |
 
 ## Parti mid-3DHeat {#part-of-3dheat}
@@ -64,11 +64,8 @@ Il-viewer jiftaħ il-fajl `.3dheat`: it-tabella fit-tab Heatmap tiegħu, id-doku
 fit-tab Partita tiegħu ([Fajl wieħed għal kull partita](https://holdi601.github.io/3DHeat/container.html)).
 X'għandu jżomm kull konvertitur: [Il-konvertituri jżommu kollox](https://holdi601.github.io/3DHeat/converters.html).
 
-**Għaliex hija għodda separata.** Il-format `.wrpl` mhuwiex iddokumentat, u l-EULA ta' Gaijin
-(3.2.2, 3.2.9) tipprojbixxi r-reverse engineering tal-logħba u l-estrazzjoni ta' dejta li mhix
-maħsuba biex turi; ma ssemmix ripetizzjonijiet, li l-logħba nnifisha turi lill-plejer. Biex
-mistoqsija ta' liċenzja tmiss lil dan il-konvertitur biss, jgħix barra mid-3DHeat Watcher: il-Watcher
-iħaddmu fuq ripetizzjonijiet ġodda meta jkun installat, u jaħdem mingħajru.
+Kull qarrej tal-logħba huwa proġett żgħir għalih, bil-fajl tal-liċenzja, ir-rilaxxi u t-tracker tal-issues tiegħu, sabiex ikun jista' jiġi installat, aġġornat, miżmum - jew irtirat fuq talba ta' detentur tad-drittijiet - waħdu, mingħajr ma jolqot il-viewer jew l-għodod l-oħra.
+Il-3DHeat Watcher iħaddem dan il-konvertitur fuq ripetizzjonijiet ġodda meta jkun installat, u jaħdem anki mingħajru.
 
 | Għodda | X'tagħmel | Sors | Dokumentazzjoni |
 |---|---|---|---|

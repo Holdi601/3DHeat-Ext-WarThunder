@@ -3,15 +3,19 @@ title: Téarmaí agus ceadúnas
 nav_order: 16
 lang: "ga"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Téarmaí agus ceadúnas {#terms-and-licence}
 
-## Na téarmaí {#the-terms}
+## Cad a léitear {#what-it-reads}
 
-Téarmaí Seirbhíse Gaijin (nuashonraithe 2026-08-17), EULA (Iarscríbhinn 2): 3.2.2 "modify, translate, create derivative works of, reverse engineer, disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from the Game(s) that is not intended to be publicly displayed"; 1.2 "are not permitted to store, download, modify, or otherwise use any part of the Game(s)" lasmuigh den chliant. Is cinneadh an úsáideora é comhaid leibhéil do chóipe féin a léamh isteach i radharc 3T áitiúil, a ghlactar agus fios aige é seo. Fanann na leibhéil a scríobhtar ar do mheaisín: **ná foilsigh choíche iad**, agus ní sheolann aon rud anseo aon sonraí cluiche.
+Léann an tiontaire na hathsheinmeanna a shábhálann War Thunder ar do ríomhaire (nó athsheinmeanna de do chathanna a d'íoslódáil tú féin ó warthunder.com) agus comhaid leibhéil do shuiteála féin de War Thunder. Níl aon rud ón gcluiche san áireamh anseo ná á athdháileadh: gan sócmhainní cluiche, gan cód cluiche, gan DLLanna; luchtaítear Oodle ó do shuiteáil féin. Fanann a scríobhann sé ar do ríomhaire: **ná foilsigh na leibhéil choíche**.
+
+Níl baint ag 3DHeat le Gaijin Entertainment agus níl sé formhuinithe acu. Is lena n-úinéirí War Thunder agus na hainmneacha agus na trádmharcanna gaolmhara.
+
+Sealbhóirí cearta: oscail issue ag <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - freagraímid go tapa agus bainimid aon rud ar iarratas.
 
 ## Foinsí {#sources}
 

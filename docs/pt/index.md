@@ -55,7 +55,7 @@ arquivo no visualizador 3DHeat.
 | [Como lê um replay](how-it-reads.md) | o que é lido, e como foi verificado |
 | [Aviões](aircraft.md), [Unidades terrestres e câmera](ground.md), [Acertos, tiros e incêndios](hits.md) | os detalhes por trás das colunas |
 | [Economia](economy.md), [Objetivos](objectives.md) | Leões de Prata e pontos de pesquisa; zonas de captura, aeródromos |
-| [Termos e licença](terms.md) | termos da Gaijin, fontes, testes, licença |
+| [Termos e licença](terms.md) | o que é lido, fontes, testes, licença |
 | [Referência de comandos](../cli-reference.md), [Lista de colunas](../columns.md) | gerados a partir do código |
 
 ## Parte do 3DHeat {#part-of-3dheat}
@@ -66,12 +66,8 @@ O visualizador abre o arquivo `.3dheat`: a tabela na sua aba Mapa de calor, o
 documento da partida na sua aba Partida ([Um arquivo por partida](https://holdi601.github.io/3DHeat/container.html)).
 O que todo conversor precisa manter: [Conversores mantêm tudo](https://holdi601.github.io/3DHeat/converters.html).
 
-**Por que é uma ferramenta separada.** O formato `.wrpl` não é documentado, e o
-EULA da Gaijin (3.2.2, 3.2.9) proíbe a engenharia reversa do jogo e a mineração de
-dados que não se destinam a ser mostrados; ele não menciona replays, que o próprio
-jogo mostra ao jogador. Assim, uma dúvida de licença toca apenas este conversor, que
-fica fora do 3DHeat Watcher: o Watcher o executa nos replays novos quando está
-instalado, e funciona sem ele.
+Cada leitor de jogo é um pequeno projeto próprio, com o seu próprio arquivo de licença, versões e rastreador de problemas, de modo que pode ser instalado, atualizado, mantido - ou retirado a pedido de um titular de direitos - sozinho, sem afetar o visualizador nem as outras ferramentas.
+O 3DHeat Watcher executa este conversor nos replays novos quando está instalado, e funciona sem ele.
 
 | Ferramenta | O que faz | Código | Documentação |
 |---|---|---|---|

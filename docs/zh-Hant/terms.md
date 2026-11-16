@@ -3,16 +3,19 @@ title: "名詞與授權"
 nav_order: 16
 lang: "zh-Hant"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # 條款與授權 {#terms-and-licence}
 
-## 條款 {#the-terms}
+## 讀取的內容 {#what-it-reads}
 
-Gaijin 的服務條款（2026-08-17 更新）、使用者授權條款（附件 2）：
-3.2.2 "modify, translate, create derivative works of, reverse engineer, disassemble, or decompile the Game(s)"，3.2.9 "mine or collect any data from the Game(s) that is not intended to be publicly displayed"；1.2 "are not permitted to store, download, modify, or otherwise use any part of the Game(s)"，客戶端除外。將你自己副本的地圖檔案讀入本機 3D 檢視，是使用者在知情的情況下自行做出的決定。寫出的地圖會留在你的電腦上：**絕對不要公開發布**，而且這裡不附帶任何遊戲資料。
+轉換器讀取 War Thunder 儲存在你電腦上的回放（或你自己從 warthunder.com 下載的自己戰鬥的回放），以及你自己安裝的 War Thunder 中的關卡檔案。這裡不包含也不再散布遊戲的任何內容：沒有遊戲資源、沒有遊戲程式碼、沒有 DLL；Oodle 從你自己的安裝載入。它寫出的內容留在你的電腦上：**絕對不要公開發布這些關卡**。
+
+3DHeat 與 Gaijin Entertainment 並無關聯，也未獲其背書。War Thunder 及相關名稱與商標屬於其各自的擁有者。
+
+權利人：請在 <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> 開一個 issue - 我們會迅速回覆，並依要求移除任何內容。
 
 ## 來源 {#sources}
 

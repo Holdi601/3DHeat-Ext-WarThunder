@@ -54,5 +54,5 @@ Where each feature is documented:
 | gunfire, hit outcomes, ammunition, vehicle fires | [Hits, gunfire and fires](docs/hits.md) |
 | Silver Lions, research points, who won | [Economy](docs/economy.md) |
 | capture zones, airfields, spawns, trams | [Objectives](docs/objectives.md) |
-| Gaijin's terms, sources, tests, licence | [Terms and licence](docs/terms.md) |
+| what it reads, sources, tests, licence | [Terms and licence](docs/terms.md) |
 | releasing | [Maintaining](docs/maintaining.md) |

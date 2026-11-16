@@ -54,7 +54,7 @@ Datei am 3DHeat-Viewer op.
 | [Wéi e Replay gelies gëtt](how-it-reads.md) | wat gelies gëtt, a wéi et gepréift gouf |
 | [Fliger](aircraft.md), [Buedemeenheeten a Kamera](ground.md), [Treffer, Schéiss a Brand](hits.md) | d'Detailer hannert de Kolonnen |
 | [Wirtschaft](economy.md), [Ziler](objectives.md) | Silver Lions a Fuerschungspunkten; Eroberungszonen, Fluchhäfen |
-| [Konditiounen a Lizenz](terms.md) | d'Konditioune vu Gaijin, Quellen, Tester, Lizenz |
+| [Konditiounen a Lizenz](terms.md) | wat gelies gëtt, Quellen, Tester, Lizenz |
 | [Befehlsreferenz](../cli-reference.md), [Kolonnelëscht](../columns.md) | aus dem Code generéiert |
 
 ## Deel vun 3DHeat {#part-of-3dheat}
@@ -65,12 +65,8 @@ De Viewer mécht d'`.3dheat`-Datei op: d'Tabell a sengem Heatmap-Tab, d'Match-Do
 a sengem Match-Tab ([Eng Datei pro Match](https://holdi601.github.io/3DHeat/container.html)).
 Wat all Konverter muss behalen: [Konverteren behalen alles](https://holdi601.github.io/3DHeat/converters.html).
 
-**Firwat et en eegent Tool ass.** D'`.wrpl`-Format ass net dokumentéiert, an
-dem Gaijin säin EULA (3.2.2, 3.2.9) verbitt et, d'Spill ze reverse-engineeren an
-Daten ze gewannen, déi net fir d'Uweisung geduecht sinn; Replays nennt en net, a si ginn
-awer vum Spill selwer dem Spiller gewisen. Fir datt eng Lizenzfro nëmmen dëse Konverter
-trëfft, läit en ausserhalb vum 3DHeat Watcher: de Watcher léisst en op nei Replays lafen,
-wann en installéiert ass, a funktionéiert och ouni en.
+All Spill-Lieser ass e klengt eegestännegt Projet mat senger eegener Lizenzdatei, senge Releases a sengem Issue-Tracker, sou datt e sech eleng installéieren, aktualiséieren, ënnerhalen - oder op Ufro vun engem Rechteinhaber zréckzéien - léisst, ouni de Viewer oder déi aner Tools ze beaflossen.
+Den 3DHeat Watcher léisst dëse Konverter op nei Replays lafen, wann en installéiert ass, a funktionéiert och ouni en.
 
 | Tool | Wat et mécht | Quell | Dokumentatioun |
 |---|---|---|---|

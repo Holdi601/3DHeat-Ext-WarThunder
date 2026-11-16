@@ -55,7 +55,7 @@ Iga lahingu kohta näed ühte rida: `ok out/<map>/<match>.3dheat`. Ava see fail
 | [Kuidas tööriist kordust loeb](how-it-reads.md) | mida loetakse ja kuidas kontrolliti |
 | [Lennukid](aircraft.md), [Maapealsed üksused ja kaamera](ground.md), [Tabamused, tulistamine ja tulekahjud](hits.md) | detailid veergude taga |
 | [Majandus](economy.md), [Eesmärgid](objectives.md) | Silver Lions ja uurimispunktid; vallutussoonid, lennuväljad |
-| [Tingimused ja litsents](terms.md) | Gaijini tingimused, allikad, testid, litsents |
+| [Tingimused ja litsents](terms.md) | mida loetakse, allikad, testid, litsents |
 | [Käskude viide](../cli-reference.md), [Veergude loend](../columns.md) | koodist genereeritud |
 
 ## Osa 3DHeatist {#part-of-3dheat}
@@ -66,11 +66,8 @@ Vaatur avab `.3dheat` faili: tabeli vahekaardil **Soojuskaart** ja mängu dokume
 vahekaardil **Matš** ([Üks fail mängu kohta](https://holdi601.github.io/3DHeat/container.html)).
 Mida iga konverter peab säilitama: [Konverterid hoiavad kõike](https://holdi601.github.io/3DHeat/converters.html).
 
-**Miks see on eraldi tööriist.** `.wrpl` formaat ei ole dokumenteeritud ja Gaijini
-EULA (3.2.2, 3.2.9) keelab mängu pöördprojekteerimise ning andmete kogumise, mis
-ei ole mõeldud avalikuks näitamiseks; see ei nimeta kordusi, mille mäng näitab mängijale endale. Et litsentsiküsimus puudutaks ainult seda konverterit,
-asub see 3DHeat Watcherist väljaspool: Watcher käivitab selle uutel kordustel,
-kui see on paigaldatud, ja töötab ka ilma selleta.
+Iga mängulugeja on omaette väike projekt oma litsentsifaili, väljalasete ja probleemijälgijaga, nii et seda saab paigaldada, uuendada, hooldada - või õiguste omaja palvel tagasi võtta - eraldi, ilma et see mõjutaks vaaturit või teisi tööriistu.
+3DHeat Watcher käivitab selle konverteri uutel kordustel, kui see on paigaldatud, ja töötab ka ilma selleta.
 
 | Tööriist | Mida see teeb | Lähtekood | Dokumentatsioon |
 |---|---|---|---|

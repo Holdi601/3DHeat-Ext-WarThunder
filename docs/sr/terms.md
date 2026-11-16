@@ -3,22 +3,19 @@ title: Услови и лиценца
 nav_order: 16
 lang: "sr"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Услови и лиценца {#terms-and-licence}
 
-## Услови {#the-terms}
+## Шта се чита {#what-it-reads}
 
-Gaijin-ови Услови коришћења (ажурирани 2026-08-17), EULA (Анекс 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-осим клијента. Читање нивоа ваше сопствене копије игре у локални 3D приказ је
-одлука корисника, донета знајући то. Нивои који се запишу остају на вашем
-рачунару: **никад их не објављујте**, и ништа овде не испоручује игрине податке.
+Конвертор чита реплеје које War Thunder чува на вашем рачунару (или реплеје ваших битака које сте сами преузели са warthunder.com) и датотеке нивоа из ваше сопствене инсталације War Thunder-а. Ништа из игре није укључено нити се даље дистрибуира: нема садржаја игре, кода игре ни DLL-ова; Oodle се учитава из ваше сопствене инсталације. Оно што запише остаје на вашем рачунару: **никад не објављујте нивое**.
+
+3DHeat није повезан са компанијом Gaijin Entertainment нити га она подржава. War Thunder и повезани називи и жигови припадају својим власницима.
+
+Носиоци права: отворите issue на <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - брзо одговарамо и на захтев уклањамо било шта.
 
 ## Извори {#sources}
 

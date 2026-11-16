@@ -54,7 +54,7 @@ skedar në shikuesin 3DHeat.
 | [Si e lexon një riluajtje](how-it-reads.md) | çfarë lexohet dhe si u kontrollua |
 | [Aeroplanët](aircraft.md), [Njësitë tokësore dhe kamera](ground.md), [Goditjet, të shtënat dhe zjarret](hits.md) | detajet pas kolonave |
 | [Ekonomia](economy.md), [Objektivat](objectives.md) | Silver Lions dhe pikët e kërkimit; zonat e kapjes, fushat ajrore |
-| [Kushtet dhe licenca](terms.md) | kushtet e Gaijin, burimet, testet, licenca |
+| [Kushtet dhe licenca](terms.md) | çfarë lexohet, burime, teste, licencë |
 | [Referenca e komandave](../cli-reference.md), [Lista e kolonave](../columns.md) | e gjeneruar nga kodi |
 
 ## Pjesë e 3DHeat {#part-of-3dheat}
@@ -65,12 +65,8 @@ Shikuesi e hap skedarin `.3dheat`: tabelën në skedën e tij Harta e nxehtësis
 në skedën e tij Ndeshja ([Një skedar për ndeshje](https://holdi601.github.io/3DHeat/container.html)).
 Çfarë duhet të ruajë çdo konvertues: [Konvertuesit ruajnë gjithçka](https://holdi601.github.io/3DHeat/converters.html).
 
-**Pse është mjet i veçantë.** Formati `.wrpl` nuk është i dokumentuar, dhe
-EULA e Gaijin (3.2.2, 3.2.9) ndalon inxhinierinë e kundërt të lojës dhe nxjerrjen e
-të dhënave që nuk janë menduar të shfaqen; ajo nuk i përmend riluajtjet, të cilat loja vetë
-ia tregon lojtarit. Që një pyetje licence të prekë vetëm këtë konvertues, ai
-qëndron jashtë 3DHeat Watcher: Watcher e nis mbi riluajtjet e reja kur
-është i instaluar, dhe funksionon edhe pa të.
+Çdo lexues loje është një projekt i vogël më vete, me skedarin e vet të licencës, versionet dhe gjurmuesin e problemeve, kështu që mund të instalohet, përditësohet, mirëmbahet - ose tërhiqet me kërkesë të një mbajtësi të të drejtave - më vete, pa prekur shikuesin ose mjetet e tjera.
+3DHeat Watcher e nis këtë konvertues mbi riluajtjet e reja kur është i instaluar, dhe funksionon edhe pa të.
 
 | Mjeti | Çfarë bën | Burimi | Dokumentacioni |
 |---|---|---|---|

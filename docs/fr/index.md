@@ -3,7 +3,7 @@ title: Accueil
 nav_order: 1
 lang: "fr"
 source: index.md
-source_hash: "7abbee10da8d"
+source_hash: "4286d0049867"
 nav_exclude: true
 search_exclude: true
 permalink: /fr/
@@ -56,7 +56,7 @@ dans le visualiseur 3DHeat.
 | [Comment le replay est lu](how-it-reads.md) | ce qui est lu, et comment cela a été vérifié |
 | [Avions](aircraft.md), [Unités au sol et caméra](ground.md), [Impacts, tirs et incendies](hits.md) | les détails derrière les colonnes |
 | [Économie](economy.md), [Objectifs](objectives.md) | Lions d'argent et points de recherche ; zones de capture, aérodromes |
-| [Termes et licence](terms.md) | les conditions de Gaijin, les sources, les tests, la licence |
+| [Termes et licence](terms.md) | ce qui est lu, sources, tests, licence |
 | [Référence des commandes](../cli-reference.md), [Liste des colonnes](../columns.md) | générées à partir du code |
 
 ## Une partie de 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Le visualiseur ouvre le fichier `.3dheat` : la table dans son onglet Carte de ch
 document de partie dans son onglet Match ([Un fichier par match](https://holdi601.github.io/3DHeat/container.html)).
 Ce que chaque convertisseur doit conserver : [Les convertisseurs gardent tout](https://holdi601.github.io/3DHeat/converters.html).
 
-**Pourquoi c'est un outil à part.** Le format `.wrpl` n'est pas documenté, et l'EULA de
-Gaijin (3.2.2, 3.2.9) interdit la rétro-ingénierie du jeu et l'extraction de données non
-destinées à être affichées ; il ne mentionne pas les replays, que le jeu lui-même montre au
-joueur. Pour qu'une question de licence ne touche que ce convertisseur, il vit en dehors du
-Watcher de 3DHeat : le Watcher le lance sur les nouveaux replays quand il est installé, et
-fonctionne sans lui.
+Chaque lecteur de jeu est un petit projet à part, avec son propre fichier de licence, ses versions et son suivi des tickets : il peut ainsi être installé, mis à jour, maintenu - ou retiré à la demande d'un ayant droit - seul, sans toucher à la visionneuse ni aux autres outils.
+Le Watcher de 3DHeat lance ce convertisseur sur les nouveaux replays quand il est installé, et fonctionne sans lui.
 
 | Outil | Ce qu'il fait | Source | Documentation |
 |---|---|---|---|

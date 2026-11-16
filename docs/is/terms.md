@@ -3,22 +3,19 @@ title: "Skilmálar og leyfi"
 nav_order: 16
 lang: "is"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Skilmálar og leyfi {#terms-and-licence}
 
-## Skilmálarnir {#the-terms}
+## Hvað er lesið {#what-it-reads}
 
-Þjónustuskilmálar Gaijin (uppfærðir 2026-08-17), EULA (viðauki 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-umfram biðlarann. Að lesa borðsskrár þíns eigin eintaks inn í staðbundna 3D-sýn er
-ákvörðun notandans, tekin með vitneskju um þetta. Borðin sem eru skrifuð haldast á
-tölvunni þinni: **birtu þau aldrei**, og ekkert hér fylgir með af leikjagögnum.
+Breytirinn les upptökurnar sem War Thunder vistar á tölvunni þinni (eða upptökur af orrustum þínum sem þú sóttir af warthunder.com) og borðaskrárnar úr þinni eigin War Thunder-uppsetningu. Ekkert úr leiknum fylgir hér með eða er dreift áfram: engin leikjagögn, enginn leikjakóði, engar DLL-skrár; Oodle er hlaðið úr þinni eigin uppsetningu. Það sem hann skrifar verður eftir á tölvunni þinni: **birtu borðin aldrei**.
+
+3DHeat tengist ekki Gaijin Entertainment og er ekki samþykkt af Gaijin Entertainment. War Thunder og tengd heiti og vörumerki tilheyra eigendum sínum.
+
+Rétthafar: stofnið issue á <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - við svörum fljótt og fjarlægjum hvað sem er sé þess óskað.
 
 ## Heimildir {#sources}
 

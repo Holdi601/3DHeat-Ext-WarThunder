@@ -5,16 +5,21 @@ nav_order: 16
 
 # Terms and licence
 
-## The terms
+## What it reads
 
-Gaijin's Terms of Service (updated 2026-08-17), EULA (Annex 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-beyond the client. Reading your own copy's level files into a local 3D view is
-the user's decision, taken knowing this. The levels written stay on your
-machine: **never publish them**, and nothing here ships any game data.
+The converter reads the replays War Thunder saves on your computer (or replays
+of your battles that you downloaded yourself from warthunder.com) and the level
+files of your own War Thunder installation. Nothing from the game is included
+or redistributed here: no game assets, no game code, no DLLs; Oodle is loaded
+from your own install. What it writes stays on your machine: **never publish
+the levels**.
+
+3DHeat is not affiliated with or endorsed by Gaijin Entertainment. War Thunder
+and related names and trademarks belong to their owners.
+
+Rights holders: open an issue at
+<https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - we respond quickly
+and remove anything on request.
 
 ## Sources
 

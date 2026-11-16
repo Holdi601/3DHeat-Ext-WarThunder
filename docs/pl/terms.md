@@ -3,22 +3,19 @@ title: Warunki i licencja
 nav_order: 16
 lang: "pl"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Warunki i licencja {#terms-and-licence}
 
-## Warunki {#the-terms}
+## Co jest odczytywane {#what-it-reads}
 
-Warunki Usługi Gaijin (zaktualizowane 2026-08-17), EULA (Załącznik 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-poza klientem. Wczytanie plików poziomów z własnej kopii gry do lokalnego widoku 3D
-to decyzja użytkownika, podjęta ze świadomością tych zapisów. Zapisane poziomy zostają na Twoim
-komputerze: **nigdy ich nie publikuj**, a nic tutaj nie zawiera danych gry.
+Konwerter odczytuje replaye, które War Thunder zapisuje na twoim komputerze (albo replaye twoich bitew, które sam pobrałeś z warthunder.com), oraz pliki poziomów z twojej własnej instalacji War Thunder. Nic z gry nie jest tu dołączone ani rozpowszechniane: żadnych zasobów gry, żadnego kodu gry, żadnych bibliotek DLL; Oodle jest wczytywany z twojej własnej instalacji. To, co zapisuje, zostaje na twoim komputerze: **nigdy nie publikuj poziomów**.
+
+3DHeat nie jest powiązany z Gaijin Entertainment ani zatwierdzony przez Gaijin Entertainment. War Thunder oraz powiązane nazwy i znaki towarowe należą do ich właścicieli.
+
+Posiadacze praw: otwórzcie zgłoszenie (issue) na <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - odpowiadamy szybko i na prośbę usuwamy wszystko.
 
 ## Źródła {#sources}
 

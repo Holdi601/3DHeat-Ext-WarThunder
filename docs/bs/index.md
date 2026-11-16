@@ -55,7 +55,7 @@ datoteku u 3DHeat pregledniku.
 | [Kako čita replay](how-it-reads.md) | šta se čita i kako je provjereno |
 | [Avioni](aircraft.md), [Kopnene jedinice i kamera](ground.md), [Pogoci, paljba i požari](hits.md) | detalji iza kolona |
 | [Ekonomija](economy.md), [Ciljevi](objectives.md) | Silver Lions i bodovi istraživanja; zone zauzimanja, aerodromi |
-| [Uvjeti i licenca](terms.md) | Gaijinovi uvjeti, izvori, testovi, licenca |
+| [Uvjeti i licenca](terms.md) | šta se čita, izvori, testovi, licenca |
 | [Referenca naredbi](../cli-reference.md), [Lista kolona](../columns.md) | generisano iz koda |
 
 ## Dio 3DHeata {#part-of-3dheat}
@@ -66,12 +66,8 @@ Preglednik otvara `.3dheat` datoteku: tabelu u kartici Toplotna mapa, dokument
 meča u kartici Meč ([Jedna datoteka po meču](https://holdi601.github.io/3DHeat/container.html)).
 Šta svaki konverter mora zadržati: [Konverteri čuvaju sve](https://holdi601.github.io/3DHeat/converters.html).
 
-**Zašto je to poseban alat.** Format `.wrpl` nije dokumentiran, a
-Gaijinov EULA (3.2.2, 3.2.9) zabranjuje reverzno inženjerstvo igre i vađenje
-podataka koji nisu namijenjeni prikazivanju; replayeve ne spominje, a igra ih sama
-pokazuje igraču. Da bi se pitanje licence ticalo samo ovog konvertera, on
-živi izvan 3DHeat Watchera: Watcher ga pokreće nad novim replayevima kada je
-instaliran, i radi i bez njega.
+Svaki čitač igre je zaseban mali projekat sa vlastitom datotekom licence, izdanjima i sistemom za prijavu problema, pa se može instalirati, ažurirati, održavati - ili povući na zahtjev nosioca prava - zasebno, bez uticaja na preglednik ili ostale alate.
+3DHeat Watcher pokreće ovaj konverter nad novim replayevima kada je instaliran, i radi i bez njega.
 
 | Alat | Šta radi | Izvor | Dokumentacija |
 |---|---|---|---|

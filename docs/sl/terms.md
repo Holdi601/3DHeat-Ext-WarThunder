@@ -3,23 +3,19 @@ title: Pogoji in licenca
 nav_order: 16
 lang: "sl"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Pogoji in licenca {#terms-and-licence}
 
-## Pogoji {#the-terms}
+## Kaj se bere {#what-it-reads}
 
-Gaijinovi Pogoji storitve (posodobljeni 2026-08-17), EULA (Priloga 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-beyond the client. Branje datotek zemljevidov iz lastnega izvoda igre v lokalni 3D
-pogled je odločitev uporabnika, sprejeta ob poznavanju tega. Zapisani zemljevidi
-ostanejo na vašem računalniku: **nikoli jih ne objavljajte**, in nič tukaj ne prinaša
-podatkov iz igre.
+Pretvornik bere posnetke, ki jih War Thunder shrani v vaš računalnik (ali posnetke vaših bitk, ki ste jih sami prenesli z warthunder.com), in datoteke ravni iz vaše lastne namestitve War Thunderja. Nič iz igre tu ni vključeno ali naprej razširjano: nobenih sredstev igre, nobene kode igre, nobenih DLL-jev; Oodle se naloži iz vaše lastne namestitve. Kar zapiše, ostane na vašem računalniku: **ravni nikoli ne objavljajte**.
+
+3DHeat ni povezan z družbo Gaijin Entertainment in ga ta ni odobrila. War Thunder ter povezana imena in blagovne znamke pripadajo njihovim lastnikom.
+
+Imetniki pravic: odprite issue na <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - odgovorimo hitro in na zahtevo odstranimo karkoli.
 
 ## Viri {#sources}
 

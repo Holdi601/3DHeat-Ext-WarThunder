@@ -3,22 +3,19 @@ title: 用語とライセンス
 nav_order: 16
 lang: "ja"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # 用語とライセンス {#terms-and-licence}
 
-## 利用規約 {#the-terms}
+## 読み取るもの {#what-it-reads}
 
-Gaijin の利用規約（2026-08-17 更新）、EULA（付属書 2）。条文は英語の原文のまま引用します:
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-beyond the client.
-ご自身のゲームのコピーのレベルファイルを、ローカルの 3D 表示に読み込むことは、そのことを承知のうえでのユーザーご自身の判断です。
-書き出されたレベルはお使いのマシンに残ります。**決して公開しないでください**。ここにあるものは、ゲームのデータを一切含みません。
+この変換ツールが読むのは、War Thunder があなたのコンピュータに保存したリプレイ（またはあなた自身が warthunder.com からダウンロードした自分の戦闘のリプレイ）と、あなた自身の War Thunder のインストールにあるレベルファイルです。ゲームのものはここには何も含まれず、再配布もされません。ゲームのアセットも、ゲームのコードも、DLL もありません。Oodle はあなた自身のインストールから読み込まれます。書き出したものはあなたのマシンに残ります。**レベルは決して公開しないでください**。
+
+3DHeat は Gaijin Entertainment とは提携しておらず、Gaijin Entertainment の承認も受けていません。War Thunder および関連する名称と商標は、それぞれの所有者に帰属します。
+
+権利者の方へ: <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> で Issue を開いてください。迅速に対応し、ご要望があれば何でも削除します。
 
 ## 出典 {#sources}
 

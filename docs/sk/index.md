@@ -56,7 +56,7 @@ súbor otvorte v 3DHeat prehliadači.
 | [Ako sa replay číta](how-it-reads.md) | čo sa číta a ako to bolo overené |
 | [Lietadlá](aircraft.md), [Pozemné jednotky a kamera](ground.md), [Zásahy, streľba a požiare](hits.md) | podrobnosti za stĺpcami |
 | [Ekonomika](economy.md), [Ciele](objectives.md) | Silver Lions a výskumné body; zóny dobytia, letiská |
-| [Podmienky a licencia](terms.md) | podmienky Gaijinu, zdroje, testy, licencia |
+| [Podmienky a licencia](terms.md) | čo sa číta, zdroje, testy, licencia |
 | [Referencia príkazov](../cli-reference.md), [Zoznam stĺpcov](../columns.md) | generované z kódu |
 
 ## Súčasť 3DHeat {#part-of-3dheat}
@@ -67,11 +67,8 @@ Prehliadač otvára súbor `.3dheat`: tabuľku na karte Heatmapa, dokument zápa
 karte Zápas ([Jeden súbor na zápas](https://holdi601.github.io/3DHeat/container.html)).
 Čo musí každý konvertor zachovať: [Konvertory zachovávajú všetko](https://holdi601.github.io/3DHeat/converters.html).
 
-**Prečo je to samostatný nástroj.** Formát `.wrpl` nie je zdokumentovaný a
-EULA Gaijinu (3.2.2, 3.2.9) zakazuje reverzné inžinierstvo hry a ťažbu údajov,
-ktoré nemajú byť zobrazené; replaye nespomína, lebo ich hra zobrazuje samotnému
-hráčovi. Aby sa otázka licencie týkala len tohto konvertora, žije mimo 3DHeat
-Watcher: Watcher ho spúšťa na nových replayoch, ak je nainštalovaný, a funguje aj bez neho.
+Každá čítačka hry je samostatný malý projekt s vlastným licenčným súborom, vydaniami a evidenciou problémov, takže ju možno inštalovať, aktualizovať, udržiavať - alebo na žiadosť držiteľa práv stiahnuť - samostatne, bez vplyvu na prehliadač a ostatné nástroje.
+3DHeat Watcher spúšťa tento konvertor na nových replayoch, ak je nainštalovaný, a funguje aj bez neho.
 
 | Nástroj | Čo robí | Zdroj | Dokumentácia |
 |---|---|---|---|

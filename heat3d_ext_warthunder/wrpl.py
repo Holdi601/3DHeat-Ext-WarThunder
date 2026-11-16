@@ -6,11 +6,7 @@ replays, `<War Thunder>/Replays/*.wrpl`), and keeps one of every battle on its
 servers, in numbered parts (`0000.wrpl`, `0001.wrpl`, ...), downloadable from
 warthunder.com's replay pages when signed in. Both are read the same way.
 
-Reading a .wrpl means decoding an undocumented binary file. Gaijin's EULA (3.2.2,
-3.2.9) forbids reverse engineering the game and mining data not meant to be
-shown; nothing there names replays, which the game itself shows to the player.
-That is why this reader is a converter of its own, apart from the 3DHeat
-Watcher; see the README.
+Reading a .wrpl means decoding an undocumented binary file.
 
 The layout
 ----------

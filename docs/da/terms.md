@@ -3,22 +3,19 @@ title: Vilkår og licens
 nav_order: 16
 lang: "da"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Vilkår og licens {#terms-and-licence}
 
-## Vilkårene {#the-terms}
+## Hvad der læses {#what-it-reads}
 
-Gaijins Terms of Service (opdateret 2026-08-17), EULA (Annex 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-ud over klienten. At læse dit eget eksemplars banefiler ind i en lokal 3D-visning
-er brugerens beslutning, taget med kendskab til dette. De baner, der skrives, bliver
-på din maskine: **publicér dem aldrig**, og intet her leverer spildata.
+Konverteren læser de replays, War Thunder gemmer på din computer (eller replays af dine kampe, som du selv har hentet fra warthunder.com), og niveaufilerne fra din egen War Thunder-installation. Intet fra spillet er med her eller videredistribueres: ingen spilaktiver, ingen spilkode, ingen DLL'er; Oodle indlæses fra din egen installation. Det, den skriver, bliver på din maskine: **publicér aldrig niveauerne**.
+
+3DHeat er ikke tilknyttet eller godkendt af Gaijin Entertainment. War Thunder og tilhørende navne og varemærker tilhører deres ejere.
+
+Rettighedshavere: opret et issue på <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - vi svarer hurtigt og fjerner alt efter anmodning.
 
 ## Kilder {#sources}
 

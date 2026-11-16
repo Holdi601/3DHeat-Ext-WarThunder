@@ -56,7 +56,7 @@ i 3DHeat-visaren.
 | [Så läser den en repris](how-it-reads.md) | vad som läses, och hur det kontrollerades |
 | [Flygplan](aircraft.md), [Markenheter och kamera](ground.md), [Träffar, beskjutning och bränder](hits.md) | detaljerna bakom kolumnerna |
 | [Ekonomi](economy.md), [Mål](objectives.md) | Silver Lions och forskningspoäng; erövringszoner, flygfält |
-| [Villkor och licens](terms.md) | Gaijins villkor, källor, tester, licens |
+| [Villkor och licens](terms.md) | vad som läses, källor, tester, licens |
 | [Kommandoreferens](../cli-reference.md), [Kolumnlista](../columns.md) | genererade från koden |
 
 ## Del av 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Visaren öppnar `.3dheat`-filen: tabellen på sin Värmekarta-flik, matchdokumen
 sin Match-flik ([En fil per match](https://holdi601.github.io/3DHeat/container.html)).
 Vad varje konverterare måste behålla: [Konverterare behåller allt](https://holdi601.github.io/3DHeat/converters.html).
 
-**Varför det är ett eget verktyg.** `.wrpl`-formatet är inte dokumenterat, och
-Gaijins EULA (3.2.2, 3.2.9) förbjuder att reverse engineera spelet och gräva fram
-data som inte är avsedd att visas; den nämner inte repriser, som spelet själv visar
-spelaren. För att en licensfråga bara ska beröra den här konverteraren ligger den
-utanför 3DHeat Watcher: Watcher kör den på nya repriser när den är installerad,
-och fungerar utan den.
+Varje spelläsare är ett eget litet projekt med egen licensfil, egna releaser och egen ärendehantering, så att den kan installeras, uppdateras, underhållas - eller dras tillbaka på en rättighetshavares begäran - för sig, utan att visaren eller de andra verktygen påverkas.
+3DHeat Watcher kör den här konverteraren på nya repriser när den är installerad, och fungerar utan den.
 
 | Verktyg | Vad det gör | Källa | Dokumentation |
 |---|---|---|---|

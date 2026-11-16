@@ -56,7 +56,7 @@ bestand in de 3DHeat-viewer.
 | [Hoe het een replay leest](how-it-reads.md) | wat er gelezen wordt, en hoe het gecontroleerd is |
 | [Vliegtuigen](aircraft.md), [Grondeenheden en camera](ground.md), [Treffers, beschieting en branden](hits.md) | de details achter de kolommen |
 | [Economie](economy.md), [Doelen](objectives.md) | Zilveren Leeuwen en onderzoekspunten; veroveringszones, vliegvelden |
-| [Voorwaarden en licentie](terms.md) | de voorwaarden van Gaijin, bronnen, tests, licentie |
+| [Voorwaarden en licentie](terms.md) | wat er gelezen wordt, bronnen, tests, licentie |
 | [Opdrachtreferentie](../cli-reference.md), [Kolomlijst](../columns.md) | gegenereerd uit de code |
 
 ## Onderdeel van 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ De viewer opent het `.3dheat`-bestand: de tabel in het tabblad Heatmap, het
 wedstrijddocument in het tabblad Match ([Eén bestand per wedstrijd](https://holdi601.github.io/3DHeat/container.html)).
 Wat elke converter moet bewaren: [Converters bewaren alles](https://holdi601.github.io/3DHeat/converters.html).
 
-**Waarom het een aparte tool is.** Het `.wrpl`-formaat is niet gedocumenteerd, en
-de EULA van Gaijin (3.2.2, 3.2.9) verbiedt het reverse engineeren van het spel en
-het opgraven van gegevens die niet bedoeld zijn om getoond te worden; er staat geen
-woord over replays, die het spel zelf aan de speler laat zien. Zodat een licentievraag
-alleen deze converter raakt, staat hij buiten de 3DHeat Watcher: de Watcher draait hem op
-nieuwe replays als hij geïnstalleerd is, en werkt ook zonder hem.
+Elke spellezer is een eigen klein project met een eigen licentiebestand, eigen releases en een eigen issuetracker, zodat hij los geïnstalleerd, bijgewerkt, onderhouden - of op verzoek van een rechthebbende teruggetrokken - kan worden, zonder dat de viewer of de andere tools daar iets van merken.
+De 3DHeat Watcher draait deze converter op nieuwe replays als hij geïnstalleerd is, en werkt ook zonder hem.
 
 | Tool | Wat hij doet | Bron | Documentatie |
 |---|---|---|---|

@@ -3,22 +3,19 @@ title: "Termini u liċenzja"
 nav_order: 16
 lang: "mt"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Termini u liċenzja {#terms-and-licence}
 
-## It-termini {#the-terms}
+## X'jinqara {#what-it-reads}
 
-It-Termini tas-Servizz ta' Gaijin (aġġornati 2026-08-17), EULA (Annex 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-lil hinn mill-klijent. Li taqra l-fajls tal-livelli tal-kopja tiegħek stess f'veduta 3D lokali
-hija d-deċiżjoni tal-utent, meħuda b'taf dan. Il-livelli miktuba jibqgħu fuq il-magna tiegħek:
-**qatt ma tippubblikahom**, u xejn hawn ma jġib data tal-logħba.
+Il-konvertitur jaqra r-ripetizzjonijiet li War Thunder jissejvja fuq il-kompjuter tiegħek (jew ripetizzjonijiet tal-battalji tiegħek li niżżilt int stess minn warthunder.com) u l-fajls tal-livelli tal-installazzjoni tiegħek ta' War Thunder. Xejn mil-logħba mhu inkluż hawn jew imqassam mill-ġdid: l-ebda assi tal-logħba, l-ebda kodiċi tal-logħba, l-ebda DLL; Oodle jitgħabba mill-installazzjoni tiegħek. Dak li jikteb jibqa' fuq il-magna tiegħek: **qatt ma tippubblika l-livelli**.
+
+3DHeat mhuwiex affiljat ma' Gaijin Entertainment u mhux approvat minnha. War Thunder u l-ismijiet u t-trademarks relatati jappartjenu lis-sidien tagħhom.
+
+Detenturi tad-drittijiet: iftħu issue fuq <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - inwieġbu malajr u nneħħu kull ħaġa fuq talba.
 
 ## Sorsi {#sources}
 

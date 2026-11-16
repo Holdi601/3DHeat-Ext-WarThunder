@@ -3,23 +3,19 @@ title: "Feltételek és licenc"
 nav_order: 16
 lang: "hu"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Feltételek és licenc {#terms-and-licence}
 
-## A feltételek {#the-terms}
+## Mit olvas {#what-it-reads}
 
-Gaijin Szolgáltatási Feltételek (frissítve: 2026-08-17), EULA (2. melléklet):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-a kliensen túl. Hogy a saját példányod pályafájljait egy helyi 3D-s nézetbe
-olvasod be, az a felhasználó döntése, amelyet ennek ismeretében hoz meg. Az
-elkészült pályák a gépeden maradnak: **soha ne tedd közzé őket**, és ez a
-tároló semmilyen játékadatot nem szállít.
+A konverter a War Thunder által a számítógépedre mentett visszajátszásokat olvassa (vagy a csatáid visszajátszásait, amelyeket magad töltöttél le a warthunder.com-ról), valamint a saját War Thunder-telepítésed pályafájljait. A játékból semmi nincs itt benne, és semmit nem terjeszt tovább: se játékelemeket, se játékkódot, se DLL-eket; az Oodle a saját telepítésedből töltődik be. Amit ír, a gépeden marad: **soha ne tedd közzé a pályákat**.
+
+A 3DHeat nem áll kapcsolatban a Gaijin Entertainment céggel, és az nem is támogatja. A War Thunder és a kapcsolódó nevek és védjegyek a tulajdonosaikéi.
+
+Jogtulajdonosok: nyissanak issue-t itt: <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - gyorsan válaszolunk, és kérésre bármit eltávolítunk.
 
 ## Források {#sources}
 

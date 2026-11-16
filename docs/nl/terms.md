@@ -3,22 +3,19 @@ title: "Voorwaarden en licentie"
 nav_order: 16
 lang: "nl"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Voorwaarden en licentie {#terms-and-licence}
 
-## De voorwaarden {#the-terms}
+## Wat er gelezen wordt {#what-it-reads}
 
-De Terms of Service van Gaijin (bijgewerkt 2026-08-17), EULA (Bijlage 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-buiten de client. Dat de levelbestanden van je eigen kopie in een lokale 3D-weergave
-lezen, is een beslissing van de gebruiker, die dit weet. De levels die geschreven worden
-blijven op je eigen computer: **publiceer ze nooit**, en niets hier levert gamegegevens mee.
+De converter leest de replays die War Thunder op je computer opslaat (of replays van je gevechten die je zelf van warthunder.com hebt gedownload) en de levelbestanden van je eigen War Thunder-installatie. Niets uit het spel zit hierin of wordt verder verspreid: geen game-assets, geen gamecode, geen DLL's; Oodle wordt uit je eigen installatie geladen. Wat hij schrijft, blijft op je eigen machine: **publiceer de levels nooit**.
+
+3DHeat is niet verbonden aan en niet goedgekeurd door Gaijin Entertainment. War Thunder en bijbehorende namen en handelsmerken zijn van hun eigenaars.
+
+Rechthebbenden: open een issue op <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - we reageren snel en verwijderen alles op verzoek.
 
 ## Bronnen {#sources}
 

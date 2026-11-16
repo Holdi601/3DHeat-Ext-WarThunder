@@ -56,7 +56,7 @@ tiedosto 3DHeat-katsojassa.
 | [Miten replay luetaan](how-it-reads.md) | mitä luetaan ja miten se tarkistettiin |
 | [Lentokoneet](aircraft.md), [Maayksiköt ja kamera](ground.md), [Osumat, tulitus ja palot](hits.md) | sarakkeiden taustalla olevat yksityiskohdat |
 | [Talous](economy.md), [Tavoitteet](objectives.md) | Silver Lions ja tutkimuspisteet; valloitusalueet, lentokentät |
-| [Ehdot ja lisenssi](terms.md) | Gaijinin ehdot, lähteet, testit, lisenssi |
+| [Ehdot ja lisenssi](terms.md) | mitä luetaan, lähteet, testit, lisenssi |
 | [Komentoviite](../cli-reference.md), [Sarakeluettelo](../columns.md) | luotu koodista |
 
 ## Osa 3DHeatiä {#part-of-3dheat}
@@ -67,12 +67,8 @@ Katselin avaa `.3dheat`-tiedoston: taulukon sen Lämpökartta-välilehdellä ja
 ottelun asiakirjan Ottelu-välilehdellä ([Yksi tiedosto ottelua kohden](https://holdi601.github.io/3DHeat/container.html)).
 Mitä jokaisen muuntimen on säilytettävä: [Muuntimet säilyttävät kaiken](https://holdi601.github.io/3DHeat/converters.html).
 
-**Miksi se on erillinen työkalu.** `.wrpl`-muoto ei ole dokumentoitu, ja
-Gaijinin EULA (3.2.2, 3.2.9) kieltää pelin käänteisen suunnittelun ja sellaisen
-datan louhinnan, jota ei ole tarkoitettu näytettäväksi; se ei mainitse
-replayta, jonka peli itse näyttää pelaajalle. Jotta lisenssikysymys koskisi vain
-tätä muunninta, se on 3DHeat Watcherin ulkopuolella: Watcher ajaa sitä uusille
-replayille, kun se on asennettu, ja toimii ilman sitä.
+Jokainen pelinlukija on oma pieni projektinsa, jolla on oma lisenssitiedosto, omat julkaisut ja oma vikaseuranta, joten sen voi asentaa, päivittää, ylläpitää - tai vetää pois oikeudenhaltijan pyynnöstä - erikseen ilman, että se vaikuttaa katseluohjelmaan tai muihin työkaluihin.
+3DHeat Watcher ajaa tämän muuntimen uusille replayille, kun se on asennettu, ja toimii myös ilman sitä.
 
 | Työkalu | Mitä se tekee | Lähde | Dokumentaatio |
 |---|---|---|---|

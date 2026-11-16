@@ -3,23 +3,19 @@ title: "Όροι και άδεια"
 nav_order: 16
 lang: "el"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Όροι και άδεια {#terms-and-licence}
 
-## Οι όροι {#the-terms}
+## Τι διαβάζεται {#what-it-reads}
 
-Οι Όροι Χρήσης της Gaijin (ενημερώθηκαν 2026-08-17), η EULA (Παράρτημα 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"· 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-πέρα από τον πελάτη. Το να διαβάζετε τα αρχεία επιπέδων της δικής σας αντιγραφής του
-παιχνιδιού σε τοπική τρισδιάστατη προβολή είναι απόφαση του χρήστη, που τη λαμβάνει
-γνωρίζοντας αυτά. Τα επίπεδα που γράφονται μένουν στον δικό σας υπολογιστή: **μην τα
-δημοσιεύετε ποτέ**, και τίποτα εδώ δεν μεταφέρει δεδομένα του παιχνιδιού.
+Ο μετατροπέας διαβάζει τα replays που αποθηκεύει το War Thunder στον υπολογιστή σας (ή replays των μαχών σας που κατεβάσατε εσείς από το warthunder.com) και τα αρχεία επιπέδων της δικής σας εγκατάστασης του War Thunder. Τίποτα από το παιχνίδι δεν περιλαμβάνεται ούτε αναδιανέμεται εδώ: κανένα asset του παιχνιδιού, κανένας κώδικας του παιχνιδιού, κανένα DLL· το Oodle φορτώνεται από τη δική σας εγκατάσταση. Ό,τι γράφει μένει στον υπολογιστή σας: **μην δημοσιεύετε ποτέ τα επίπεδα**.
+
+Το 3DHeat δεν συνδέεται με την Gaijin Entertainment ούτε έχει την έγκρισή της. Το War Thunder και τα σχετικά ονόματα και εμπορικά σήματα ανήκουν στους κατόχους τους.
+
+Δικαιούχοι: ανοίξτε ένα issue στο <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - απαντάμε γρήγορα και αφαιρούμε οτιδήποτε κατόπιν αιτήματος.
 
 ## Πηγές {#sources}
 

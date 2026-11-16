@@ -3,24 +3,19 @@ title: "Condizioni e licenza"
 nav_order: 16
 lang: "it"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Condizioni e licenza {#terms-and-licence}
 
-## Le condizioni {#the-terms}
+## Cosa viene letto {#what-it-reads}
 
-Condizioni di servizio di Gaijin (aggiornate il 2026-08-17), EULA (Allegato 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)" (modificare, tradurre, creare opere derivate, eseguire il reverse engineering,
-smontare o decompilare il/i Gioco/i), 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed" (estrarre o raccogliere dati dal/dai Gioco/i che non sono destinati
-a essere mostrati pubblicamente); 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-(non è consentito memorizzare, scaricare, modificare o in altro modo usare alcuna parte del/dei Gioco/i)
-oltre il client. Leggere i file dei livelli della propria copia del gioco in una vista 3D locale è una
-decisione dell'utente, presa sapendolo. I livelli scritti restano sul tuo computer: **non pubblicarli mai**, e nulla qui distribuisce dati del gioco.
+Il convertitore legge i replay che War Thunder salva sul tuo computer (o i replay delle tue battaglie che hai scaricato tu stesso da warthunder.com) e i file dei livelli della tua installazione di War Thunder. Qui non è incluso né ridistribuito nulla del gioco: nessun asset del gioco, nessun codice del gioco, nessuna DLL; Oodle viene caricato dalla tua installazione. Ciò che scrive resta sulla tua macchina: **non pubblicare mai i livelli**.
+
+3DHeat non è affiliato a Gaijin Entertainment né approvato da Gaijin Entertainment. War Thunder e i nomi e marchi correlati appartengono ai rispettivi proprietari.
+
+Titolari dei diritti: aprite una issue su <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> - rispondiamo rapidamente e rimuoviamo qualsiasi cosa su richiesta.
 
 ## Fonti {#sources}
 

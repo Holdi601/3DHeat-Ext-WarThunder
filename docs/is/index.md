@@ -56,7 +56,7 @@ Opnaðu þá skrá í 3DHeat-skoðaranum.
 | [Hvernig upptaka er lesin](how-it-reads.md) | hvað er lesið og hvernig það var sannreynt |
 | [Flugvélar](aircraft.md), [Landfarartæki og myndavél](ground.md), [Högg, skothríð og eldar](hits.md) | smáatriðin á bak við dálkana |
 | [Hagkerfi](economy.md), [Markmið](objectives.md) | Silver Lions og rannsóknarstig; handtökusvæði, flugvellir |
-| [Skilmálar og leyfi](terms.md) | skilmálar Gaijin, heimildir, prófanir, leyfi |
+| [Skilmálar og leyfi](terms.md) | hvað er lesið, heimildir, prófanir, leyfi |
 | [Skipanayfirlit](../cli-reference.md), [Dálkalisti](../columns.md) | búið til úr kóðanum |
 
 ## Hluti af 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Skoðarinn opnar `.3dheat` skrána: töfluna í flipanum Hitakort, leikjaskjali�
 í flipanum Leikur ([Ein skrá á leik](https://holdi601.github.io/3DHeat/container.html)).
 Það sem hver umbreytir verður að varðveita: [Umbreytar varðveita allt](https://holdi601.github.io/3DHeat/converters.html).
 
-**Hvers vegna þetta er sérstakt verkfæri.** Sniðið `.wrpl` er óskjalfest og
-EULA Gaijin (3.2.2, 3.2.9) bannar að rekja leikinn með bakvirkni og að vinna
-gögn sem ekki eru ætluð til sýnis; það nefnir ekki upptökur, sem leikurinn
-sjálfur sýnir spilaranum. Til þess að leyfisspurning snerti aðeins þennan
-breyti er hann utan 3DHeat Watcher: Watcher keyrir hann á nýjum upptökum þegar
-hann er uppsettur og virkar án hans.
+Hver leikjalesari er sérstakt lítið verkefni með eigin leyfisskrá, útgáfur og villurakningu, svo hægt er að setja hann upp, uppfæra, viðhalda - eða draga til baka að beiðni rétthafa - einan og sér, án þess að það hafi áhrif á skoðarann eða önnur verkfæri.
+3DHeat Watcher keyrir þennan breyti á nýjum upptökum þegar hann er uppsettur og virkar án hans.
 
 | Verkfæri | Hvað það gerir | Frumkóði | Skjölun |
 |---|---|---|---|

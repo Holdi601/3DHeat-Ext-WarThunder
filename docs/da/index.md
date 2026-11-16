@@ -56,7 +56,7 @@ Du bør se én linje per kamp: `ok out/<map>/<match>.3dheat`. Åbn den fil i
 | [Hvordan replayet læses](how-it-reads.md) | hvad der læses, og hvordan det er kontrolleret |
 | [Fly](aircraft.md), [Landenheder og kamera](ground.md), [Træf, skud og brande](hits.md) | detaljerne bag kolonnerne |
 | [Økonomi](economy.md), [Mål](objectives.md) | Silver Lions og forskningspoint; erobringszoner, flyvepladser |
-| [Vilkår og licens](terms.md) | Gaijins vilkår, kilder, tests, licens |
+| [Vilkår og licens](terms.md) | hvad der læses, kilder, tests, licens |
 | [Kommandoreference](../cli-reference.md), [Kolonneliste](../columns.md) | genereret ud fra koden |
 
 ## Del af 3DHeat {#part-of-3dheat}
@@ -67,12 +67,8 @@ Vieweren åbner `.3dheat`-filen: tabellen på sin Heatmap-fane, kampdokumentet p
 sin Kamp-fane ([En fil pr. kamp](https://holdi601.github.io/3DHeat/container.html)).
 Hvad enhver konverter skal bevare: [Konvertere bevarer alt](https://holdi601.github.io/3DHeat/converters.html).
 
-**Hvorfor er det et separat værktøj.** `.wrpl`-formatet er ikke dokumenteret, og
-Gaijins EULA (3.2.2, 3.2.9) forbyder at reverse engineere spillet og at udvinde
-data, der ikke er beregnet til visning; den nævner ikke replays, som spillet selv
-viser spilleren. Så et licensspørgsmål kun rammer denne konverter, ligger den uden
-for 3DHeat Watcher: Watcheren kører den på nye replays, når den er installeret, og
-fungerer uden den.
+Hver spillæser er sit eget lille projekt med egen licensfil, egne udgivelser og egen issue-tracker, så den kan installeres, opdateres, vedligeholdes - eller trækkes tilbage efter anmodning fra en rettighedshaver - for sig selv, uden at det påvirker vieweren eller de andre værktøjer.
+3DHeat Watcher kører denne konverter på nye replays, når den er installeret, og fungerer uden den.
 
 | Værktøj | Hvad det gør | Kilde | Dokumentation |
 |---|---|---|---|

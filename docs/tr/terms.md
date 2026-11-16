@@ -3,22 +3,19 @@ title: "Koşullar ve lisans"
 nav_order: 16
 lang: "tr"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Koşullar ve lisans {#terms-and-licence}
 
-## Koşullar {#the-terms}
+## Neler okunur {#what-it-reads}
 
-Gaijin'in Hizmet Koşulları (2026-08-17 güncellemesi), EULA (Ek 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-istemcinin ötesinde. Kendi kopyanızın seviye dosyalarını yerel bir 3B görünüme okumak
-kullanıcının bunu bilerek verdiği bir karardır. Yazılan seviyeler makinenizde kalır:
-**bunları asla yayımlamayın** ve burada hiçbir oyun verisi dağıtılmaz.
+Dönüştürücü, War Thunder'ın bilgisayarınıza kaydettiği tekrarları (ya da warthunder.com'dan kendiniz indirdiğiniz kendi savaşlarınızın tekrarlarını) ve kendi War Thunder kurulumunuzun seviye dosyalarını okur. Oyundan hiçbir şey burada yer almaz ya da yeniden dağıtılmaz: oyun varlığı yok, oyun kodu yok, DLL yok; Oodle kendi kurulumunuzdan yüklenir. Yazdıkları sizin makinenizde kalır: **seviyeleri asla yayımlamayın**.
+
+3DHeat'in Gaijin Entertainment ile bir bağlantısı yoktur ve Gaijin Entertainment tarafından onaylanmamıştır. War Thunder ve ilgili adlar ile ticari markalar sahiplerine aittir.
+
+Hak sahipleri: <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> adresinde bir issue açın - hızlı yanıt veririz ve istek üzerine her şeyi kaldırırız.
 
 ## Kaynaklar {#sources}
 

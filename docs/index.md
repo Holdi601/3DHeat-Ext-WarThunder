@@ -50,7 +50,7 @@ file in the 3DHeat viewer.
 | [How it reads a replay](how-it-reads.md) | what is read, and how it was checked |
 | [Aircraft](aircraft.md), [Ground units and camera](ground.md), [Hits, gunfire and fires](hits.md) | the details behind the columns |
 | [Economy](economy.md), [Objectives](objectives.md) | Silver Lions and research points; capture zones, airfields |
-| [Terms and licence](terms.md) | Gaijin's terms, sources, tests, licence |
+| [Terms and licence](terms.md) | what it reads, sources, tests, licence |
 | [Command reference](cli-reference.md), [Column list](columns.md) | generated from the code |
 
 ## Part of 3DHeat
@@ -61,12 +61,11 @@ The viewer opens the `.3dheat` file: the table in its Heatmap tab, the match
 document in its Match tab ([One file a match](https://holdi601.github.io/3DHeat/container.html)).
 What every converter must keep: [Converters keep everything](https://holdi601.github.io/3DHeat/converters.html).
 
-**Why it is a separate tool.** The `.wrpl` format is undocumented, and
-Gaijin's EULA (3.2.2, 3.2.9) forbids reverse engineering the game and mining
-data not meant to be shown; it does not name replays, which the game itself
-shows the player. So that a licence question touches only this converter, it
-lives outside the 3DHeat Watcher: the Watcher runs it on new replays when it
-is installed, and works without it.
+Each game reader is its own small project with its own licence file, releases and issue
+tracker, so it can be installed, updated, maintained - or withdrawn on a rights holder's
+request - on its own, without affecting the viewer or the other tools.
+The 3DHeat Watcher runs this converter on new replays when it is installed,
+and works without it.
 
 | Tool | What it does | Source | Documentation |
 |---|---|---|---|

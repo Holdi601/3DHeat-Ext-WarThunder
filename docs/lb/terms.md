@@ -3,22 +3,19 @@ title: "Konditiounen a Lizenz"
 nav_order: 16
 lang: "lb"
 source: terms.md
-source_hash: "87615c2f7602"
+source_hash: "01d249aa8f1b"
 nav_exclude: true
 search_exclude: true
 ---
 # Konditiounen a Lizenz {#terms-and-licence}
 
-## D'Konditiounen {#the-terms}
+## Wat gelies gëtt {#what-it-reads}
 
-Dem Gaijin seng Terms of Service (aktualiséiert 2026-08-17), EULA (Annex 2):
-3.2.2 "modify, translate, create derivative works of, reverse engineer,
-disassemble, or decompile the Game(s)", 3.2.9 "mine or collect any data from
-the Game(s) that is not intended to be publicly displayed"; 1.2 "are not
-permitted to store, download, modify, or otherwise use any part of the Game(s)"
-iwwer de Client eraus. D'Level-Dateie vun Ärer eegener Kopie an eng lokal 3D-Usiicht ze liesen,
-ass dem Benotzer seng Entscheedung, geholl mat Wëssen dorëms. Déi geschriwwe Levelen bleiwen op
-Ärer Maschinn: **verëffentlecht se ni**, an hei gëtt keng Spilldaten matgeliwwert.
+De Konverter liest d'Replays, déi War Thunder op Ärem Computer späichert (oder Replays vun Äre Schluechten, déi Dir selwer vu warthunder.com erofgelueden hutt), an d'Level-Dateie vun Ärer eegener War-Thunder-Installatioun. Näischt aus dem Spill ass hei dran oder gëtt weiderverdeelt: keng Spill-Assets, kee Spillcode, keng DLLen; Oodle gëtt aus Ärer eegener Installatioun gelueden. Wat e schreift, bleift op Ärer Maschinn: **verëffentlecht d'Leveln ni**.
+
+3DHeat ass net mat Gaijin Entertainment verbonnen an net vun Gaijin Entertainment ënnerstëtzt. War Thunder an déi verbonnen Nimm a Marken gehéieren hiren Eegentümer.
+
+Rechteinhaber: maacht en Issue op <https://github.com/Holdi601/3DHeat-Ext-WarThunder/issues> op - mir äntweren séier an huelen op Ufro alles erof.
 
 ## Quellen {#sources}
 
