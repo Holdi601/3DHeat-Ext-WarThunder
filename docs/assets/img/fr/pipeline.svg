@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="880" height="510" viewBox="0 0 880 510" role="img" aria-label="From a replay to the 3DHeat viewer"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6270"/></marker></defs><rect width="880" height="510" rx="10" fill="#f7f8fa"/>
-<text x="440" y="30" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle" fill="#1d2330">D'un replay à la visionneuse 3DHeat</text>
+<text x="440" y="30" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle" fill="#1d2330">D'un replay au visualiseur 3DHeat</text>
 <rect x="20" y="48" width="840" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="440" y="72" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">1. Votre replay</text>
 <text x="440" y="94" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">.wrpl, ou un dossier qui les contient</text>
@@ -13,15 +13,15 @@
 <rect x="20" y="276" width="408" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="224" y="300" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">&lt;match&gt;.3dheat (par défaut)</text>
 <text x="224" y="322" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">un fichier par bataille : la table,</text>
-<text x="224" y="342" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">le document de match et les annexes</text>
+<text x="224" y="342" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">le document de partie et les annexes</text>
 <rect x="452" y="276" width="408" height="80" rx="8" fill="#ffffff" stroke="#5b6270" stroke-width="1.2"/>
 <text x="656" y="300" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">ou, avec --loose</text>
 <text x="656" y="322" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">la même chose en fichiers séparés :</text>
 <text x="656" y="342" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">&lt;match&gt;.parquet, &lt;match&gt;.match.json, ...</text>
 <line x1="440" y1="356" x2="440" y2="388" stroke="#5b6270" stroke-width="1.8" marker-end="url(#a)"/>
 <rect x="20" y="390" width="840" height="100" rx="8" fill="#eef4ff" stroke="#5b6270" stroke-width="1.2"/>
-<text x="440" y="414" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">3. La visionneuse 3DHeat</text>
+<text x="440" y="414" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#1d2330">3. Le visualiseur 3DHeat</text>
 <text x="440" y="436" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Carte de chaleur : la table</text>
-<text x="440" y="456" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Onglet Match : le document de match</text>
+<text x="440" y="456" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Onglet Match : le document de partie</text>
 <text x="440" y="476" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="14" text-anchor="middle" fill="#394150">Arrière-plan / niveau : niveaux de heat3d-wt-level</text>
 </svg>

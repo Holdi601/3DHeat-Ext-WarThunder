@@ -3,7 +3,7 @@ title: La table
 nav_order: 6
 lang: "fr"
 source: table.md
-source_hash: "eb510866a208"
+source_hash: "9fd198ff79e6"
 nav_exclude: true
 search_exclude: true
 ---
@@ -12,24 +12,24 @@ search_exclude: true
 ![La table d'un replay synthétique, résumée](../assets/img/table.svg)
 
 Une ligne par échantillon ou événement, 105 colonnes ([Liste des colonnes](../columns.md), générée à partir du
-code) ; dans le pied de page, sous `heat3d`, les consignes de lecture de la visionneuse, de sorte que la
-visionneuse n'a aucun formulaire à remplir.
+code) ; dans le pied de page, sous `heat3d`, les consignes de lecture du visualiseur, de sorte que la
+visualiseur n'a aucun formulaire à remplir.
 
 | Colonne | Contenu |
 |---|---|
 | `time` | secondes sur l'horloge propre du replay |
 | `event` | `position` ; les lignes d'événement se trouvent sur la trajectoire à leur instant (entre deux échantillons, sur la droite qui les relie) ; `kill` (chez le tueur), `death` (chez la victime), `hit_critical` / `hit_severe` (chez l'unité touchée), `module_destroyed` (chez l'unité), `launch` (chez l'unité qui a lâché une arme), `impact` (le dernier échantillon d'une arme lorsqu'elle a été retirée juste après) ; `explosion` et `flak` (0xD08E, 0xD01F) à leur position, genre `effect`, sans trajectoire, avec la direction de l'explosion lorsqu'elle en a une ; `shot` (un projectile qui a touché, chez le tireur), `gun_shot`, `fire_start`, `fire_stop` (la rafale d'un canon, non un véhicule en feu), `fire_on`, `fire_off` (un véhicule en feu, voir [Incendies des véhicules](hits.md#vehicle-fires)), `reward` (Lions d'argent et points de recherche gagnés, voir [Économie](economy.md)), `dead`, `bailout`, `repair`, `rearm`, `bullet_rearm`, `reload` (voir [Messages aux unités](how-it-reads.md#messages-to-units)) ; `despawn` : la dernière ligne d'une trajectoire dont l'unité a disparu avant la fin du replay (voir [Fin d'une trajectoire](ground.md#end-of-a-track)) |
-| `track` | ce que la visionneuse dessine comme une seule chose : une vie d'unité, ou le vol d'une arme - `<joueur ou véhicule> #<hex>` (la visionneuse montre le nom sans la partie `#`) |
+| `track` | ce que le visualiseur dessine comme une seule chose : une vie d'unité, ou le vol d'une arme - `<joueur ou véhicule> #<hex>` (le visualiseur montre le nom sans la partie `#`) |
 | `x`, `y`, `z` | les mètres du jeu : x vers l'est, y vers le haut, z vers le nord (les indications retournent z, de sorte que le nord n'est pas dessiné au sud) |
 | `player` | le nom du joueur ; pour une unité d'IA `<VehicleName> #<uid>` (par exemple `F-15A #204`) ; `uid <n>` lorsque rien ne la nomme ; pour une arme, qui l'a lâchée |
 | `userId`, `team` | l'identifiant Gaijin du joueur et son équipe (`1`, `2`) |
 | `ai`, `isPlayer` | `ai` vaut vrai pour chaque unité que ne conduit aucun compte joueur (unités de mission, avions d'IA, cibles au sol, canons DCA, navires sans joueur, substituts), `isPlayer` l'inverse : un joueur est une unité dont l'entité nomme un emplacement de joueur avec un identifiant Gaijin. Une arme a celui de son lanceur ; vide lorsqu'il est inconnu |
-| `match` | l'identifiant du match (`match` du document de match), sur chaque ligne ; les indications en font la session, de sorte que deux replays chargés ne se mélangent jamais dans leurs trajectoires |
+| `match` | l'identifiant du match (`match` du document de partie), sur chaque ligne ; les indications en font la session, de sorte que deux replays chargés ne se mélangent jamais dans leurs trajectoires |
 | `life` | `uid#n` : la trajectoire d'une unité, coupée lorsque l'uid passe à une autre unité, que l'unité se déplace plus vite qu'elle ne le peut (une réapparition, un réarmement, un déplacement par le jeu, une correction du client pour une unité lointaine ; voir Téléportations dans [Comment le replay est lu](how-it-reads.md#what-is-read-and-the-check)) ou qu'elle n'est pas vue depuis longtemps ; `w<hex>` le vol d'une arme (`w<hex>#n` après une coupure) |
 | `uid` | l'identifiant de l'unité dans le replay |
 | `kind` | `aircraft`, `helicopter`, `tank`, `apc`, `spaa`, `truck`, `ship`, `boat`, `structure`, `train` (un tramway ou un wagon que place le niveau, voir [Unités de scène](objectives.md#scene-units-trams-and-rail-wagons)) ; armes `missile`, `rocket`, `bomb`, `torpedo`, `payload`, `jettisoned` ; `camera`, la caméra de replay du joueur qui enregistre (voir [La caméra](ground.md#the-camera)) |
 | `type` | le type propre au jeu lorsque les résultats le nomment (`fighter`, `assault`, `destroyer`, `gun_boat`), sinon comme `kind` |
-| `Vehicle` | l'identifiant du véhicule dans le jeu (`f_15a`, `germ_flakpz_I_Gepard`), que les figurines de la visionneuse reconnaissent |
+| `Vehicle` | l'identifiant du véhicule dans le jeu (`f_15a`, `germ_flakpz_I_Gepard`), que les figurines du visualiseur reconnaissent |
 | `VehicleName`, `VehicleShortName`, `VehicleNameKey` | le nom anglais du véhicule tiré de la localisation de votre installation (`Pz.Kpfw. III Ausf. J1`, court `Pz.III J1`) et sa clé (`germ_pzkpfw_III_ausf_J_0`) ; les marques de pays de la police du jeu sont omises. Lorsque le jeu ne nomme rien, ou qu'aucune installation n'est trouvée, le nom est l'identifiant et la clé est vide |
 | `mission` | le nom de l'unité dans la mission (`t1_tank_05`, `t2_player03_0`) |
 | `dirX`, `dirY`, `dirZ` | vers où pointe l'unité (le vecteur de regard) : avions à partir de l'attitude du modèle de vol, unités au sol et navires à partir de leur propre attitude, armes le long de leur vol |
@@ -45,11 +45,11 @@ visionneuse n'a aucun formulaire à remplir.
 | `targetX`, `targetY`, `targetZ` | le point d'impact d'un `shot` |
 | `hitOutcome`, `hitFlags` | l'issue d'un `shot` sur une unité au sol : `kill`, `critical`, `penetration` ou `nonpenetration` (rebondi ou arrêté : le replay ne distingue pas un ricochet), à partir des bits que le serveur envoie avec l'impact (`hitFlags`, brut) ; vide là où rien n'est envoyé (avions, navires). Voir [Issues des impacts](hits.md#hit-outcomes) |
 | `hitShell` | la signature d'obus d'un `shot` : quatre octets du message d'impact (hexadécimal brut) ; une même signature peut correspondre à différents obus (les APFSDS de 120 et 125 mm en partagent une), elle est donc conservée brute, non lue comme un calibre |
-| `ammoType`, `ammoName`, `ammoSlot`, `calibre` | les munitions d'un `shot` : leur type (`APFSDS`, `APDS`, `HE`, `HEAT-FS`, `HESH`, `ATGM`...) et identifiant (`125mm_3bm46`) lorsqu'un frag nomme le logement du tireur, sinon `explosive` (la rafale d'impact) ou `kinetic` ; le `weapon/slot` du canon à partir de ses rechargements ; le calibre en mm à partir des fichiers d'armes de l'installation. Voir [Issues des impacts](hits.md#hit-outcomes) |
+| `ammoType`, `ammoName`, `ammoSlot`, `calibre` | les munitions d'un `shot` : leur type (`APFSDS`, `APDS`, `HE`, `HEAT-FS`, `HESH`, `ATGM`...) et identifiant (`125mm_3bm46`) lorsqu'un kill nomme le logement du tireur, sinon `explosive` (la rafale d'impact) ou `kinetic` ; le `weapon/slot` du canon à partir de ses rechargements ; le calibre en mm à partir des fichiers d'armes de l'installation. Voir [Issues des impacts](hits.md#hit-outcomes) |
 | `rpm` | le régime moteur d'un avion (la moyenne de ses moteurs) tel qu'envoyé en dernier, dans les 2 s |
 | `vx`, `vy`, `vz` | la vitesse d'un avion telle que son entrée de vol l'envoie (m/s, les axes du jeu ; les vitesses au-delà de 500 m/s valent 500) |
 | `engine`, `afterburner`, `engineCondition` | les moteurs d'un avion d'après son entrée de vol : `off`, `starting`, `running`, `dead` (séparés par `/` lorsque ses moteurs diffèrent) ; la postcombustion de 0 à 1 ; un octet envoyé seulement après que le moteur a été touché |
-| `weaponName` | frags et morts : l'arme ou la munition dans l'anglais de votre installation (`AIM-120C-5 AMRAAM air-to-air missiles`, `Fragmentation incendiary tracer shell`) |
+| `weaponName` | kills et morts : l'arme ou la munition dans l'anglais de votre installation (`AIM-120C-5 AMRAAM air-to-air missiles`, `Fragmentation incendiary tracer shell`) |
 | `throttle`, `elevator`, `aileron`, `rudder`, `ammo` | l'avion du seul joueur qui enregistre : la manette de 0 à 1,1 d'après son cockpit (1,1 en puissance de guerre d'urgence ou postcombustion ; sinon les quinzièmes de son entrée de vol), les commandes de -1 à 1 d'après son entrée de vol (profondeur positive en tirant, ailerons positifs en roulant à droite), les coups restants par arme (`250 140 170`) |
 | `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` | l'avion du seul joueur qui enregistre, d'après son cockpit : vitesse indiquée et vitesse verticale (m/s), carburant, pression d'admission (atm), train (de 0 à 1, 1 sorti), températures d'huile et de culasse, lorsque son cockpit a la jauge |
 | `speed` | m/s sur environ deux secondes de la trajectoire (calculé ici ; le replay n'envoie aucune vitesse pour les autres unités) |
@@ -57,8 +57,8 @@ visionneuse n'a aucun formulaire à remplir.
 | `otherVehicle`, `otherLife` | la victime d'un `shot` : son véhicule et sa `life` |
 | `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | le point d'impact d'un `shot` dans le repère propre de la victime (m ; x avant, y haut, z gauche ; voir [Messages aux unités](how-it-reads.md#messages-to-units)) et le sens d'arrivée du tir, transformé dans ce repère par l'attitude de la victime à ce moment |
 | `hitPart`, `hitFlag` | le message d'impact d'un `shot` : son mot de pièce tel qu'envoyé, et son octet de poids fort |
-| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won` | ce que la bataille a coûté et rapporté, et qui a gagné : voir [Économie](economy.md) |
-| `other`, `weapon` | frags : l'autre camp et l'arme ; impacts : qui a touché (d'après l'uid de l'enregistrement, sinon son emplacement de joueur), leur véhicule ; lancers : l'arme ; modules détruits : qui a touché l'unité en dernier dans les 5 s précédentes, et `part <n>` |
+| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won`, `matchWon`, `round`, `roundEndReason` | ce que la bataille a coûté et rapporté, qui a gagné et comment elle s'est terminée : voir [Économie](economy.md) |
+| `other`, `weapon` | kills : l'autre camp et l'arme ; impacts : qui a touché (d'après l'uid de l'enregistrement, sinon son emplacement de joueur), leur véhicule ; lancers : l'arme ; modules détruits : qui a touché l'unité en dernier dans les 5 s précédentes, et `part <n>` |
 
 ---
 

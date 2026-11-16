@@ -3,7 +3,7 @@ title: "Economia"
 nav_order: 14
 lang: "it"
 source: economy.md
-source_hash: "870b7f982c6d"
+source_hash: "70125462713a"
 nav_exclude: true
 search_exclude: true
 ---
@@ -20,13 +20,7 @@ Quanto è costata e quanto ha reso la battaglia, come colonne sulle sue righe di
 | `currency` | ogni riga con un `cost_*` o `earn_sl` | `SL` (`earn_rp` sono punti di ricerca) |
 | `econ_basis` | lo stesso | `install` (un prezzo letto dall'installazione) o `inferred` (calcolato, vedi sotto) |
 
-**Chi ha vinto.** `won` (0/1) su ogni riga di una squadra, dove il replay lo dice: i risultati di un replay
-del client portano l'esito dell'autore (`status`: `success` o `fail`), quindi la squadra dell'autore ha vinto
-o perso e l'altra squadra il contrario; `result` nel documento della partita
-dice quale (`winner`, `status`, `authorTeam`). I replay dei server e i replay interrotti prima della
-fine non portano alcun esito (lo `status` di un replay del server è sempre `success` e non nomina l'autore),
-e nessuno dei due tipi contiene le modifiche installate: i risultati elencano i veicoli di ogni giocatore
-solo per nome e tipo. In questi casi `won` resta vuoto.
+**Chi ha vinto.** `won` e `matchWon` (0/1, uguali in una battaglia: una battaglia è un round) su ogni riga della squadra, `roundEndReason` su ogni riga, e `round` 1 - le colonne dell'esito per il visualizzatore. I risultati di un replay del client portano l'esito dell'autore (`status`: `success` o `fail`), quindi la squadra dell'autore ha vinto o perso e l'altra squadra il contrario. Lo `status` di un replay del server è sempre `success` e non nomina l'autore; lì decidono i biglietti: la battaglia è finita per la squadra con i biglietti a 0 alla fine mentre quelli dell'altra non lo sono (il campo 3 del tabellone; ogni replay del client con uno status concorda, e ogni replay del server campionato finisce così). `result` nel documento della partita dice quale (`winner`, `source`: `results.status` o `tickets`, `status`, `authorTeam`) e come è finita la battaglia (`endReason`, anche `roundEndReason` sulle righe): `destruction` (i biglietti del perdente sono caduti a 0 in un solo passo, con gli ultimi veicoli persi), `capture` (esaurimento mentre il vincitore teneva le zone), `tickets` (persi per le uccisioni), `time` (uno status vincitore con i biglietti di entrambe le squadre ancora presenti, quello del vincitore è il più alto). Un replay del client interrotto prima della fine non dice nessuna delle due cose; lì le colonne restano vuote. Nessun replay contiene modifiche installate: i risultati elencano i veicoli di ogni giocatore solo per nome e tipo.
 
 Il modello dei costi del visualizzatore legge le colonne `cost_*` (e `earn_*`) con `currency`; sommando `cost_fired_sl +
 cost_lost_sl` si ottiene dove sono stati spesi e persi gli Argento Leoni, `earn_sl` dove sono stati guadagnati (il premio di un'uccisione è

@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Fichiers annexes et complétude {#sidecars-and-completeness}
 
-Rien dans un replay n'est jeté. Ce que le convertisseur lit va dans la table et le document de match ;
+Rien dans un replay n'est jeté. Ce que le convertisseur lit va dans la table et le document de partie ;
 tout le reste est conservé en entier dans trois fichiers annexes à côté de la table (à l'intérieur du
 fichier `.3dheat`, ou séparés avec `--loose`). C'est la règle que partagent tous les convertisseurs de
 3DHeat : [Les convertisseurs gardent tout](https://holdi601.github.io/3DHeat/converters.html).
@@ -33,7 +33,7 @@ fichier `.3dheat`, ou séparés avec `--loose`). C'est la règle que partagent t
 
 ## Ce que garantissent les compteurs {#what-the-counts-guarantee}
 
-Les `counts` du document de match disent ce que le replay contenait et ce qu'il est devenu :
+Les `counts` du document de partie disent ce que le replay contenait et ce qu'il est devenu :
 
 | Clé | Contenu |
 |---|---|
@@ -43,8 +43,7 @@ Les `counts` du document de match disent ce que le replay contenait et ce qu'il 
 | `entities`, `entityTemplates`, `entityMessages` | ce que le flux d'entités a créé et envoyé |
 | `droppedSamples` | échantillons laissés de côté volontairement (l'épave d'une unité au sol, une fois son entité disparue), par raison |
 
-Rien d'autre n'est laissé de côté : un élément du replay est soit lu dans la table ou le document de
-match, soit conservé en entier dans un fichier annexe. Le `selfCheck` du document de match contient les
+Rien d'autre n'est laissé de côté : un élément du replay est soit lu dans la table ou le document de partie, soit conservé en entier dans un fichier annexe. Le `selfCheck` du document de partie contient les
 contrôles de ce qui a été lu ([Comment le replay est lu](how-it-reads.md)).
 
 ---

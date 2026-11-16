@@ -3,7 +3,7 @@ title: "Il documento della partita"
 nav_order: 7
 lang: "it"
 source: match-document.md
-source_hash: "665622673174"
+source_hash: "3bd1f4245ad0"
 nav_exclude: true
 search_exclude: true
 ---
@@ -28,7 +28,7 @@ visualizzatore lo legge.
 | `started`, `timePlayed`, `replayEnd` | ora di inizio (ISO, UTC); secondi giocati, dai risultati; secondi dell'ultimo pacchetto del replay |
 | `author`, `authorUserId` | il giocatore che registra e il suo id Gaijin (replay del client) |
 | `teams` | le squadre della battaglia (`1`, `2`) |
-| `result` | `winner`, `status` (`success` o `fail`, l'esito dell'autore), `authorTeam`, `teams` ([Economia](economy.md)) |
+| `result` | `winner`, `source` (`results.status` o `tickets`), `status` (`success` o `fail`, l'esito dell'autore), `authorTeam`, `teams`, `endReason` (`destruction`, `capture`, `tickets`, `time`) ([Economia](economy.md)) |
 | `vehicleNames` | da dove vengono i nomi dei veicoli (la tua installazione) e la loro lingua |
 | `conventions` | le unità e i segni della tabella: assi, tempo, vita, traccia, vivo, rollio, e altro |
 
@@ -39,7 +39,7 @@ visualizzatore lo legge.
 | `battle`, `difficulty`, `gameMode` | la modalità di battaglia: `difficulty` `AB` / `RB` / `SB` (e il suo nome, e il byte dell'intestazione), `gameMode` `ground` / `air` / `naval`, la modalità della missione (`Dom`, `Conq`, `Bttl`, `I2M`, ...) e il suo nome inglese dalla tua installazione (`Domination`, `Enduring Confrontation`), i tipi di unità consentiti (vedi [Modalità di battaglia](ground.md#battle-mode)) |
 | `settings` | il blk della missione dopo l'intestazione: modalità, ambiente, meteo, limiti di punteggio e tempo, paesi, tipi di unità consentiti, vento, e `stars` (latitudine, longitudine, data, ora locale) |
 | `sky` | il primo `CustomWeatherParams`: direzione del sole e della luna, vento, colori del cielo, scostamenti delle nuvole |
-| `players`, `slots` | la riga dei risultati per giocatore (uccisioni, uccisioni a terra, morti, assistenze, punteggio, catture, squadra, clan, paese, formazione, gli uid guidati); gli slot dei giocatori del replay (nome, id utente, squadra) |
+| `players`, `slots` | la riga dei risultati per giocatore (uccisioni, uccisioni a terra, morti, assistenze, punteggio, catture, squadra, clan, paese, formazione, gli uid dei veicoli guidati); gli slot dei giocatori del replay (nome, id utente, squadra) |
 | `units` | ogni entità unità creata dal replay: eid, uid, modello, veicolo, tipo, squadra, giocatore, nome della missione, quando è stata creata e rimossa, dove è stata creata, quali componenti non si sono potuti leggere |
 | `objects` | gli oggetti nominati della missione: zone di cattura e aeroporti con posizione e dimensione, contorni degli aeroporti come punti, aree di comparsa |
 | `objectives` | gli obiettivi della battaglia, ciascuno con `type` (`capture_zone`, `airfield`, `helipad`, `base`, `spawn`, `convoy_spawn`, `battle_area`, `bombing_target`, `exit_zone`, `kill_area`, `rearm_zone`), `team` (la 1 o 2 del replay, vuoto per entrambe), `name` (per una zona di cattura la sua lettera, `A`), `shape` (`sphere`, `cylinder`, `box`, `point`, `points`, `outline`) con `position`, `radius` / `height` / `size` e `heading`, `source` (`replay` o `mission`) e ciò che altro si conosce (vedi [Obiettivi](objectives.md)) |

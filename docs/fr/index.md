@@ -3,7 +3,7 @@ title: Accueil
 nav_order: 1
 lang: "fr"
 source: index.md
-source_hash: "5266a64b1c30"
+source_hash: "7abbee10da8d"
 nav_exclude: true
 search_exclude: true
 permalink: /fr/
@@ -12,7 +12,7 @@ permalink: /fr/
 
 **Qu'est-ce que c'est ?** War Thunder peut enregistrer une bataille sous forme de fichier
 replay. Cet outil transforme cet enregistrement en un fichier que vous pouvez regarder d'en
-haut dans la [visionneuse 3DHeat](https://holdi601.github.io/3DHeat/), avec chaque avion,
+haut dans la [visualiseur 3DHeat](https://holdi601.github.io/3DHeat/), avec chaque avion,
 char et navire, chaque missile et bombe, et chaque impact à l'endroit où il s'est produit.
 Une seconde commande transforme les cartes de votre propre installation du jeu en niveaux
 3D, sur lesquels les batailles sont montrées.
@@ -25,7 +25,7 @@ d'autres outils peuvent lire aussi.
 
 **Exemple :** un replay `.wrpl` en entrée, un fichier `<match>.3dheat` en sortie :
 
-![D'un replay à la visionneuse 3DHeat](../assets/img/fr/pipeline.svg)
+![D'un replay au visualiseur 3DHeat](../assets/img/fr/pipeline.svg)
 
 ## Démarrage rapide {#quick-start}
 
@@ -39,7 +39,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 ```
 
 Vous devez voir une ligne par bataille : `ok out/<map>/<match>.3dheat`. Ouvrez ce fichier
-dans la visionneuse 3DHeat.
+dans le visualiseur 3DHeat.
 
 ## Cette documentation {#this-documentation}
 
@@ -50,7 +50,7 @@ dans la visionneuse 3DHeat.
 | [Convertir les replays](converting.md) | `heat3d-wt-replay` pas à pas, chaque option, messages |
 | [Fichiers de sortie](output-files.md) | le fichier `.3dheat`, les fichiers `--loose`, les noms |
 | [La table](table.md) | chaque colonne et chaque événement |
-| [Le document de match](match-document.md) | chaque clé de `<match>.match.json` |
+| [Le document de partie](match-document.md) | chaque clé de `<match>.match.json` |
 | [Fichiers annexes et complétude](sidecars.md) | ce qui est conservé en entier à côté de la table, et les compteurs |
 | [Niveaux](levels.md) | `heat3d-wt-level` : des niveaux de votre installation en `.glb` |
 | [Comment le replay est lu](how-it-reads.md) | ce qui est lu, et comment cela a été vérifié |
@@ -62,9 +62,9 @@ dans la visionneuse 3DHeat.
 ## Une partie de 3DHeat {#part-of-3dheat}
 
 Ce convertisseur est l'un des outils de [3DHeat](https://github.com/Holdi601/3DHeat),
-une visionneuse 3D de télémétrie et de replays en temps réel ([documentation](https://holdi601.github.io/3DHeat/)).
-La visionneuse ouvre le fichier `.3dheat` : la table dans son onglet Carte de chaleur, le
-document de match dans son onglet Match ([Un fichier par match](https://holdi601.github.io/3DHeat/container.html)).
+un visualiseur 3D de télémétrie et de replays en temps réel ([documentation](https://holdi601.github.io/3DHeat/)).
+Le visualiseur ouvre le fichier `.3dheat` : la table dans son onglet Carte de chaleur, le
+document de partie dans son onglet Match ([Un fichier par match](https://holdi601.github.io/3DHeat/container.html)).
 Ce que chaque convertisseur doit conserver : [Les convertisseurs gardent tout](https://holdi601.github.io/3DHeat/converters.html).
 
 **Pourquoi c'est un outil à part.** Le format `.wrpl` n'est pas documenté, et l'EULA de
@@ -76,7 +76,7 @@ fonctionne sans lui.
 
 | Outil | Ce qu'il fait | Source | Documentation |
 |---|---|---|---|
-| Visionneuse 3DHeat | affiche les données en 3D : cartes de chaleur, replays, analyse de course | [3DHeat](https://github.com/Holdi601/3DHeat) | [site](https://holdi601.github.io/3DHeat/) |
+| Visualiseur 3DHeat | affiche les données en 3D : cartes de chaleur, replays, analyse de course | [3DHeat](https://github.com/Holdi601/3DHeat) | [site](https://holdi601.github.io/3DHeat/) |
 | GameFiles | parcours et niveaux tirés des fichiers livrés avec les jeux | [3DHeat-GameFiles](https://github.com/Holdi601/3DHeat-GameFiles) | [site](https://holdi601.github.io/3DHeat-GameFiles/) |
 | GameCapture | télémétrie de tour, et niveaux reconstruits à partir de vidéos de jeu | [3DHeat-GameCapture](https://github.com/Holdi601/3DHeat-GameCapture) | [site](https://holdi601.github.io/3DHeat-GameCapture/) |
 | Unreal Exporter | un plugin de l'éditeur Unreal qui exporte un niveau | [3DHeat-UnrealExporter](https://github.com/Holdi601/3DHeat-UnrealExporter) | [site](https://holdi601.github.io/3DHeat-UnrealExporter/) |
@@ -88,6 +88,15 @@ fonctionne sans lui.
 | Démos Squad | démos de serveur Squad | [3DHeat-Ext-Squad](https://github.com/Holdi601/3DHeat-Ext-Squad) | [site](https://holdi601.github.io/3DHeat-Ext-Squad/) |
 | Cartes DCS | cartes de DCS World en niveaux 3D | [3DHeat-Ext-DCS](https://github.com/Holdi601/3DHeat-Ext-DCS) | [site](https://holdi601.github.io/3DHeat-Ext-DCS/) |
 | Cartes IL-2 | cartes d'IL-2 Great Battles en niveaux 3D | [3DHeat-Ext-IL2](https://github.com/Holdi601/3DHeat-Ext-IL2) | [site](https://holdi601.github.io/3DHeat-Ext-IL2/) |
+| Carte Dota 2 | la carte de Dota 2 de votre propre installation, en niveau 3D | [3DHeat-Ext-Dota](https://github.com/Holdi601/3DHeat-Ext-Dota) | [site](https://holdi601.github.io/3DHeat-Ext-Dota/) |
+| Replays Dota 2 | replays de Dota 2 | [3DHeat-Ext-DotaReplay](https://github.com/Holdi601/3DHeat-Ext-DotaReplay) | [site](https://holdi601.github.io/3DHeat-Ext-DotaReplay/) |
+| Replays Riot | replays de League of Legends et de VALORANT (ce qu'ils contiennent en clair) | [3DHeat-Ext-Riot](https://github.com/Holdi601/3DHeat-Ext-Riot) | [site](https://holdi601.github.io/3DHeat-Ext-Riot/) |
+| Cartes Forza | parcours, courses et voitures de Forza tirés de votre propre installation | [3DHeat-Ext-Forza](https://github.com/Holdi601/3DHeat-Ext-Forza) | [site](https://holdi601.github.io/3DHeat-Ext-Forza/) |
+| Cartes Battlefield | niveaux de Battlefield (Frostbite) en niveaux 3D | [3DHeat-Ext-Battlefield](https://github.com/Holdi601/3DHeat-Ext-Battlefield) | [site](https://holdi601.github.io/3DHeat-Ext-Battlefield/) |
+| Cartes BeamNG | parcours de BeamNG.drive | [3DHeat-Ext-BeamNG](https://github.com/Holdi601/3DHeat-Ext-BeamNG) | [site](https://holdi601.github.io/3DHeat-Ext-BeamNG/) |
+| Cartes AC Rally | étapes d'Assetto Corsa Rally en parcours | [3DHeat-Ext-ACRally](https://github.com/Holdi601/3DHeat-Ext-ACRally) | [site](https://holdi601.github.io/3DHeat-Ext-ACRally/) |
+| Cartes Reforger | mondes d'Arma Reforger (Enfusion) en niveaux 3D | [3DHeat-Ext-Reforger](https://github.com/Holdi601/3DHeat-Ext-Reforger) | [site](https://holdi601.github.io/3DHeat-Ext-Reforger/) |
+| Replays R6 | replays de matchs de Rainbow Six Siege | [3DHeat-Ext-R6](https://github.com/Holdi601/3DHeat-Ext-R6) | [site](https://holdi601.github.io/3DHeat-Ext-R6/) |
 
 ---
 

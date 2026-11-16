@@ -54,7 +54,7 @@ compétences d'équipage et les modifications ; 45 et 20 degrés par seconde là
 nomme aucun). À chaque impact du canon principal, la tourelle est fixée exactement sur la ligne du
 tir, et un passage à rebours l'y amène à temps (`selfCheck.turretLimit`). La ligne `shot` porte aussi
 ces `turretYaw` / `gunPitch`. La valeur telle qu'envoyée reste dans `turretYawRaw` / `gunPitchRaw`.
-Un char dont l'état ne contient aucune tourelle a des colonnes de tourelle vides (la visionneuse peut
+Un char dont l'état ne contient aucune tourelle a des colonnes de tourelle vides (le visualiseur peut
 alors se rabattre sur `viewYaw`). `gunPitch` est un peu au-dessus de `viewPitch` à longue portée :
 c'est l'élévation du canon pour la chute de l'obus.
 

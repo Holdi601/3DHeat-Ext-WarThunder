@@ -9,7 +9,7 @@ search_exclude: true
 ---
 # Objectifs {#objectives}
 
-`objectives` dans le document de match liste ce pour quoi la bataille se joue, à partir de deux sources
+`objectives` dans le document de partie liste ce pour quoi la bataille se joue, à partir de deux sources
 (`source`) :
 
 - **Le replay** (`replay`) : les objets de mission que nomme le message 0xD039 (zones de capture

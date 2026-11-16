@@ -1,9 +1,9 @@
 ---
-title: Die Tabelle
+title: "Die Tabelle"
 nav_order: 6
 lang: "de"
 source: table.md
-source_hash: "eb510866a208"
+source_hash: "9fd198ff79e6"
 nav_exclude: true
 search_exclude: true
 ---
@@ -57,7 +57,7 @@ Formular ausgefüllt braucht.
 | `otherVehicle`, `otherLife` | das Opfer eines `shot`: sein Fahrzeug und sein `life` |
 | `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | der Trefferpunkt eines `shot` im eigenen Koordinatensystem des Opfers (m; x vorwärts, y oben, z links; siehe [Nachrichten an Einheiten](how-it-reads.md#messages-to-units)) und die Richtung, aus der der Schuss kam, umgerechnet in dieses Koordinatensystem über die damalige Lage des Opfers |
 | `hitPart`, `hitFlag` | die Treffernachricht eines `shot`: ihr Teilwort, so wie gesendet, und ihr höchstes Byte |
-| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won` | was das Gefecht gekostet und eingebracht hat und wer gewonnen hat: siehe [Wirtschaft](economy.md) |
+| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won`, `matchWon`, `round`, `roundEndReason` | was das Gefecht gekostet und eingebracht hat, wer gewonnen hat und wie es endete: siehe [Wirtschaft](economy.md) |
 | `other`, `weapon` | Abschüsse: die andere Seite und die Waffe; Treffer: wer getroffen hat (aus der uid des Datensatzes, sonst aus seinem Spielerplatz), deren Fahrzeug; Starts: die Waffe; zerstörte Module: wer die Einheit zuletzt innerhalb von 5 s davor getroffen hat, und `part <n>` |
 
 ---

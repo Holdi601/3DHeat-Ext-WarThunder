@@ -21,7 +21,7 @@ Con ogni colpo di proiettile su un'unità di terra il server invia il messaggio 
 
 | Bit | Significato | Prova |
 |---|---|---|
-| 0x20 | il colpo stesso del proiettile | quasi tutti arrivano con un colpo 0xF0E9 sull'unità entro 5 ms; senza di esso, con un'esplosione (spruzzo) |
+| 0x20 | il colpo stesso del proiettile | quasi tutti arrivano con un colpo 0xF0E9 sull'unità entro 5 ms; senza di esso, con un'esplosione (danno ad area) |
 | 0x01 | è passato (perforazione) | ogni messaggio con 0x02, 0x04 o 0x08 ce l'ha anche lui |
 | 0x02 | colpo critico | la maggior parte dei record di colpo critico ce l'ha, molto più spesso del caso |
 | 0x04 | distrutto | la maggior parte arriva con un record di uccisione e la morte dell'unità entro un secondo |

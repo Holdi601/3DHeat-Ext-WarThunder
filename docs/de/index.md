@@ -3,7 +3,7 @@ title: Start
 nav_order: 1
 lang: "de"
 source: index.md
-source_hash: "5266a64b1c30"
+source_hash: "7abbee10da8d"
 nav_exclude: true
 search_exclude: true
 permalink: /de/
@@ -51,7 +51,7 @@ Datei im 3DHeat-Viewer.
 | [Ausgabedateien](output-files.md) | die Datei `.3dheat`, die `--loose`-Dateien, Namen |
 | [Die Tabelle](table.md) | jede Spalte und jedes Ereignis |
 | [Das Match-Dokument](match-document.md) | jeder Schlüssel von `<match>.match.json` |
-| [Sidecars und Vollständigkeit](sidecars.md) | was außer der Tabelle vollständig aufbewahrt wird, und die Zählungen |
+| [Begleitdateien und Vollständigkeit](sidecars.md) | was außer der Tabelle vollständig aufbewahrt wird, und die Zählungen |
 | [Level](levels.md) | `heat3d-wt-level`: Level aus deiner Installation als `.glb` |
 | [So liest es ein Replay](how-it-reads.md) | was gelesen wird und wie es geprüft wurde |
 | [Flugzeuge](aircraft.md), [Bodeneinheiten und Kamera](ground.md), [Treffer, Beschuss und Brände](hits.md) | die Einzelheiten hinter den Spalten |
@@ -63,8 +63,8 @@ Datei im 3DHeat-Viewer.
 
 Dieser Umwandler ist eines der Werkzeuge von [3DHeat](https://github.com/Holdi601/3DHeat),
 eines Viewers für 3D-Telemetrie und Replays in Echtzeit ([Dokumentation](https://holdi601.github.io/3DHeat/)).
-Der Viewer öffnet die Datei `.3dheat`: die Tabelle im Reiter Heatmap, das Match-Dokument
-im Reiter Match ([Eine Datei pro Match](https://holdi601.github.io/3DHeat/container.html)).
+Der Viewer öffnet die Datei `.3dheat`: die Tabelle im Heatmap-Tab, das Match-Dokument
+im Match-Tab ([Eine Datei pro Match](https://holdi601.github.io/3DHeat/container.html)).
 Was jeder Umwandler behalten muss: [Umwandler behalten alles](https://holdi601.github.io/3DHeat/converters.html).
 
 **Warum ein eigenes Werkzeug?** Das Format `.wrpl` ist nicht dokumentiert, und die
@@ -88,6 +88,15 @@ Replays, wenn er installiert ist, und arbeitet auch ohne ihn.
 | Squad-Demos | Demos von Squad-Servern | [3DHeat-Ext-Squad](https://github.com/Holdi601/3DHeat-Ext-Squad) | [Seite](https://holdi601.github.io/3DHeat-Ext-Squad/) |
 | DCS-Karten | Karten von DCS World als 3D-Level | [3DHeat-Ext-DCS](https://github.com/Holdi601/3DHeat-Ext-DCS) | [Seite](https://holdi601.github.io/3DHeat-Ext-DCS/) |
 | IL-2-Karten | Karten von IL-2 Great Battles als 3D-Level | [3DHeat-Ext-IL2](https://github.com/Holdi601/3DHeat-Ext-IL2) | [Seite](https://holdi601.github.io/3DHeat-Ext-IL2/) |
+| Dota-2-Karte | die Dota-2-Karte aus deiner eigenen Installation als 3D-Level | [3DHeat-Ext-Dota](https://github.com/Holdi601/3DHeat-Ext-Dota) | [Seite](https://holdi601.github.io/3DHeat-Ext-Dota/) |
+| Dota-2-Replays | Dota-2-Replays | [3DHeat-Ext-DotaReplay](https://github.com/Holdi601/3DHeat-Ext-DotaReplay) | [Seite](https://holdi601.github.io/3DHeat-Ext-DotaReplay/) |
+| Riot-Replays | Replays von League of Legends und VALORANT (was sie unverschlüsselt enthalten) | [3DHeat-Ext-Riot](https://github.com/Holdi601/3DHeat-Ext-Riot) | [Seite](https://holdi601.github.io/3DHeat-Ext-Riot/) |
+| Forza-Karten | Strecken, Rennen und Autos aus Forza aus deiner eigenen Installation | [3DHeat-Ext-Forza](https://github.com/Holdi601/3DHeat-Ext-Forza) | [Seite](https://holdi601.github.io/3DHeat-Ext-Forza/) |
+| Battlefield-Karten | Battlefield-Level (Frostbite) als 3D-Level | [3DHeat-Ext-Battlefield](https://github.com/Holdi601/3DHeat-Ext-Battlefield) | [Seite](https://holdi601.github.io/3DHeat-Ext-Battlefield/) |
+| BeamNG-Karten | Strecken von BeamNG.drive | [3DHeat-Ext-BeamNG](https://github.com/Holdi601/3DHeat-Ext-BeamNG) | [Seite](https://holdi601.github.io/3DHeat-Ext-BeamNG/) |
+| AC-Rally-Karten | Etappen von Assetto Corsa Rally als Strecken | [3DHeat-Ext-ACRally](https://github.com/Holdi601/3DHeat-Ext-ACRally) | [Seite](https://holdi601.github.io/3DHeat-Ext-ACRally/) |
+| Reforger-Karten | Welten von Arma Reforger (Enfusion) als 3D-Level | [3DHeat-Ext-Reforger](https://github.com/Holdi601/3DHeat-Ext-Reforger) | [Seite](https://holdi601.github.io/3DHeat-Ext-Reforger/) |
+| R6-Replays | Replays von Rainbow-Six-Siege-Matches | [3DHeat-Ext-R6](https://github.com/Holdi601/3DHeat-Ext-R6) | [Seite](https://holdi601.github.io/3DHeat-Ext-R6/) |
 
 ---
 

@@ -1,9 +1,9 @@
 ---
-title: El documento de la partida
+title: "El documento de la partida"
 nav_order: 7
 lang: "es"
 source: match-document.md
-source_hash: "665622673174"
+source_hash: "3bd1f4245ad0"
 nav_exclude: true
 search_exclude: true
 ---
@@ -28,7 +28,7 @@ la tabla. La pestaña Partida del visor lo lee.
 | `started`, `timePlayed`, `replayEnd` | hora de inicio (ISO, UTC); segundos jugados, según los resultados; segundos del último paquete de la repetición |
 | `author`, `authorUserId` | el jugador que graba y su id de Gaijin (repeticiones de cliente) |
 | `teams` | los equipos de la batalla (`1`, `2`) |
-| `result` | `winner`, `status` (`success` o `fail`, el resultado del autor), `authorTeam`, `teams` ([Economía](economy.md)) |
+| `result` | `winner`, `source` (`results.status` o `tickets`), `status` (`success` o `fail`, el resultado del autor), `authorTeam`, `teams`, `endReason` (`destruction`, `capture`, `tickets`, `time`) ([Economía](economy.md)) |
 | `vehicleNames` | de dónde salieron los nombres de los vehículos (tu instalación) y su idioma |
 | `conventions` | las unidades y signos de la tabla: ejes, tiempo, vida, trayectoria, vivo, balanceo, y más |
 

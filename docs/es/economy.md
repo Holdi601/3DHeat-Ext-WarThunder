@@ -1,9 +1,9 @@
 ---
-title: Economía
+title: "Economía"
 nav_order: 14
 lang: "es"
 source: economy.md
-source_hash: "870b7f982c6d"
+source_hash: "70125462713a"
 nav_exclude: true
 search_exclude: true
 ---
@@ -25,13 +25,19 @@ valores van solo a tu propia salida. Sin el `char.vromfs.bin` de la instalación
 | `currency` | toda fila con un `cost_*` o `earn_sl` | `SL` (`earn_rp` son puntos de investigación) |
 | `econ_basis` | lo mismo | `install` (un precio leído de la instalación) o `inferred` (calculado, abajo) |
 
-**Quién ganó.** `won` (0/1) en cada fila de un equipo, cuando la repetición lo indica: los resultados de una
-repetición de cliente contienen el resultado propio del autor (`status`: `success` o `fail`), así que el
-equipo del autor ganó o perdió y el otro equipo al revés; `result` en el documento de la partida
-indica cuál (`winner`, `status`, `authorTeam`). Las repeticiones de servidor y las que se dejan antes del
-final no contienen resultado (el `status` de una repetición de servidor siempre es `success` y no nombra ningún autor),
-y ninguna de las dos guarda las modificaciones instaladas: los resultados listan los vehículos de cada jugador
-solo por nombre y tipo. Allí `won` queda vacío.
+**Quién ganó.** `won` y `matchWon` (0/1, iguales en una batalla: una batalla es una ronda) en cada fila de un equipo,
+`roundEndReason` en cada fila, y `round` 1: las columnas de resultado del visor. Los resultados de una repetición de
+cliente llevan el resultado propio del autor (`status`: `success` o `fail`), así que el equipo del autor ganó o perdió y
+el otro equipo al revés. El `status` de una repetición de servidor es siempre `success` y no nombra a ningún autor; allí
+deciden los tickets: la batalla termina para el equipo cuyos tickets están en 0 al final mientras los del otro no lo
+están (el campo 3 del marcador; toda repetición de cliente con estado coincide, y toda repetición de servidor muestreada
+termina así). `result` en el documento de la partida indica cuál (`winner`, `source`: `results.status` o `tickets`,
+`status`, `authorTeam`) y cómo terminó la batalla (`endReason`, también `roundEndReason` en las filas): `destruction`
+(los tickets del perdedor cayeron a 0 de un solo paso, perdidos sus últimos vehículos), `capture` (se desangró mientras el
+ganador tenía zonas), `tickets` (perdió tickets por bajas), `time` (un ganador según el estado con los tickets de ambos
+equipos aún en juego, el del ganador es el mayor). Una repetición de cliente que se dejó antes del final no dice ninguno;
+allí las columnas quedan vacías. Ninguna repetición guarda modificaciones instaladas: los resultados listan los vehículos
+de cada jugador solo por nombre y tipo.
 
 El modelo de coste del visor lee las columnas `cost_*` (y `earn_*`) con `currency`; sumar `cost_fired_sl +
 cost_lost_sl` da dónde se gastaron y perdieron Leones de Plata, `earn_sl` dónde se ganaron (la recompensa de una baja

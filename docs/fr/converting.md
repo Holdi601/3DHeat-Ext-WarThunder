@@ -32,7 +32,7 @@ Résultat : un fichier `.3dheat` par bataille (par défaut), ou des fichiers sé
 
    `out` est créé dans le dossier où se trouve votre terminal.
 4. **Lire ce que la commande affiche.** Vous devez voir une ligne par bataille.
-5. **Ouvrir le résultat :** chargez `out/<map>/<match>.3dheat` dans la visionneuse 3DHeat
+5. **Ouvrir le résultat :** chargez `out/<map>/<match>.3dheat` dans le visualiseur 3DHeat
    ([Charger un fichier](https://holdi601.github.io/3DHeat/container.html#loading-one)).
 
 ![Un essai sur un replay synthétique : un .3dheat, --loose, un fichier cassé, un dossier vide](../assets/img/convert.svg)
@@ -56,7 +56,7 @@ replay, aucune installation nécessaire) :
 | `--game FOLDER` | trouvé | le dossier de War Thunder dont les textes donnent les noms des véhicules, des armes et des munitions, et dont les tables donnent le prix de l'[économie](economy.md) ; aussi `HEAT3D_WT_GAME` |
 | `--no-smoothing` | désactivé | garder les échantillons recalculés et reçus des autres unités tels que le replay les contient ([Recalcul de position](aircraft.md#dead-reckoning-and-the-smoother)) |
 | `--container` | activé | regrouper chaque bataille dans un seul fichier `.3dheat` |
-| `--loose` | désactivé | garder chaque bataille en fichiers séparés (table, document de match, fichiers annexes) |
+| `--loose` | désactivé | garder chaque bataille en fichiers séparés (table, document de partie, fichiers annexes) |
 | `--version` | - | afficher `heat3d-wt-replay <version>` et s'arrêter |
 | `-h`, `--help` | - | afficher les options et s'arrêter |
 

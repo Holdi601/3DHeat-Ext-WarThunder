@@ -36,14 +36,14 @@ l'accord sont donnés ici.
 | Hauteurs de terrain compactées | les positions compactées sur 64 bits comptent leur hauteur à partir de -100 m sur la plupart des niveaux, et à partir du niveau de l'eau sur certains ; le décalage est mesuré sur chaque replay à partir des unités vues sous les deux formes (`selfCheck.packedGroundHeight`) |
 | Flux d'entités (création, destruction) | chaque création est lue. La disposition vient du code source publié du Dagor Engine ; les types de composants propres à War Thunder sont sautés en repérant où commence le composant suivant. Le véhicule et l'emplacement de joueur de chaque unité sont égaux à ceux que nomment les enregistrements de destruction et d'impact, pour chaque enregistrement contrôlé |
 | Qui a conduit quelle unité, unités d'IA, navires, cibles au sol | depuis le flux d'entités : chaque unité a son véhicule et son équipe, l'unité de chaque joueur son joueur |
-| Destructions par rapport aux résultats | les morts par joueur sont égales à celles des résultats ; les résultats comptent davantage de frags, car le client ne reçoit pas chaque frag. Un replay qui commence après le début de la bataille ne contient que les frags postérieurs à ce moment |
-| Frags, coups critiques, dégâts graves | chaque fichier |
+| Destructions par rapport aux résultats | les morts par joueur sont égales à celles des résultats ; les résultats comptent davantage de kills, car le client ne reçoit pas chaque kill. Un replay qui commence après le début de la bataille ne contient que les kills postérieurs à ce moment |
+| Kills, coups critiques, dégâts graves | chaque fichier |
 | Modules détruits (0xF118) | l'unité et le numéro de la pièce ; le nom de la pièce demande le modèle de dégâts du véhicule, qui ne figure pas dans le replay |
 | Armes lâchées (flux d'entités) | le point de lâcher se trouve à 10-20 m environ (médiane) de l'unité la plus proche, qui est prise pour le lanceur |
 | Armes en vol (0xF0DB) | missiles, roquettes et bombes, chacun rattaché à son entité |
-| Bombes sans enregistrements de vol | une bombe sans eux voit sa chute calculée depuis le lâcher jusqu'à l'impact (gravité et traînée, un échantillon toutes les 0,1 s, `extrapolated` à vrai). Vérifié au-dessus de la mer, où la hauteur d'impact est connue : les chutes calculées finissent à environ 15 m de l'eau près. Dans le document de match, une telle arme porte `ballisticImpact` ; `counts.bombsBallistic` les compte |
+| Bombes sans enregistrements de vol | une bombe sans eux voit sa chute calculée depuis le lâcher jusqu'à l'impact (gravité et traînée, un échantillon toutes les 0,1 s, `extrapolated` à vrai). Vérifié au-dessus de la mer, où la hauteur d'impact est connue : les chutes calculées finissent à environ 15 m de l'eau près. Dans le document de partie, une telle arme porte `ballisticImpact` ; `counts.bombsBallistic` les compte |
 | Emplacements de joueurs, chat | chaque fichier |
-| Explosions, éclatements de DCA, prix, détections, météo, objets de mission | lus ; positions vérifiées à l'œil dans la visionneuse |
+| Explosions, éclatements de DCA, prix, détections, météo, objets de mission | lus ; positions vérifiées à l'œil dans le visualiseur |
 | Instruments du joueur qui enregistre (0xD04A) | nommés d'après ce qu'ils font : [Instruments du cockpit](aircraft.md#cockpit-instruments) ; le reste sous `notNamed` |
 | Autres champs des entrées de vol | vitesse, coups, commandes, moteurs : [Entrées de vol](aircraft.md#flight-entries) |
 | Attitude des lignes d'événements | chaque ligne d'événement porte le cap, le tangage, le roulis et le vecteur de regard de son unité à cet instant |
@@ -71,7 +71,7 @@ Pour les spécialistes, les messages lus :
 |---|---|
 | 0xF0E9 UnitHitEffects | l'impact d'un projectile : l'uid du tireur et le point d'impact dans le repère de l'unité (x avant, y haut, z gauche) : centimètres sur avions et navires, 20/32768 m par pas sur les unités au sol (ajusté à la taille des tourelles de char). `hitLocalX/Y/Z` en mètres. Devient une ligne `shot` ([Tirs](hits.md#gunfire)). Le tireur de presque chaque enregistrement d'impact et de destruction figure parmi ces tireurs ; les points d'impact se trouvent du côté qui fait face au tireur |
 | 0xF133 UnitOnExplosion | le même uid de tireur |
-| 0xF04B OnUnitDead | lignes `dead` : chaque victime d'un enregistrement de frag en a une dans les 2 s |
+| 0xF04B OnUnitDead | lignes `dead` : chaque victime d'un enregistrement de kill en a une dans les 2 s |
 | 0xD047 FmwRpm | les régimes des moteurs (`rpm`) ; concorde avec la jauge de régime du cockpit |
 | 0xF0B1, 0xF0A0 | lignes `gun_shot` : coups uniques de la DCA lourde et de l'artillerie |
 | 0xF01B, 0xF01C | lignes `fire_start`, `fire_stop` : rafales des canons DCA de 40 mm (un canon qui tire ; un feu sur un véhicule est `fire_on`, voir [Incendies des véhicules](hits.md#vehicle-fires)) |
@@ -106,10 +106,10 @@ Les noms sont ceux de la communauté (ShioUmiusi/WTACRP, `tools/wrpl_mpi_names.p
 - **Incendies d'avions** : introuvables dans tous les messages ; un avion en feu n'a pas de ligne
   `fire_on`.
 - **Noms des armes lâchées** : l'entité d'une bombe ou d'une roquette ne porte aucun nom ; les
-  enregistrements de frag nomment l'arme d'un frag.
+  enregistrements de kill nomment l'arme d'un kill.
 - **Tirs manqués** : un replay ne contient que les impacts.
 
-Le `counts.messageIdsNotRead` et le `selfCheck` de chaque document de match indiquent ce qu'un nouveau
+Le `counts.messageIdsNotRead` et le `selfCheck` de chaque document de partie indiquent ce qu'un nouveau
 replay contient et à quel point il a été bien lu.
 
 ---

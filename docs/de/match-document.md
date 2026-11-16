@@ -3,7 +3,7 @@ title: Das Match-Dokument
 nav_order: 7
 lang: "de"
 source: match-document.md
-source_hash: "665622673174"
+source_hash: "3bd1f4245ad0"
 nav_exclude: true
 search_exclude: true
 ---
@@ -12,7 +12,7 @@ search_exclude: true
 ![Der Anfang eines synthetischen Match-Dokuments und seine Schlüssel](../assets/img/match-document.svg)
 
 `<match>.match.json` enthält alles, was das Replay sagt und das keine Zeile der
-Tabelle ist. Der Reiter Match des Viewers liest es.
+Tabelle ist. Der Match-Tab des Viewers liest es.
 
 ## Das Gefecht {#the-battle}
 
@@ -28,9 +28,9 @@ Tabelle ist. Der Reiter Match des Viewers liest es.
 | `started`, `timePlayed`, `replayEnd` | Startzeit (ISO, UTC); gespielte Sekunden aus den Ergebnissen; Sekunden des letzten Pakets des Replays |
 | `author`, `authorUserId` | der aufnehmende Spieler und seine Gaijin-ID (Client-Replays) |
 | `teams` | die Teams im Gefecht (`1`, `2`) |
-| `result` | `winner`, `status` (`success` oder `fail`, das Ergebnis des Autors), `authorTeam`, `teams` ([Wirtschaft](economy.md)) |
+| `result` | `winner`, `source` (`results.status` oder `tickets`), `status` (`success` oder `fail`, das Ergebnis des Autors), `authorTeam`, `teams`, `endReason` (`destruction`, `capture`, `tickets`, `time`) ([Wirtschaft](economy.md)) |
 | `vehicleNames` | woher die Fahrzeugnamen stammen (deine Installation) und ihre Sprache |
-| `conventions` | die Einheiten und Vorzeichen der Tabelle: Achsen, Zeit, Leben, Spur, alive, Rollen und mehr |
+| `conventions` | die Einheiten und Vorzeichen der Tabelle: Achsen, Zeit, Leben, Spur, `alive`, Rollwinkel und mehr |
 
 ## Alles Übrige {#everything-else}
 

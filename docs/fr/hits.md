@@ -59,7 +59,7 @@ qui enregistre, tous bits à zéro : les impacts sur avions et navires n'ont pas
   charge un coup dans les 20 s après la moitié de ses impacts ou plus, à un délai régulier. `ammoSlot`
   est `weapon/slot`, le logement chargé avant l'impact : probablement celui qui a tiré, sauf si le
   joueur a changé de munition entre-temps. Les mitrailleuses n'envoient pas de 0xF0BD.
-* **L'obus.** L'arme d'un frag est l'identifiant de l'obus (`125mm_3bm46`) ; le dernier impact du tueur
+* **L'obus.** L'arme d'un kill est l'identifiant de l'obus (`125mm_3bm46`) ; le dernier impact du tueur
   sur la victime l'attribue au logement de ce tireur, lorsque le calibre du canon concorde. Son type et
   son calibre sont ceux du fichier d'arme (`bulletName`, `bulletType`, `caliber` ; `apds_fs_*` APFSDS,
   `heat_fs_*` HEAT-FS, `he_*` HE ...).

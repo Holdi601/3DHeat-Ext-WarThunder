@@ -46,7 +46,7 @@ l'installation) :
 | 490-497, 500-505 | freins de roue | probablement : mis seulement à l'arrêt sur un aérodrome |
 
 Quelques autres numéros sont envoyés sans que leur sens soit connu ; ils sont conservés dans
-`authorInstruments.notNamed` du document de match.
+`authorInstruments.notNamed` du document de partie.
 
 Les colonnes `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`,
 `headTemperature` et `throttle` de la table viennent de ces numéros, sur les lignes du joueur
@@ -84,17 +84,16 @@ identifiant (les 5 bits de tête le genre, les 11 bits de poids faible un index)
 de champs. Le genre 14 correspond aux emplacements de joueurs (champ 2 identifiant utilisateur
 et nom, 9 l'équipe), le genre 15 aux équipes (index 1 et 2) :
 
-- Le champ 39 d'un emplacement contient ses statistiques à des places fixes : frags (décalage
-  0), frags d'équipe (2), morts (4), frags navals (10), frags d'IA (12), frags d'IA au sol (14),
+- Le champ 39 d'un emplacement contient ses statistiques à des places fixes : kills (décalage
+  0), kills d'équipe (2), morts (4), kills navals (10), kills d'IA (12), kills d'IA au sol (14),
   assistances (20), zones de capture (22), dégâts de zone (24, sur 32 bits), prime de dégâts
   (40, sur 32 bits), esquives de missiles (50). Le champ 38 commence par le score, le champ 42
   est l'escadron. À la fin d'une bataille, chaque valeur est égale à celle des résultats pour
-  chaque joueur (`selfCheck.scoreboardVsResults`). On ne sait pas où sont gardés les frags
+  chaque joueur (`selfCheck.scoreboardVsResults`). On ne sait pas où sont gardés les kills
   au sol.
 - Le champ 7 d'une équipe est son score : à la fin, il est égal à la somme des scores de ses
   joueurs dans les résultats. Le champ 3 correspond probablement à ses tickets.
-- Chaque message n'envoie que les champs qui ont changé ; `scoreboard` dans le document de
-  match liste donc les statistiques de chaque joueur et le score de chaque équipe à chaque
+- Chaque message n'envoie que les champs qui ont changé ; `scoreboard` dans le document de partie liste donc les statistiques de chaque joueur et le score de chaque équipe à chaque
   changement.
 
 ## Recalcul de position, et le lisseur {#dead-reckoning-and-the-smoother}

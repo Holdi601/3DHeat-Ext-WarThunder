@@ -3,7 +3,7 @@ title: Wirtschaft
 nav_order: 14
 lang: "de"
 source: economy.md
-source_hash: "870b7f982c6d"
+source_hash: "70125462713a"
 nav_exclude: true
 search_exclude: true
 ---
@@ -25,12 +25,11 @@ Werte landen nur in deiner eigenen Ausgabe. Ohne die `char.vromfs.bin` der Insta
 | `currency` | jede Zeile mit einem `cost_*` oder `earn_sl` | `SL` (`earn_rp` sind Forschungspunkte) |
 | `econ_basis` | dasselbe | `install` (ein Preis aus der Installation gelesen) oder `inferred` (berechnet, siehe unten) |
 
-**Wer gewonnen hat.** `won` (0/1) auf jeder Zeile eines Teams, wenn das Replay es angibt: Die Ergebnisse eines Client-Replays
+**Wer gewonnen hat.** `won` und `matchWon` (0/1, bei einem Gefecht gleich: ein Gefecht ist eine Runde) auf jeder Zeile eines Teams, `roundEndReason` auf jeder Zeile und `round` 1 - die Spalten für das Ergebnis im Viewer. Die Ergebnisse eines Client-Replays
 tragen das eigene Ergebnis des Autors (`status`: `success` oder `fail`), also hat das Team des Autors gewonnen oder verloren
-und das andere Team umgekehrt. `result` im Match-Dokument sagt es (`winner`, `status`, `authorTeam`). Server-Replays und
-Replays, die vor dem Ende abbrechen, tragen kein Ergebnis (der `status` eines Server-Replays ist immer `success` und nennt
-keinen Autor). Beide Arten enthalten auch keine eingebauten Modifikationen: Die Ergebnisse listen die Fahrzeuge jedes Spielers
-nur nach Name und Typ. Dort bleibt `won` leer.
+und das andere Team umgekehrt. Der `status` eines Server-Replays ist immer `success` und nennt
+keinen Autor; dort entscheiden die Tickets: Das Gefecht ist für das Team vorbei, dessen Tickets am Ende 0 sind, während die des anderen nicht 0 sind (Feld 3 der Punktetafel; jedes Client-Replay mit einem Status stimmt überein, und jedes geprüfte Server-Replay endet so). `result` im Match-Dokument sagt, welches (`winner`, `source`: `results.status` oder `tickets`, `status`, `authorTeam`) und wie das Gefecht endete (`endReason`, auch `roundEndReason` auf den Zeilen): `destruction` (die Tickets des Verlierers fielen in einem Schritt auf 0, seine letzten Fahrzeuge verloren), `capture` (ausgeblutet, während der Sieger Zonen hielt), `tickets` (durch Abschüsse verloren), `time` (ein Status-Sieger mit noch übrigen Tickets beider Teams, der Sieger hat die meisten). Ein Client-Replay, das vor dem Ende abbricht, sagt beides nicht; dort bleiben die Spalten leer. Kein Replay enthält eingebaute Modifikationen: Die Ergebnisse listen die Fahrzeuge jedes Spielers
+nur nach Name und Typ.
 
 Das Kostenmodell des Viewers liest die Spalten `cost_*` (und `earn_*`) mit `currency`. Die Summe von `cost_fired_sl +
 cost_lost_sl` zeigt, wo SL ausgegeben und verloren wurden, `earn_sl`, wo sie verdient wurden. Die Belohnung eines Abschusses
@@ -51,7 +50,7 @@ steht in seiner `reward`-Zeile, nicht in der `kill`-Zeile, so wird nichts doppel
   das `pointsPerKill` des Blocks). Ihr Typ ist der Zähler, der mit ihr gestiegen ist (Assists, eroberte Zonen, Zonenschaden,
   Schadensbelohnung, Raketenausweichen). Sonst der kritische oder schwere Treffer dieses Spielers innerhalb von 3 s, sonst eine
   Entdeckung der Einheit des Spielers innerhalb von 2 s (`scouting`), sonst `other`. `battle_end` ist `winK` (gewonnen) oder `defeatK`
-  (verloren) der Verdienste des Spielers im Gefecht; Sieger ist, wer mehr Tickets übrig hat, dann nach Punktzahl. Prämienzeit,
+  (verloren) der Verdienste des Spielers im Gefecht; der Sieger ist nach den übrigen Tickets der Teams bestimmt, dann nach Punktzahl. Prämienzeit,
   Booster, Besatzung und Modifikationen sind nicht bekannt und werden nicht angewendet. Die Abschussbudgets der Bodengefechte
   (`def_ground_kill_wp_budget*`) sind nicht nachgebildet.
 

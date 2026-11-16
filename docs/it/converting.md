@@ -19,7 +19,7 @@ Output: un file `.3dheat` per battaglia (predefinito), oppure file separati con
    `C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays`.
    Si può convertire anche un replay del server salvato dalla pagina dei replay del gioco (uno zip con `0000.wrpl`,
    `0001.wrpl`, ...).
-2. **Apri un Terminale** in una cartella dove possono finire i risultati
+2. **Apri un terminale** in una cartella dove possono finire i risultati
    ([Prima di iniziare](before-you-start.md)).
 3. **Converti:**
 

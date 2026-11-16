@@ -1,9 +1,9 @@
 ---
-title: La tabla
+title: "La tabla"
 nav_order: 6
 lang: "es"
 source: table.md
-source_hash: "eb510866a208"
+source_hash: "9fd198ff79e6"
 nav_exclude: true
 search_exclude: true
 ---
@@ -56,7 +56,7 @@ instrucciones de lectura del visor, así que el visor no necesita que se rellene
 | `otherVehicle`, `otherLife` | la víctima de un `shot`: su vehículo y su `life` |
 | `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | el punto de impacto de un `shot` en el propio sistema de la víctima (m; x adelante, y arriba, z izquierda; véase [Mensajes a las unidades](how-it-reads.md#messages-to-units)) y la dirección de llegada del disparo, convertida a ese sistema según la actitud de la víctima en ese momento |
 | `hitPart`, `hitFlag` | el mensaje de impacto de un `shot`: su palabra de parte tal como se envió, y su byte alto |
-| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won` | lo que costó y ganó la batalla, y quién ganó: véase [Economía](economy.md) |
+| `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won`, `matchWon`, `round`, `roundEndReason` | lo que costó y ganó la batalla, quién ganó y cómo terminó: véase [Economía](economy.md) |
 | `other`, `weapon` | bajas: el otro bando y el arma; impactos: quién alcanzó (del uid del registro, o si no de la ranura del jugador), su vehículo; lanzamientos: el arma; módulos destruidos: quién alcanzó por última vez a la unidad en los 5 s anteriores, y `part <n>` |
 
 ---

@@ -10,7 +10,7 @@ search_exclude: true
 # Niveaux (heat3d-wt-level) {#levels-heat3d-wt-level}
 
 `heat3d-wt-level` transforme les niveaux de votre propre installation de War Thunder en niveaux `.glb`
-pour la visionneuse, dans le même repère que les tables des replays.
+pour le visualiseur, dans le même repère que les tables des replays.
 
 ## Étape par étape {#step-by-step}
 
@@ -29,7 +29,7 @@ pour la visionneuse, dans le même repère que les tables des replays.
    heat3d-wt-level extract <level> -o levels --detail high
    ```
 
-3. Chargez `levels/<level>/<level>.glb` dans le panneau Arrière-plan / niveau de la visionneuse, sous les batailles
+3. Chargez `levels/<level>/<level>.glb` dans le panneau Arrière-plan / niveau du visualiseur, sous les batailles
    de cette carte.
 
 Les niveaux que vous écrivez restent sur votre machine : ne les publiez jamais (voir
@@ -78,12 +78,12 @@ est maintenu, de sorte que deux extractions n'écrivent jamais le même niveau (
 | `structure:<level> trees` | arbres et buissons, fixes et générés (forêts, haies) : leur maillage de rendu quand le budget le permet, sinon un tronc et une couronne (un cône pour les conifères) dans la couleur de feuillage propre à l'arbre, à sa taille réelle |
 
 Les objets sans maillage de rendu reprennent leur forme de collision ; les arbres sans maillage prennent la
-couronne. Les couleurs de sommet (`COLOR_0`) contiennent des valeurs encodées en sRGB, ce que la visionneuse
+couronne. Les couleurs de sommet (`COLOR_0`) contiennent des valeurs encodées en sRGB, ce que le visualiseur
 3DHeat lit ainsi.
 
 **Coordonnées.** Ce sont les mètres du jeu avec z retourné : glb (x, y, z) = jeu (x, y, -z). Le monde du jeu
 est gaucher (x vers l'est, y vers le haut, z vers le nord) ; glTF est droitier. `heat3d-wt-replay` garde le z du jeu et indique à la
-visionneuse de le retourner, de sorte qu'un replay et le niveau de sa carte se superposent sans étape de
+visualiseur de le retourner, de sorte qu'un replay et le niveau de sa carte se superposent sans étape de
 placement. Le JSON donne le rectangle de chaque carte tactique en mètres du jeu et ses coins dans l'espace du
 glb, pour charger le PNG comme image de carte.
 

@@ -18,7 +18,7 @@ installati con esso.
 1. Scarica il codice: `git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git`,
    oppure scarica uno zip da [Releases](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases)
    e decomprimilo.
-2. Apri un Terminale in quella cartella e scrivi `pip install -e .`. Questo installa
+2. Apri un terminale in quella cartella e scrivi `pip install -e .`. Questo installa
    due comandi: `heat3d-wt-replay` (replay) e `heat3d-wt-level` (livelli).
 3. Verifica: `heat3d-wt-replay --version`. Dovresti vedere
    `heat3d-wt-replay 0.2.0`. `heat3d-wt-replay --help` elenca le opzioni:
@@ -33,7 +33,7 @@ Senza installare: `python -m heat3d_ext_warthunder ...` e
 Veicoli, armi e munizioni ricevono i nomi in inglese dai file di testo del
 gioco, letti dalla tua installazione durante la conversione. L'installazione viene
 trovata tramite Steam o le cartelle predefinite del launcher; `--game <cartella>` o la
-variabile d'ambiente `HEAT3D_WT_GAME` indicano dove si trova, altrimenti. Nel
+variabile d'ambiente `HEAT3D_WT_GAME` indicano dove trovarla. Nel
 repository non c'è nessun testo del gioco; senza installazione i nomi sono gli
 ID dei veicoli (il convertitore lo segnala con una riga `note:`).
 
