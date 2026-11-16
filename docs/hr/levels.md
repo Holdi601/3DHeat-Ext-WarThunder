@@ -32,7 +32,7 @@ istom okviru kao tablice snimki.
 3. Učitaj `levels/<level>/<level>.glb` u panel Pozadina / razina preglednika, pod bitkama te karte.
 
 Razine koje zapišeš ostaju na tvom računalu: nikad ih ne objavljuj (vidi
-[Pojmovi i licenca](terms.md)).
+[Uvjeti i licenca](terms.md)).
 
 ## Opcije {#options}
 

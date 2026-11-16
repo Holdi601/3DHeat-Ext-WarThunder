@@ -46,7 +46,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 | [讀取回放的方式](how-it-reads.md) | 讀取了什麼，以及如何核對 |
 | [飛機](aircraft.md)、[地面單位與攝影機](ground.md)、[命中、射擊與火勢](hits.md) | 欄位背後的細節 |
 | [經濟](economy.md)、[目標](objectives.md) | 銀獅幣與研究點數；佔領區域、機場 |
-| [名詞與授權](terms.md) | 讀取的內容、來源、測試、授權 |
+| [條款與授權](terms.md) | 讀取的內容、來源、測試、授權 |
 | [指令參考](../cli-reference.md)、[欄位清單](../columns.md) | 由程式碼產生 |
 
 ## 3DHeat 的一部分 {#part-of-3dheat}

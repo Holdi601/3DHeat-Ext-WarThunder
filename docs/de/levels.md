@@ -34,7 +34,7 @@ search_exclude: true
    Gefechten dieser Karte.
 
 Die Level, die du schreibst, bleiben auf deinem Rechner: veröffentliche sie nie
-(siehe [Begriffe und Lizenz](terms.md)).
+(siehe [Nutzungsbedingungen und Lizenz](terms.md)).
 
 ## Optionen {#options}
 

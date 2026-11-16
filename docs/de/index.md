@@ -56,7 +56,7 @@ Datei im 3DHeat-Viewer.
 | [So liest es ein Replay](how-it-reads.md) | was gelesen wird und wie es geprüft wurde |
 | [Flugzeuge](aircraft.md), [Bodeneinheiten und Kamera](ground.md), [Treffer, Beschuss und Brände](hits.md) | die Einzelheiten hinter den Spalten |
 | [Wirtschaft](economy.md), [Ziele](objectives.md) | Silberlöwen und Forschungspunkte; Eroberungszonen, Flugplätze |
-| [Begriffe und Lizenz](terms.md) | was gelesen wird, Quellen, Tests, Lizenz |
+| [Nutzungsbedingungen und Lizenz](terms.md) | was gelesen wird, Quellen, Tests, Lizenz |
 | [Befehlsreferenz](../cli-reference.md), [Spaltenliste](../columns.md) | aus dem Code erzeugt |
 
 ## Teil von 3DHeat {#part-of-3dheat}

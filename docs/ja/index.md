@@ -53,7 +53,7 @@ heat3d-wt-replay "<War Thunder>/Replays" -o out
 | [リプレイの読み取り方](how-it-reads.md) | 何を読み、どう確かめたか |
 | [飛行機](aircraft.md)、[地上ユニットとカメラ](ground.md)、[命中・射撃・火災](hits.md) | 列の裏にある詳しい内容 |
 | [経済](economy.md)、[目的](objectives.md) | シルバーライオンと研究ポイント、占領地点、飛行場 |
-| [用語とライセンス](terms.md) | 読み取るもの、出典、テスト、ライセンス |
+| [利用条件とライセンス](terms.md) | 読み取るもの、出典、テスト、ライセンス |
 | [コマンドリファレンス](../cli-reference.md)、[列の一覧](../columns.md) | コードから生成 |
 
 ## 3DHeat の一部として {#part-of-3dheat}

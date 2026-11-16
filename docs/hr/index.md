@@ -54,7 +54,7 @@ datoteku u 3DHeat pregledniku.
 | [Kako se snimka čita](how-it-reads.md) | što se čita i kako je provjereno |
 | [Zrakoplovi](aircraft.md), [Kopnene jedinice i kamera](ground.md), [Pogoci, paljba i požari](hits.md) | pojedinosti iza stupaca |
 | [Ekonomija](economy.md), [Ciljevi](objectives.md) | Silver Lions i bodovi za istraživanje; zone zauzimanja, aerodromi |
-| [Pojmovi i licenca](terms.md) | što se čita, izvori, testovi, licenca |
+| [Uvjeti i licenca](terms.md) | što se čita, izvori, testovi, licenca |
 | [Referenca naredbi](../cli-reference.md), [Popis stupaca](../columns.md) | generirano iz koda |
 
 ## Dio 3DHeata {#part-of-3dheat}
