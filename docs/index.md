@@ -47,6 +47,7 @@ file in the 3DHeat viewer.
 | [The match document](match-document.md) | every key of `<match>.match.json` |
 | [Sidecars and completeness](sidecars.md) | what is kept whole besides the table, and the counts |
 | [Levels](levels.md) | `heat3d-wt-level`: levels from your install as `.glb` |
+| [Ranges catalogue](ranges.md) | `heat3d-wt-ranges`: weapons' reach, sights and sensors from your install |
 | [How it reads a replay](how-it-reads.md) | what is read, and how it was checked |
 | [Aircraft](aircraft.md), [Ground units and camera](ground.md), [Hits, gunfire and fires](hits.md) | the details behind the columns |
 | [Economy](economy.md), [Objectives](objectives.md) | Silver Lions and research points; capture zones, airfields |

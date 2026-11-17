@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Server replays: each player's camera per unit (0xF0CC): `zoom` and `cameraMode` on unit rows (the gunner's
+  sight steps, a targeting camera). Aircraft and helicopters: their sensors from each flight entry - `sensors`
+  (slots on or off), `sensorModes` (raw), `sensorContacts`, `sensorLocks`, the optical sensor's tracked point
+  (`opticX/Y/Z`), the locked target's (`lockX/Y/Z`) and where the sight or pod looks (`sightX/Y/Z`).
+- `heat3d-wt-ranges` (also `heat3d-wt-replay ranges`) builds a catalogue from your own installation: each
+  weapon's least, best and most range (shells, missiles with their launch tables, bombs, torpedoes), each
+  vehicle's weapons, sights (zoom, thermal generation, night vision) and sensors (radars, IRST, warners,
+  laser rangefinders), for the viewer's engagement ranges, view cones and sensor sectors.
 - Server replays say who won: the team whose tickets are 0 at the end lost (checked against every client
   replay with a status). Every row carries the viewer's outcome columns: `won`, `matchWon`, `round` (1) and
   `roundEndReason` (`destruction`, `capture`, `tickets`, `time`); the match document's `result` adds

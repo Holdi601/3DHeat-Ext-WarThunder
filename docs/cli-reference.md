@@ -94,3 +94,18 @@ options:
   --no-texture          do not texture the ground with the tactical map
   --skip-existing       leave levels whose .glb exists
 ```
+
+## `heat3d-wt-ranges`
+
+```text
+usage: heat3d-wt-ranges [-h] [-o OUT] [--game GAME] [--quiet]
+
+Builds a catalogue of weapon reach, sights and sensors from your own War Thunder
+installation
+
+options:
+  -h, --help     show this help message and exit
+  -o, --out OUT  the catalogue file to write (default ranges.json)
+  --game GAME    the War Thunder folder (found if not given)
+  --quiet        no progress lines
+```

@@ -18,6 +18,7 @@ test = ["pytest>=8.0"]
 [project.scripts]
 heat3d-wt-replay = "heat3d_ext_warthunder.cli:main"
 heat3d-wt-level = "heat3d_ext_warthunder.levelcli:main"
+heat3d-wt-ranges = "heat3d_ext_warthunder.ranges:main"
 
 [tool.setuptools]
 packages = ["heat3d_ext_warthunder"]

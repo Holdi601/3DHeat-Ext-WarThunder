@@ -76,6 +76,18 @@ converted), `2` no replay file found. Every start first looks for a newer
 release and asks before installing it; `HEAT3D_NO_UPDATE=1` switches that
 off. Step by step: [Converting replays](https://holdi601.github.io/3DHeat-Ext-WarThunder/converting.html).
 
+## Ranges catalogue: `heat3d-wt-ranges`
+
+```bash
+heat3d-wt-ranges -o ranges.json     # or: heat3d-wt-replay ranges -o ranges.json
+```
+
+Builds a catalogue from your own installation - each weapon's reach, each
+vehicle's weapons, sights and sensors - for the viewer's engagement ranges,
+view cones and sensor sectors. `--game FOLDER` as for the levels. The file
+stays on your machine. Details:
+[Ranges catalogue](https://holdi601.github.io/3DHeat-Ext-WarThunder/ranges.html).
+
 ## Levels: `heat3d-wt-level`
 
 ```bash

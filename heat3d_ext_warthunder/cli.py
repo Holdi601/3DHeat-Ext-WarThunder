@@ -1,5 +1,6 @@
 """
 `heat3d-wt-replay <replay, folder or zip>... -o <folder>`
+(`heat3d-wt-replay ranges ...`: the range catalogue, see ranges.py)
 
 Each battle becomes one file, `<folder>/<map>/<match>.3dheat` (container.py):
 the table `<match>.parquet`, `<match>.match.json` and the sidecars packed
@@ -113,6 +114,12 @@ def main(argv: list[str] | None = None) -> int:
         update.startup("heat3d_ext_warthunder")
     except Exception:  # an update check never stops a conversion
         pass
+    args = sys.argv[1:] if argv is None else argv
+    if args[:1] == ["ranges"]:
+        # `heat3d-wt-replay ranges ...`: the catalogue of weapons, sights and sensors (ranges.py).
+        from .ranges import main as ranges_main
+
+        return ranges_main(args[1:])
     ap = argparse.ArgumentParser(prog="heat3d-wt-replay", description="War Thunder replays (.wrpl) into 3DHeat tables")
     ap.add_argument("replays", nargs="+", type=Path, help=".wrpl files, folders of them, or zips of them")
     ap.add_argument("-o", "--out", type=Path, required=True, help="where to write <map>/<match>.parquet and .match.json")

@@ -17,7 +17,8 @@ import sys
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 #: (the command as users type it, the module that runs it)
-COMMANDS = [("heat3d-wt-replay", "heat3d_ext_warthunder"), ("heat3d-wt-level", "heat3d_ext_warthunder.levelcli")]
+COMMANDS = [("heat3d-wt-replay", "heat3d_ext_warthunder"), ("heat3d-wt-level", "heat3d_ext_warthunder.levelcli"),
+            ("heat3d-wt-ranges", "heat3d_ext_warthunder.ranges")]
 #: (module, attribute) of the table's columns: a dict name -> type code, or a list of (name, type) pairs
 COLUMNS = ("heat3d_ext_warthunder.convert", "COLUMNS")
 TYPES = {"s": "text", "str": "text", "string": "text", "f": "decimal", "d": "decimal", "f32": "decimal",

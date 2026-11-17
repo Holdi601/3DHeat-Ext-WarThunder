@@ -3,7 +3,7 @@ title: Start
 nav_order: 1
 lang: "de"
 source: index.md
-source_hash: "4286d0049867"
+source_hash: "53071b35f224"
 nav_exclude: true
 search_exclude: true
 permalink: /de/
@@ -53,6 +53,7 @@ Datei im 3DHeat-Viewer.
 | [Das Match-Dokument](match-document.md) | jeder Schlüssel von `<match>.match.json` |
 | [Begleitdateien und Vollständigkeit](sidecars.md) | was außer der Tabelle vollständig aufbewahrt wird, und die Zählungen |
 | [Level](levels.md) | `heat3d-wt-level`: Level aus deiner Installation als `.glb` |
+| [Reichweitenkatalog](ranges.md) | `heat3d-wt-ranges`: Reichweiten, Visiere und Sensoren aus deiner Installation |
 | [So liest es ein Replay](how-it-reads.md) | was gelesen wird und wie es geprüft wurde |
 | [Flugzeuge](aircraft.md), [Bodeneinheiten und Kamera](ground.md), [Treffer, Beschuss und Brände](hits.md) | die Einzelheiten hinter den Spalten |
 | [Wirtschaft](economy.md), [Ziele](objectives.md) | Silberlöwen und Forschungspunkte; Eroberungszonen, Flugplätze |
