@@ -23,17 +23,34 @@ output is plain Parquet and JSON, so other tools can read it too.
 
 ## Quick start
 
+You need Windows, Python 3.10 or later ("Add python.exe to PATH" ticked in its
+installer), War Thunder installed and replay saving switched on in the game's
+options (your battles then land as `.wrpl` files in its `Replays` folder); no Git.
 New to the command line? Read [Before you start](before-you-start.md) first.
 
 ```bash
-git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
-cd 3DHeat-Ext-WarThunder
-pip install -e .                                  # installs heat3d-wt-replay and heat3d-wt-level
-heat3d-wt-replay "<War Thunder>/Replays" -o out
+python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.0.zip
+heat3d-wt-replay "C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays" -o out
+heat3d-wt-level list                              # the levels of your install
+heat3d-wt-level extract <level> -o levels         # one level as a 3D model
 ```
 
-You should see one line per battle: `ok out/<map>/<match>.3dheat`. Open that
-file in the 3DHeat viewer.
+The game's folder is found by itself; `--game "<folder>"` names it otherwise.
+You should see one line per battle: `ok out/<map>/<match>.3dheat`. A level
+lands in `levels\<level>\<level>.glb` (up to about 250 MB with `--detail high`).
+
+Then open the files in the [3DHeat viewer](https://github.com/Holdi601/3DHeat#quick-start):
+download it (**Code -> Download ZIP**, unpack), double-click `start.bat` (it
+offers to install Node.js when it is missing and opens `http://127.0.0.1:5273`),
+then **Source -> Files...** and pick the `.3dheat` (or drop it on the Source
+panel) for the Heatmap tab; for the battle itself, the **Match** tab's
+**Load match files...** and the same `.3dheat`
+([loading one](https://holdi601.github.io/3DHeat/container.html#loading-one)).
+For the level, **Background / level -> 3D model...** and pick the `.glb`.
+Everything stays on your machine.
+
+When a new release is out, the tool says so when it starts and offers to
+update itself.
 
 ## This documentation
 

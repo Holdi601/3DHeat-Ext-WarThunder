@@ -3,7 +3,7 @@ title: Start
 nav_order: 1
 lang: "de"
 source: index.md
-source_hash: "53071b35f224"
+source_hash: "b81c404b12e5"
 nav_exclude: true
 search_exclude: true
 permalink: /de/
@@ -29,17 +29,34 @@ Werkzeuge sie lesen können.
 
 ## Schnellstart {#quick-start}
 
+Du brauchst Windows, Python 3.10 oder neuer (im Installer "Add python.exe to PATH"
+ankreuzen), das installierte War Thunder und in den Optionen des Spiels das Speichern
+von Replays eingeschaltet (deine Gefechte landen dann als `.wrpl`-Dateien in seinem
+Ordner `Replays`); Git ist nicht nötig.
 Neu auf der Kommandozeile? Lies zuerst [Bevor du anfängst](before-you-start.md).
 
 ```bash
-git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
-cd 3DHeat-Ext-WarThunder
-pip install -e .                                  # installiert heat3d-wt-replay und heat3d-wt-level
-heat3d-wt-replay "<War Thunder>/Replays" -o out
+python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.0.zip
+heat3d-wt-replay "C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays" -o out
+heat3d-wt-level list                              # die Level deiner Installation
+heat3d-wt-level extract <level> -o levels         # ein Level als 3D-Modell
 ```
 
-Du solltest pro Gefecht eine Zeile sehen: `ok out/<map>/<match>.3dheat`. Öffne diese
-Datei im 3DHeat-Viewer.
+Der Ordner des Spiels wird von selbst gefunden; sonst nennt ihn `--game "<Ordner>"`.
+Du solltest pro Gefecht eine Zeile sehen: `ok out/<map>/<match>.3dheat`. Ein Level
+landet in `levels\<level>\<level>.glb` (mit `--detail high` bis etwa 250 MB).
+
+Dann öffne die Dateien im [3DHeat-Viewer](https://github.com/Holdi601/3DHeat#quick-start):
+herunterladen (**Code -> Download ZIP**, entpacken), `start.bat` doppelklicken (es bietet
+an, Node.js zu installieren, wenn es fehlt, und öffnet `http://127.0.0.1:5273`), dann
+**Quelle -> Dateien...** und die `.3dheat` wählen (oder sie auf das Quelle-Panel ziehen)
+für den Heatmap-Tab; für das Gefecht selbst im **Match**-Tab **Match-Dateien laden...**
+und dieselbe `.3dheat` ([eine laden](https://holdi601.github.io/3DHeat/container.html#loading-one)).
+Für das Level **Hintergrund / Level -> 3D-Modell...** und die `.glb` wählen.
+Alles bleibt auf deinem Rechner.
+
+Wenn ein neues Release erscheint, sagt das Werkzeug es beim Start und bietet an, sich
+selbst zu aktualisieren.
 
 ## Diese Dokumentation {#this-documentation}
 

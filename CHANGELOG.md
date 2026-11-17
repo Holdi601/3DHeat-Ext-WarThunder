@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - Server replays: each player's camera per unit (0xF0CC): `zoom` and `cameraMode` on unit rows (the gunner's
   sight steps, a targeting camera). Aircraft and helicopters: their sensors from each flight entry - `sensors`
@@ -20,8 +20,6 @@
   battle keys, a completeness section, generated reference pages, no real
   level names or replay figures; the README is a short overview.
 
-## 0.2.0
-
 - One `.3dheat` file a battle by default; `--loose` for separate files.
 - Who won, where the replay says; Silver Lions and research points per
   event, priced from your install.
@@ -33,6 +31,8 @@
 - Hits in the victim's own frame; the recorded camera; clean ends of
   tracks; AB/RB/SB in file names.
 - Levels: render meshes, generated forests and towns, land-class colours.
+- Installs with one pip line from the release zip, no Git needed; a pip install knows its version and updates itself with pip when a newer release is out.
+- README: a quick start for new users.
 
 ## 0.1.0
 
