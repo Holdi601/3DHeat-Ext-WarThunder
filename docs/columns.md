@@ -6,7 +6,7 @@ nav_order: 91
 # Column list
 
 This page is generated from the code by `tools/gen_docs_reference.py`; do not edit it by hand.
-What each column means is on [The table](table.md). The table has **108 columns**:
+What each column means is on [The table](table.md). The table has **122 columns**:
 
 | # | Column | Type |
 |---|---|---|
@@ -105,16 +105,30 @@ What each column means is on [The table](table.md). The table has **108 columns*
 | 93 | `aimPitch` | decimal |
 | 94 | `aimDistance` | decimal |
 | 95 | `zoom` | decimal |
-| 96 | `difficulty` | text |
-| 97 | `gameMode` | text |
-| 98 | `cost_fired_sl` | decimal |
-| 99 | `cost_lost_sl` | decimal |
-| 100 | `earn_sl` | decimal |
-| 101 | `earn_rp` | decimal |
-| 102 | `currency` | text |
-| 103 | `econ_basis` | text |
-| 104 | `rewardType` | text |
-| 105 | `won` | whole number |
-| 106 | `matchWon` | whole number |
-| 107 | `round` | whole number |
-| 108 | `roundEndReason` | text |
+| 96 | `cameraMode` | whole number |
+| 97 | `sensors` | text |
+| 98 | `sensorModes` | text |
+| 99 | `sensorContacts` | text |
+| 100 | `sensorLocks` | text |
+| 101 | `opticX` | decimal |
+| 102 | `opticY` | decimal |
+| 103 | `opticZ` | decimal |
+| 104 | `lockX` | decimal |
+| 105 | `lockY` | decimal |
+| 106 | `lockZ` | decimal |
+| 107 | `sightX` | decimal |
+| 108 | `sightY` | decimal |
+| 109 | `sightZ` | decimal |
+| 110 | `difficulty` | text |
+| 111 | `gameMode` | text |
+| 112 | `cost_fired_sl` | decimal |
+| 113 | `cost_lost_sl` | decimal |
+| 114 | `earn_sl` | decimal |
+| 115 | `earn_rp` | decimal |
+| 116 | `currency` | text |
+| 117 | `econ_basis` | text |
+| 118 | `rewardType` | text |
+| 119 | `won` | whole number |
+| 120 | `matchWon` | whole number |
+| 121 | `round` | whole number |
+| 122 | `roundEndReason` | text |

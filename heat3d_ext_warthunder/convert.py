@@ -82,7 +82,9 @@ HINTS = {
                   "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
-                  "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "difficulty",
+                  "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "cameraMode",
+                  "sensors", "sensorModes", "sensorContacts", "sensorLocks", "opticX", "opticY", "opticZ", "lockX", "lockY",
+                  "lockZ", "sightX", "sightY", "sightZ", "difficulty",
                   "gameMode", "cost_fired_sl", "cost_lost_sl", "earn_sl", "earn_rp", "currency", "econ_basis",
                   "rewardType", "won", "matchWon", "round", "roundEndReason"],
     },
@@ -95,7 +97,28 @@ HINTS = {
                     "viewYaw": "where the player looks: compass degrees in the world, clockwise from north, as "
                                "aimHeading (not relative to the hull)",
                     "viewPitch": "where the player looks: degrees up in the world, as aimPitch",
-                    "camera": "kind 'camera' rows: the recording player's replay camera, its own track"},
+                    "camera": "kind 'camera' rows: the recording player's replay camera, its own track",
+                    "zoom": "the camera's zoom: on 'camera' rows the recording player's; on a unit's rows (server "
+                            "replays) its player's, with cameraMode; about 1 (a tank's third-person view 1.19) is "
+                            "no sight",
+                    "cameraMode": "server replays: the camera the unit's player uses (the game's number: a tank's "
+                                  "third-person view 29, its gunner's sight 39; an aircraft's own view 0, its "
+                                  "targeting camera 21)",
+                    "sensors": "aircraft: each sensor the flight model sends, in order: d (detecting: radar, IRST, "
+                               "warning receiver) or o (optical: targeting pod, sight), its slot in the aircraft's "
+                               "own sensor list, + on (o: tracking a point) or - off; e.g. 'd0+ d1+ d2- o3-'",
+                    "sensorModes": "aircraft: per detecting sensor that is on, its mode word in hex and mode byte "
+                                   "as sent ('d0:9850/62'; not decoded: they change when the mode does)",
+                    "sensorContacts": "aircraft: per detecting sensor, what it lists: units by uid, weapons in "
+                                      "flight as their life ('w<eid hex>'), e.g. 'd0:161 168 w8001a2;d1:116'",
+                    "sensorLocks": "aircraft: per detecting sensor that has picked a contact, the contact "
+                                   "('d0:161'), same notation as sensorContacts",
+                    "opticX": "aircraft: opticX/Y/Z the point an optical sensor (targeting pod, helicopter or "
+                              "drone sight) tracks, the game's axes like x/y/z",
+                    "lockX": "aircraft: lockX/Y/Z the point the aircraft's sensors track as their target (the "
+                             "flight model's target with id (6, 0)), near the tracked aircraft",
+                    "sightX": "aircraft: sightX/Y/Z where the sight, pod or drone camera looks (the flight "
+                              "model's target with id (2, 7)): on the ground or on the unit it watches"},
 }
 
 COLUMNS = [
@@ -194,6 +217,20 @@ COLUMNS = [
     ("aimPitch", "f32"),
     ("aimDistance", "f32"),
     ("zoom", "f32"),
+    ("cameraMode", "i16"),
+    ("sensors", "str"),
+    ("sensorModes", "str"),
+    ("sensorContacts", "str"),
+    ("sensorLocks", "str"),
+    ("opticX", "f32"),
+    ("opticY", "f32"),
+    ("opticZ", "f32"),
+    ("lockX", "f32"),
+    ("lockY", "f32"),
+    ("lockZ", "f32"),
+    ("sightX", "f32"),
+    ("sightY", "f32"),
+    ("sightZ", "f32"),
     ("difficulty", "str"),
     ("gameMode", "str"),
     ("cost_fired_sl", "f32"),
@@ -1726,10 +1763,12 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
 
 
 def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = None,
-         rpm: dict[int, tuple] | None = None, extra: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+         rpm: dict[int, tuple] | None = None, extra: list[dict[str, Any]] | None = None,
+         views: dict[int, tuple[list[float], list[tuple[int, float]]]] | None = None) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = list(extra or [])
     by_uid: dict[int, list[Life]] = defaultdict(list)
     rpm = rpm or {}
+    views = views or {}
     entries = flight_entries(r)
     author = str(r.results.get("authorUserId") or "")
     cockpit = _cockpit_states(r)
@@ -1739,11 +1778,14 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
         until = life.wreck_until()
         series = rpm.get(life.uid) if life.kind == "air" else None
         own = bool(author) and life.user_id == author
+        view = views.get(life.uid)
         for s, v in zip(life.samples, _speeds(life.samples)):
             row = _row(life, s, "position")
             row["speed"] = v
             if series:
                 row["rpm"] = _rpm_at(series, s.t)
+            if view:
+                row.update(_view_at(view, s.t))
             if 0 <= s.entry < len(entries) and entries[s.entry] is not None:
                 row.update(_flight_columns(entries[s.entry], own))
             if own and life.kind == "air":
@@ -1884,11 +1926,14 @@ def _flight_columns(x: tuple, own: bool) -> dict[str, Any]:
     then (a median of 4 and 1 changes an aircraft in an hour's battle; their
     rounds fall within 3 s of 41 of 134 hits they score) and stay in the flight
     sidecar; their engine fields change with the engine (start, afterburner,
-    loss) and are used.
+    loss) and are used. The sensor columns (`_sensor_columns`) are every
+    aircraft's own, sent with each entry.
     """
     v, nib, eng, ammo = x[0], x[1], x[2], x[3]
     state, burn, cond = _engine(eng)
     out = {"vx": v[0], "vy": v[1], "vz": v[2], "engine": state, "afterburner": burn, "engineCondition": cond}
+    if len(x) > 6 and x[6]:
+        out.update(x[6])
     if own and nib:
         out.update(elevator=(nib[1] - 8) / 7, aileron=(nib[2] - 8) / 7, rudder=(nib[3] - 8) / 7, throttle=nib[11] / 15,
                    ammo=" ".join(map(str, ammo)))
@@ -2672,6 +2717,44 @@ def camera_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]],
     return out, dict(check)
 
 
+#: A unit's row takes its player's camera (0xF0CC) sent at most this long (s) before it.
+VIEW_HOLD = 1.0
+
+
+def unit_views(msgs: list[UnitMessage]) -> tuple[dict[int, tuple[list[float], list[tuple[int, float]]]], dict[str, Any]]:
+    """
+    Each uid's player camera over time (0xF0CC, server replays; see wrpl.read_unit_camera): uid -> (times, (mode,
+    zoom) per message), and a check: messages, units, how often each mode came with a zoom near 1 (no sight).
+    """
+    out: dict[int, tuple[list[float], list[tuple[int, float]]]] = {}
+    modes: dict[int, Counter] = defaultdict(Counter)
+    for m in msgs:
+        if m.mid != wrpl.UNIT_CAMERA or m.uid is None:
+            continue
+        try:
+            c = wrpl.read_unit_camera(m.body)
+        except (wrpl.FormatError, EOFError, IndexError, ValueError, struct.error):
+            c = None
+        if c is None or not math.isfinite(c["zoom"]):
+            continue
+        ts, vs = out.setdefault(m.uid, ([], []))
+        ts.append(m.t)
+        vs.append((c["mode"], c["zoom"]))
+        modes[c["mode"]]["near1" if abs(c["zoom"] - 1.1) <= 0.1 else "zoomed"] += 1
+    check = {"messages": sum(len(v[0]) for v in out.values()), "units": len(out),
+             "modes": {str(k): dict(v) for k, v in sorted(modes.items())}}
+    return out, check
+
+
+def _view_at(view: tuple[list[float], list[tuple[int, float]]], t: float) -> dict[str, Any]:
+    """The unit's player camera at t: the last message at most VIEW_HOLD seconds before it."""
+    ts, vs = view
+    i = bisect.bisect_right(ts, t) - 1
+    if i < 0 or t - ts[i] > VIEW_HOLD:
+        return {}
+    return {"cameraMode": vs[i][0], "zoom": vs[i][1]}
+
+
 def rpm_series(msgs: list[UnitMessage]) -> dict[int, tuple[list[float], list[list[int]]]]:
     """Each uid's engine rpm over time (0xD047 FmwRpm): uid -> (times, rpm per engine)."""
     out: dict[int, tuple[list[float], list[list[int]]]] = {}
@@ -2756,22 +2839,79 @@ def flight_entries(r: Replay) -> list[tuple | None]:
     """
     Every flight-model entry of `r.flight_raw` decoded once (wrpl.flight_extras), kept small: (velocity, the 14
     nibbles, the engines as (state, afterburner, condition, tail) tuples, the ammunition per weapon, the velocity word,
-    the number list as JSON); None where an entry does not read.
+    the number list as JSON, the sensor columns (see `_sensor_columns`) or None); None where an entry does not read.
     """
     if r.flight_x is None:
         out: list[tuple | None] = []
         text: dict[str, str] = {}
+        layout = r.layout or "2026"
         for _, _, n, bits, phase in r.flight_raw:
             try:
-                x = wrpl.flight_extras(n, bits, r.layout or "2026", phase)
+                x = wrpl.flight_extras(n, bits, layout, phase)
             except (wrpl.FormatError, EOFError):
                 out.append(None)
                 continue
+            try:
+                sensors = _sensor_columns(wrpl.flight_sensors(n, bits, layout, phase), text)
+            except (wrpl.FormatError, EOFError, struct.error):
+                sensors = None
             nums = json.dumps(x["numbers"], separators=(",", ":"))
             out.append((x["velocity"], bytes(x["nibbles"]), tuple(tuple(e) for e in x["engines"]), tuple(x["ammo"]),
-                        x["velocityWord"], text.setdefault(nums, nums)))
+                        x["velocityWord"], text.setdefault(nums, nums), sensors))
         r.flight_x = out
     return r.flight_x
+
+
+def _contact(v: int) -> str:
+    """A detecting sensor's contact as the table names it: a unit by its uid, a weapon in flight by its life."""
+    what, n = wrpl.sensor_contact(v)
+    return str(n) if what == "uid" else f"w{n:x}"
+
+
+def _point(p: Any) -> tuple[float, float, float] | None:
+    return tuple(p) if p and len(p) == 3 and all(math.isfinite(v) and abs(v) < 1e7 for v in p) else None
+
+
+def _sensor_columns(fs: dict[str, Any] | None, text: dict[str, str] | None = None) -> dict[str, Any] | None:
+    """
+    An aircraft's sensor columns from its flight entry's sensors and targets (wrpl.flight_sensors): `sensors`,
+    `sensorModes`, `sensorContacts`, `sensorLocks`, the optical sensor's tracked point (`opticX/Y/Z`), the tracked
+    target's point (the target with id (6, 0): `lockX/Y/Z`) and where the sight looks (id (2, 7): `sightX/Y/Z`). None for an entry without sensors or targets (older aircraft, the 2025 layout).
+    """
+    if not fs or not (fs["sensors"] or fs["targets"]):
+        return None
+    keep = text if text is not None else {}
+    state, modes, contacts, locks = [], [], [], []
+    optic = None
+    for s in fs["sensors"]:
+        letter = {wrpl.SENSOR_DETECTING: "d", wrpl.SENSOR_OPTICAL: "o"}.get(s["kind"], f"k{s['kind']}")
+        name = f"{letter}{s['slot']}"
+        state.append(f"{name}{'+' if s['on'] else '-'}")
+        if s["kind"] == wrpl.SENSOR_DETECTING and s["on"]:
+            modes.append(f"{name}:{s['mode']:04x}" + (f"/{s['modeByte']}" if "modeByte" in s else ""))
+        if s["kind"] == wrpl.SENSOR_OPTICAL and optic is None:
+            optic = _point(s.get("point"))
+        listed = s.get("contacts") or []
+        if listed:
+            contacts.append(f"{name}:" + " ".join(_contact(v) for v in listed))
+            if s.get("pick", wrpl.NO_PICK) < len(listed):
+                locks.append(f"{name}:{_contact(listed[s['pick']])}")
+    lock = sight = None
+    for t in fs["targets"]:
+        if t["id"] == (6, 0) and lock is None:
+            lock = _point(t.get("point"))
+        elif t["id"] == (2, 7) and sight is None:
+            sight = _point(t.get("point"))
+    out: dict[str, Any] = {}
+    for col, parts, sep in (("sensors", state, " "), ("sensorModes", modes, " "), ("sensorContacts", contacts, ";"),
+                            ("sensorLocks", locks, " ")):
+        if parts:
+            v = sep.join(parts)
+            out[col] = keep.setdefault(v, v)
+    for prefix, p in (("optic", optic), ("lock", lock), ("sight", sight)):
+        if p is not None:
+            out.update({f"{prefix}X": p[0], f"{prefix}Y": p[1], f"{prefix}Z": p[2]})
+    return out or None
 
 
 def _engine(engines: tuple) -> tuple[str | None, float | None, int | None]:
@@ -2808,7 +2948,7 @@ def flight_table(r: Replay):
         cols["bits"].append(n)
         cols["phase"].append(phase)
         cols["entry"].append(bits)
-        v, nib, eng, ammo, word, nums = x or (None, b"", (), (), None, "")
+        v, nib, eng, ammo, word, nums = x[:6] if x else (None, b"", (), (), None, "")
         state, burn, cond = _engine(eng)
         for k, val in zip(("vx", "vy", "vz"), v or (None, None, None)):
             cols[k].append(val)
@@ -4131,7 +4271,8 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
     fires, more["fires"] = fire_rows(r, all_lives)
     cam, more["camera"] = camera_rows(r, all_lives)
-    data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam)
+    views, more["unitCameras"] = unit_views(msgs)
+    data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam, views)
     board = scoreboard(r)
     result = battle_result(r, roster, board)
     eco = economy.Economy.from_game(game, arms_install)

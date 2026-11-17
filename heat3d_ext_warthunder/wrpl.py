@@ -783,6 +783,7 @@ def _engines(r: Bits, tail: int) -> None:
 
 
 def _sensors(r: Bits) -> int:
+    """The sensor list skipped (`read_sensors` reads it)."""
     n = _count(r.byte(), 4)
     for _ in range(n):
         first = r.flag()
@@ -813,6 +814,7 @@ def _sensors(r: Bits) -> int:
 
 
 def _targets(r: Bits) -> None:
+    """The target list skipped (`read_targets` reads it)."""
     for _ in range(_count(r.bits(4), 8)):
         r.skip(16)
         if r.flag():
@@ -828,6 +830,153 @@ def _targets(r: Bits) -> None:
             r.byte()
         if r.flag():
             r.skip(32)
+
+
+#: A flight entry's sensors: kind 1 a sensor that lists what it detects (radars, IRST, warning receivers), 2 an optical
+#: sensor that tracks a point (targeting pods, helicopter and drone sights). See `flight_sensors`.
+SENSOR_DETECTING, SENSOR_OPTICAL = 1, 2
+#: A detecting sensor's `pick` when it has picked none of its contacts.
+NO_PICK = 32
+
+
+def sensor_contact(v: int) -> tuple[str, int]:
+    """
+    One contact of a detecting sensor (a u32): a unit, ("uid", uid), when its high half is 0xFFFF; else an entity
+    as a message's ext UID (index << 10 | generation), returned as ("eid", the entity's eid as the entity stream
+    numbers it: index | generation << 22). The entities a radar lists are mostly weapons in flight (see
+    `flight_sensors`).
+    """
+    if v >> 16 == 0xFFFF:
+        return "uid", v & 0xFFFF
+    return "eid", (v >> 10) | ((v & 0x3FF) << 22)
+
+
+def flight_sensors(n: int, raw: bytes, layout: str = "2026", phase: int = 0) -> dict[str, Any] | None:
+    """
+    The sensors and targets of one flight-model entry (2026 layout; None for the 2025 one, which has no sensors).
+
+    Sensors (up to 4), each: a bit, a state byte - its high nibble the kind, its low nibble the sensor's place in the
+    aircraft's own sensor list (`slot`; 0x10, 0x11, 0x12 on a jet with three detecting sensors) - then by kind:
+
+    * 1, a detecting sensor: a bit, on (`on`); when on, a u16 (`mode`; with its top bit set a byte follows,
+      `modeByte`), a float (`since`: the replay time the sensor came on or changed mode; it stays while the mode
+      does), three u16 (`words`; the first stays with the mode, the other two move) and an optional byte.
+    * 2, an optical sensor: when the first bit is set (`on`) it tracks a point: a bit, a u16 (`word`), the point
+      (`point`, three floats, the game's axes), its velocity relative to the aircraft (`velocity`, m/s; checked:
+      the tracked point's own motion minus the aircraft's) and the time (`time`).
+    * 4: optionally three floats.
+
+    After any of them, optionally a list of up to 63 u32 (`contacts`, see `sensor_contact`) and a 6-bit index
+    (`pick`): which contact the sensor has picked (`NO_PICK`, 32: none).
+
+    Then a byte when there were sensors, the countermeasures (a byte n, n u16, a byte when n > 0) and the targets
+    (up to 8), each: two bytes (`id`), optionally three floats (`from`), then either a point (three
+    floats, `point`) and three u16 (`words`) or six floats (`direction`, a unit vector, and `more`), a float (`time`,
+    the replay time), 2 bits, an optional byte, three bits (the middle one says a byte follows, `extra`) and an
+    optional u32 (`word`).
+
+    What the data shows (a ground battle's server replay, 13,231 entries; recon drones and older aircraft send no
+    sensors): a jet's slot-0 sensor lists aircraft and helicopters of both teams out to 35 km and weapons in flight
+    (as entities: 96 % of its entity contacts name a weapon the table draws), a second detecting sensor on the
+    same jets lists only SPAA and ground launchers (a warning receiver), a short-range one (under 10 km) lists the
+    helicopter or tank an optical sensor then tracks. A `pick` other than 32 always lies inside the list. An optical
+    sensor's point follows its target: a helicopter's sight on another helicopter within 3-4 m (the target with id
+    (2, 0) holds the same point). Targets with id (6, 0) lie within ~40 m (median, a second's motion) of an aircraft
+    (jets with a radar on), (2, 7) on or near a ground unit (median 7-60 m) or on the ground ahead - where the sight,
+    pod or drone camera looks - (1, 7) a point along the nose, at 30 km when it meets no ground, and (3, 7) has a
+    unit vector instead of a point (a look direction).
+    """
+    form = FLIGHT_LAYOUTS[layout]
+    if not form["sensors"]:
+        return None
+    r = entry_bits(n, raw, phase)
+    if r.flag():
+        r.uleb()
+    r.bits(3)
+    r.bits(1)
+    r.u32()
+    r.bits(1)
+    if r.flag():
+        r.bits(3)
+        r.bits(r.bits(4))
+    for _ in range(_count(r.zigzag(), 4096)):
+        r.zigzag()
+        for _ in range(max(0, r.zigzag())):
+            r.zigzag()
+    r.skip(96 + 32 + 32)
+    r.align()
+    r.raw(7)
+    _engines(r, form["engine"])
+    sensors: list[dict[str, Any]] = []
+    if read_sensors(r, sensors):
+        r.byte()
+    count = r.byte()
+    r.skip(count * 16)
+    if count:
+        r.byte()
+    targets: list[dict[str, Any]] = []
+    read_targets(r, targets)
+    return {"sensors": sensors, "targets": targets}
+
+
+def read_sensors(r: Bits, out: list) -> int:
+    """The sensor list read (see `flight_sensors`): each sensor is added to `out` as a dict."""
+    n = _count(r.byte(), 4)
+    for _ in range(n):
+        first = r.flag()
+        state = r.byte()
+        kind = state >> 4
+        s: dict[str, Any] = {"slot": state & 15, "kind": kind, "on": False}
+        out.append(s)
+        if kind == 1:
+            if not r.flag():
+                continue
+            a = r.u16()
+            s.update(on=True, mode=a, since=r.f32(), words=[r.u16(), r.u16(), r.u16()])
+            if a >= 0x8000:
+                s["modeByte"] = r.byte()
+            if r.flag():
+                s["extra"] = r.byte()
+        elif kind == 2:
+            if not first:
+                continue
+            s.update(on=True, flag=r.bits(1), word=r.u16(), point=[r.f32(), r.f32(), r.f32()],
+                     velocity=[r.f32(), r.f32(), r.f32()], time=r.f32())
+        elif kind == 3:
+            raise FormatError("sensor kind 3")
+        elif kind == 4:
+            if r.flag():
+                s.update(on=True, point=[r.f32(), r.f32(), r.f32()])
+        if r.flag():
+            s["contacts"] = [r.u32() for _ in range(_count(r.bits(6), 63))]
+            s["pick"] = r.bits(6)
+    return n
+
+
+def read_targets(r: Bits, out: list) -> None:
+    """The target list read (see `flight_sensors`): each target is added to `out` as a dict."""
+    for _ in range(_count(r.bits(4), 8)):
+        t: dict[str, Any] = {"id": (r.byte(), r.byte())}
+        if r.flag():
+            t["from"] = [r.f32(), r.f32(), r.f32()]
+        if r.flag():
+            t["point"] = [r.f32(), r.f32(), r.f32()]
+            t["words"] = [r.u16(), r.u16(), r.u16()]
+        else:
+            t["direction"] = [r.f32(), r.f32(), r.f32()]
+            t["more"] = [r.f32(), r.f32(), r.f32()]
+        t["time"] = r.f32()
+        t["bits"] = r.bits(2)
+        if r.flag():
+            t["byte"] = r.byte()
+        r.bits(1)
+        extra = r.flag()
+        r.bits(1)
+        if extra:
+            t["extra"] = r.byte()
+        if r.flag():
+            t["word"] = r.u32()
+        out.append(t)
 
 
 #: Ground position delta history: 32 bodies per unit, by packet number.
@@ -1321,7 +1470,7 @@ UNIT_MESSAGES = {
     0xF052: "F052", 0xF054: "UnitRearm", 0xF061: "F061", 0xF09A: "DvmUnreliableHpReflectionData", 0xF09F: "F09F",
     0xF0A0: "GmDoSingleShotUnreliable", 0xF0A1: "F0A1", 0xF0AB: "DvmCutDecor", 0xF0B1: "UnitSingleShot",
     0xF0BD: "UnitBulletRearm", 0xF0E6: "GmApplyExplosionImpulse", 0xF0E9: "UnitHitEffects", 0xF117: "F117",
-    0xF133: "UnitOnExplosion", 0xF13E: "F13E", 0xF144: "UnitOnHit", 0xF15F: "F15F",
+    0xF133: "UnitOnExplosion", 0xF13E: "F13E", 0xF144: "UnitOnHit", 0xF15F: "F15F", 0xF0CC: "F0CC",
 }
 
 
@@ -1529,7 +1678,7 @@ def decode_unit_message(mid: int, body: bytes) -> dict[str, Any] | list | None:
     """A message to a unit decoded as far as it is known (None when nothing is)."""
     reader = {0xF0E9: read_hit_effect, 0xF133: read_unit_explosion, 0xF13E: read_part_damage, 0xD047: read_rpm,
               0xF031: read_effect, 0xD041: read_gunner, 0xD048: read_part_list, 0xF117: read_after_hit,
-              0xD0FE: read_projectile_hit_replay, 0xF144: read_unit_on_hit}.get(mid)
+              0xD0FE: read_projectile_hit_replay, 0xF144: read_unit_on_hit, 0xF0CC: read_unit_camera}.get(mid)
     if reader is None:
         return None
     try:
@@ -1687,6 +1836,33 @@ def read_camera(payload: bytes) -> dict[str, Any] | None:
         return None
     return {"quat": floats(f[1]), "f2": floats(f.get(2, b"")), "f3": floats(f.get(3, b"")),
             "f4": floats(f.get(4, b"")), "f5": floats(f.get(5, b"")),
+            "f6": f.get(6, b"").hex(), "f7": f.get(7, b"").hex()}
+
+
+#: A message to a unit, not in the community lists: in server replays every player's camera, about 8 a second.
+UNIT_CAMERA = 0xF0CC
+
+
+def read_unit_camera(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF0CC, a player's camera (server replays; a client replay has only its own player's, 0xD043): id fields 1 a
+    quaternion (4 floats), 2 and 3 three floats each (3 a unit vector), 4 a u16 (`mode`: the camera the player
+    uses), 5 a float (`zoom`), 6 a byte, 7 two or three bytes. Checked on a ground battle's server replay (110,935
+    messages): the zoom goes with the mode - a tank's third-person view (mode 29) 1.19 in 63,131 of 63,394
+    messages, the gunner's sight (39) 2.94 to 18.64 by the sight's steps, mode 35 9.28, an aircraft's or
+    helicopter's own view (0) about 1, its targeting camera (21) 3.17 on a drone, 5.67 and 35.8 on a helicopter,
+    31.8 on a jet - and the mode changes as the player switches views. Field 6 is 1 only on aircraft (a few dozen
+    messages, then field 7 has three bytes).
+    """
+    f = fields(b"\0\0\0\0" + body)
+    if len(f.get(4, b"")) != 2 or len(f.get(5, b"")) != 4:
+        return None
+
+    def floats(b: bytes) -> list[float]:
+        return list(struct.unpack_from(f"<{len(b) // 4}f", b)) if len(b) >= 4 else []
+
+    return {"quat": floats(f.get(1, b"")), "offset": floats(f.get(2, b"")), "look": floats(f.get(3, b"")),
+            "mode": struct.unpack("<H", f[4])[0], "zoom": struct.unpack("<f", f[5])[0],
             "f6": f.get(6, b"").hex(), "f7": f.get(7, b"").hex()}
 
 
