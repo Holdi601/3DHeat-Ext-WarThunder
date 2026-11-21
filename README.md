@@ -38,7 +38,7 @@ replay saving switched on in the game's options (it then saves your battles as
 1. Install the tool (one line, in PowerShell or a command prompt):
 
    ```bash
-   python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.4.zip
+   python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.5.zip
    ```
 
 2. Convert the replays, and if you like the level they were played on
@@ -76,7 +76,7 @@ first. Needs Python 3.10 or later.
 git clone https://github.com/Holdi601/3DHeat-Ext-WarThunder.git
 cd 3DHeat-Ext-WarThunder
 pip install -e .                 # installs heat3d-wt-replay and heat3d-wt-level
-heat3d-wt-replay --version       # you should see: heat3d-wt-replay 0.2.4
+heat3d-wt-replay --version       # you should see: heat3d-wt-replay 0.2.5
 ```
 
 `python -m heat3d_ext_warthunder ...` does the same as `heat3d-wt-replay ...`,

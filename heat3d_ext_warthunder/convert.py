@@ -466,10 +466,11 @@ def _id_key(pk: wrpl.Packet) -> str:
     return str(pk.type)
 
 
-def read(paths: list[Path]) -> Replay:
+def read(paths: list[Path], game: str | Path | None = None, level_heights_: bool = True) -> Replay:
     """
     One battle from its file or, for a server replay, its parts (every file
-    must be of the same session; they are read in part order).
+    must be of the same session; they are read in part order). `game`: the War Thunder folder whose level
+    heightmap places the packed ground heights (found by itself when not given; `level_heights_` False: not used).
     """
     parts = []
     for p in paths:
@@ -605,7 +606,7 @@ def read(paths: list[Path]) -> Replay:
             tracks[("air", smp.uid)].append(smp)
     r.tracks = dict(tracks)
     r.shells = dict(shells)
-    r.packed_height = _packed_height(r)
+    r.packed_height = _packed_height(r, level_heights(header.get("level") or "", game) if level_heights_ else None)
     for k, v in r.stream.problems.items():
         problems[f"entity {k}"] += v
     return r
@@ -680,15 +681,101 @@ def _retime(frames: list[tuple[float, list[Sample]]]) -> list[dict[str, Any]]:
     return out
 
 
-def _packed_height(r: Replay) -> dict[str, Any]:
+#: The packed heights' offset from pairs (below) is taken only from this many pairs on, ...
+PACKED_PAIRS_MIN = 5
+#: ... when they agree within this (m, 10th to 90th percentile) ...
+PACKED_SPREAD_MAX = 2.0
+#: ... and the offset is larger than this (m).
+PACKED_OFFSET_MIN = 5.0
+#: Against the level's heightmap: at least this many packed samples over the heightmap, ...
+HEIGHTMAP_SAMPLES_MIN = 50
+#: ... of which at least this share lies within HEIGHTMAP_NEAR m of the median offset (on the ground, not on a
+#: bridge, a roof or in water) ...
+HEIGHTMAP_AGREE = 0.5
+HEIGHTMAP_NEAR = 1.0
+#: ... and an offset is applied when it is larger than this (m). Checked on 15 server battles of 9 levels: the
+#: packed heights lie on the heightmap plus a level's own offset within 0.1 m (10th to 90th percentile; 0, 7, -10,
+#: -12, 25, -100 and -1,493 m).
+HEIGHTMAP_OFFSET_MIN = 0.5
+
+
+def level_heights(level: str, game: str | Path | None = None):
+    """
+    The ground height at game (x, z) arrays from the level's heightmap (HM2) in the install, bilinear, NaN outside
+    it; None without an install or a heightmap. Only the heightmap's block is read from the level file.
+    """
+    import numpy as np
+
+    from . import dagorlevel, install
+
+    try:
+        root = install.find_game(game)
+        path = Path(root) / level if root and level else None
+        if path is None or not path.is_file():
+            return None
+        table, _ = dagorlevel.scan(path)
+        if "HM2" not in table:
+            return None
+        b = table["HM2"][0]
+        with path.open("rb") as fh:
+            fh.seek(b.start)
+            data = fh.read(b.end - b.start)
+        hm = dagorlevel.read_heightmap(data, dagorlevel.Block("HM2", 0, len(data)))
+    except (OSError, ValueError, struct.error, KeyError, IndexError):
+        return None
+    hh = hm.heights
+    rows, cols = hh.shape
+
+    def height(x, z):
+        fx = (np.asarray(x, np.float64) - hm.origin_x) / hm.cell
+        fz = (np.asarray(z, np.float64) - hm.origin_z) / hm.cell
+        inside = (fx >= 0) & (fx < cols - 1) & (fz >= 0) & (fz < rows - 1)
+        fx, fz = np.clip(fx, 0, cols - 1.001), np.clip(fz, 0, rows - 1.001)
+        c, r = np.floor(fx).astype(np.int64), np.floor(fz).astype(np.int64)
+        tx, tz = fx - c, fz - r
+        a = hh[r, c] * (1 - tx) + hh[r, c + 1] * tx
+        b = hh[r + 1, c] * (1 - tx) + hh[r + 1, c + 1] * tx
+        return np.where(inside, a * (1 - tz) + b * tz, np.nan)
+
+    return height
+
+
+def _height_offset(r: Replay, heights) -> dict[str, Any] | None:
+    """The packed heights' offset against the level's heightmap (`_packed_height`), or None when unsure."""
+    import numpy as np
+
+    pts = [(s.x, s.y, s.z) for (kind, _), samples in r.tracks.items() if kind == "ground" for s in samples if s.packed]
+    if len(pts) > 20000:  # an even subsample is plenty for a median
+        pts = pts[:: len(pts) // 20000 + 1]
+    if not pts:
+        return None
+    a = np.array(pts, np.float64)
+    d = heights(a[:, 0], a[:, 2]) - a[:, 1]
+    d = d[np.isfinite(d)]
+    if len(d) < HEIGHTMAP_SAMPLES_MIN:
+        return None
+    mid = float(np.median(d))
+    agree = float(np.mean(np.abs(d - mid) <= HEIGHTMAP_NEAR))
+    out = {"samples": int(len(d)), "median": round(mid, 2), "agree": round(agree, 3), "sure": agree >= HEIGHTMAP_AGREE}
+    if out["sure"]:
+        out["offset"] = round(mid, 2) if abs(mid) > HEIGHTMAP_OFFSET_MIN else 0.0
+    return out
+
+
+def _packed_height(r: Replay, heights=None) -> dict[str, Any]:
     """
     Ground positions come as floats or packed in 64 bits; the packed height
     counts from -100 m on most levels but from higher up on a level whose
-    ground lies high (by its water level, which can be more than a kilometre). The offset is measured on
-    the replay's own data - a unit's float sample and its packed one under
-    12 s apart, and a unit's creation point (entity stream) against its first
-    packed sample within 15 s - and added to every packed height when at
-    least three agree on more than 5 m (their median; the spread is kept).
+    ground lies high (by its water level, which can be more than a kilometre).
+
+    The offset is measured against the level's heightmap when the install has the level (`heights`, see
+    `level_heights`): the median of the ground height minus the packed height over the packed ground samples, taken
+    when at least half of them agree with it within 1 m (`method` "heightmap"; 0.5 m or less is none).
+
+    Without a heightmap (or when it is unsure) the offset comes from the replay's own data - a unit's float sample
+    and its packed one under 12 s apart, and a unit's creation point (entity stream) against its first packed
+    sample within 15 s - when at least five pairs agree within 2 m (10th to 90th percentile) on more than 5 m (their
+    median; `method` "pairs"). Otherwise none is applied (`method` "none").
     """
     deltas: list[float] = []
     for (kind, uid), samples in r.tracks.items():
@@ -708,19 +795,27 @@ def _packed_height(r: Replay) -> dict[str, Any]:
                 if s.packed and s.t - e.t < 15 and math.hypot(tm["pos"][0] - s.x, tm["pos"][2] - s.z) < 300:
                     deltas.append(tm["pos"][1] - s.y)
                 break
-    out: dict[str, Any] = {"pairs": len(deltas), "applied": 0.0}
+    out: dict[str, Any] = {"pairs": len(deltas), "applied": 0.0, "method": "none"}
+    offset = 0.0
     if len(deltas) >= 3:
         deltas.sort()
         mid = deltas[len(deltas) // 2]
         out["median"] = round(mid, 2)
         out["spread"] = round(deltas[int(len(deltas) * 0.9)] - deltas[int(len(deltas) * 0.1)], 2)
-        if abs(mid) > 5:
-            out["applied"] = round(mid, 2)
-            for (kind, _), samples in r.tracks.items():
-                if kind == "ground":
-                    for s in samples:
-                        if s.packed:
-                            s.y += mid
+        if len(deltas) >= PACKED_PAIRS_MIN and out["spread"] < PACKED_SPREAD_MAX and abs(mid) > PACKED_OFFSET_MIN:
+            offset, out["method"] = mid, "pairs"
+    hm = _height_offset(r, heights) if heights is not None else None
+    if hm is not None:
+        out["heightmap"] = hm
+        if hm["sure"]:
+            offset, out["method"] = hm["offset"], "heightmap"
+    if offset:
+        out["applied"] = round(offset, 2)
+        for (kind, _), samples in r.tracks.items():
+            if kind == "ground":
+                for s in samples:
+                    if s.packed:
+                        s.y += offset
     return out
 
 
@@ -4288,7 +4383,7 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     """
     import pyarrow.parquet as pq
 
-    r = read(paths)
+    r = read(paths, game)
     all_units = units(r)
     all_lives = lives(r, all_units)
     roster = players(r)

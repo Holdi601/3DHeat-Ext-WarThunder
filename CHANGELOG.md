@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.5
+
+- Ground units' packed heights: the offset that places them (a level whose packed heights count from its water
+  level, by 7, -10, 25, -100 or -1,493 m, for example) is now measured against the level's heightmap from your
+  install: the median of the ground height less the packed height over the battle's packed ground samples, taken
+  when at least half of them agree with it within 1 m. On 15 server battles of 9 levels the packed samples lie on
+  the heightmap within 0.1 m (10th to 90th percentile) once it is added. Only the heightmap's block of the level
+  file is read.
+- Without the level (or when its heightmap does not agree), the offset from units seen both as floats and packed
+  is taken only when at least five such pairs agree within 2 m. Before, three pairs were enough whatever their
+  spread, so a battle could be placed several metres above or below the ground, or left 1,493 m off where too few
+  pairs were seen.
+- `selfCheck.packedGroundHeight` says how the offset was found (`method`: `heightmap`, `pairs` or `none`) and holds
+  the heightmap's measurement (`heightmap`: samples, median, share that agrees).
+- Files converted before 0.2.5 may need converting again for their ground units' heights.
+
 ## 0.2.4
 
 - Server replays of game versions before 101421 (before about 11 November 2026): a ground unit's hit point is a
