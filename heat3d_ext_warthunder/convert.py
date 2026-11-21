@@ -699,36 +699,78 @@ HEIGHTMAP_NEAR = 1.0
 HEIGHTMAP_OFFSET_MIN = 0.5
 
 
+def heights_cache() -> Path:
+    """Where decoded level heightmaps are kept (`level_heights`): `HEAT3D_WT_HEIGHTS`, else ~/.cache/heat3d-wt/heights."""
+    import os
+
+    return Path(os.environ.get("HEAT3D_WT_HEIGHTS") or Path.home() / ".cache" / "heat3d-wt" / "heights")
+
+
+def _read_heightmap(path: Path):
+    """(heights float32 rows = z, cols = x; cell; origin x; origin z) of a level file, decoded once and then kept in
+    `heights_cache` (16-bit steps over the level's height range, named by the level and its file size); None when
+    the level has no heightmap or it cannot be decoded (no Oodle library, for one)."""
+    import os
+
+    import numpy as np
+
+    from . import dagorlevel
+
+    cache = heights_cache() / f"{path.stem}-{path.stat().st_size}.npz"
+    try:
+        with np.load(cache) as z:
+            lo, hi = float(z["lo"]), float(z["hi"])
+            heights = (lo + z["q"].astype(np.float32) * np.float32((hi - lo) / 65535)).astype(np.float32)
+            return heights, float(z["cell"]), float(z["ox"]), float(z["oz"])
+    except (OSError, KeyError, ValueError):
+        pass
+    table, _ = dagorlevel.scan(path)
+    if "HM2" not in table:
+        return None
+    b = table["HM2"][0]
+    with path.open("rb") as fh:
+        fh.seek(b.start)
+        data = fh.read(b.end - b.start)
+    hm = dagorlevel.read_heightmap(data, dagorlevel.Block("HM2", 0, len(data)))
+    try:
+        lo, hi = float(hm.heights.min()), float(hm.heights.max())
+        q = np.round((hm.heights - lo) / max(hi - lo, 1e-6) * 65535).astype(np.uint16)
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        tmp = cache.with_name(f"{cache.stem}.{os.getpid()}.tmp.npz")
+        np.savez_compressed(tmp, q=q, lo=lo, hi=hi, cell=hm.cell, ox=hm.origin_x, oz=hm.origin_z)
+        os.replace(tmp, cache)
+    except OSError:
+        pass  # no cache: decoded again next time
+    return hm.heights, hm.cell, hm.origin_x, hm.origin_z
+
+
 def level_heights(level: str, game: str | Path | None = None):
     """
     The ground height at game (x, z) arrays from the level's heightmap (HM2) in the install, bilinear, NaN outside
-    it; None without an install or a heightmap. Only the heightmap's block is read from the level file.
+    it; None without an install, a heightmap or the means to decode it (any failure: the offset then comes from the
+    replay alone). Only the heightmap's block is read from the level file, and its decoding is kept
+    (`heights_cache`).
     """
     import numpy as np
 
-    from . import dagorlevel, install
+    from . import install
 
     try:
         root = install.find_game(game)
         path = Path(root) / level if root and level else None
         if path is None or not path.is_file():
             return None
-        table, _ = dagorlevel.scan(path)
-        if "HM2" not in table:
-            return None
-        b = table["HM2"][0]
-        with path.open("rb") as fh:
-            fh.seek(b.start)
-            data = fh.read(b.end - b.start)
-        hm = dagorlevel.read_heightmap(data, dagorlevel.Block("HM2", 0, len(data)))
-    except (OSError, ValueError, struct.error, KeyError, IndexError):
+        got = _read_heightmap(path)
+    except Exception:  # noqa: BLE001 - a level that cannot be read never stops a conversion
         return None
-    hh = hm.heights
+    if got is None:
+        return None
+    hh, cell, ox, oz = got
     rows, cols = hh.shape
 
     def height(x, z):
-        fx = (np.asarray(x, np.float64) - hm.origin_x) / hm.cell
-        fz = (np.asarray(z, np.float64) - hm.origin_z) / hm.cell
+        fx = (np.asarray(x, np.float64) - ox) / cell
+        fz = (np.asarray(z, np.float64) - oz) / cell
         inside = (fx >= 0) & (fx < cols - 1) & (fz >= 0) & (fz < rows - 1)
         fx, fz = np.clip(fx, 0, cols - 1.001), np.clip(fz, 0, rows - 1.001)
         c, r = np.floor(fx).astype(np.int64), np.floor(fz).astype(np.int64)

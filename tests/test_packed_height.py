@@ -78,12 +78,13 @@ def test_samples_outside_the_heightmap_do_not_count():
     assert out["method"] == "none" and "heightmap" not in out  # 10 samples inside: too few
 
 
-def test_level_heights_reads_only_the_heightmap_block(tmp_path, monkeypatch):
+def test_level_heights_reads_only_the_heightmap_block_and_keeps_it(tmp_path, monkeypatch):
     from heat3d_ext_warthunder import dagorlevel
 
     hm = dagorlevel.Heightmap(np.array([[0.0, 10.0], [20.0, 30.0]], np.float32), 4.0, 100.0, 200.0, 0, False)
     monkeypatch.setattr(dagorlevel, "scan", lambda p: ({"HM2": [dagorlevel.Block("HM2", 0, 4)]}, {}))
     monkeypatch.setattr(dagorlevel, "read_heightmap", lambda data, block: hm)
+    monkeypatch.setenv("HEAT3D_WT_HEIGHTS", str(tmp_path / "cache"))
     (tmp_path / "levels").mkdir()
     (tmp_path / "levels" / "x.bin").write_bytes(b"abcd")
     monkeypatch.setattr("heat3d_ext_warthunder.install.find_game", lambda game=None: tmp_path)
@@ -91,3 +92,14 @@ def test_level_heights_reads_only_the_heightmap_block(tmp_path, monkeypatch):
     assert h(np.array([102.0]), np.array([202.0]))[0] == pytest.approx(15.0)
     assert np.isnan(h(np.array([90.0]), np.array([202.0]))[0])
     assert convert.level_heights("levels/missing.bin") is None
+    assert [f.name for f in (tmp_path / "cache").iterdir()] == ["x-4.npz"]
+
+    # Kept: read again without decoding (no Oodle library, say), within the 16-bit step.
+    def fail(data, block):
+        raise RuntimeError("no Oodle library found")
+    monkeypatch.setattr(dagorlevel, "read_heightmap", fail)
+    h = convert.level_heights("levels/x.bin")
+    assert h(np.array([102.0]), np.array([202.0]))[0] == pytest.approx(15.0, abs=0.001)
+    # Not kept and not decodable: none, and the conversion goes on.
+    (tmp_path / "cache" / "x-4.npz").unlink()
+    assert convert.level_heights("levels/x.bin") is None

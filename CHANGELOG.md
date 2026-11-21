@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.6
+
+- 0.2.5 stopped a conversion when a level file was there but could not be decoded (no Oodle library, as on
+  Linux). A level that cannot be read is now skipped, and the packed heights' offset comes from the replay alone.
+- A level's heightmap is decoded once and kept (16-bit steps over the level's height range) in the folder
+  `HEAT3D_WT_HEIGHTS` names, by default `~/.cache/heat3d-wt/heights`, named by the level and its file size. Kept
+  heightmaps are read without decoding, so a machine without the Oodle library can use those decoded elsewhere.
+
 ## 0.2.5
 
 - Ground units' packed heights: the offset that places them (a level whose packed heights count from its water
