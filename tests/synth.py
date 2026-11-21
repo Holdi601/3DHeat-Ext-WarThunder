@@ -220,11 +220,12 @@ def angle16(deg: float) -> int:
 
 
 def tank_state(x: float, y: float, z: float, turrets: list[tuple[float, float]], compass: float = 90.0,
-               pitch: float = 0.0, roll: float = 0.0) -> bytes:
+               pitch: float = 0.0, roll: float = 0.0, turret_at: int = wrpl.TURRET_AT) -> bytes:
     """A tank's whole ground state: the 16-bit attitude (pitch in 180/65536 steps, roll right side down negative),
-    a float position, 141 bits, per turret its yaw and gun pitch (16 bits each) and 30 bits, then 8 bits."""
+    a float position, 141 bits (`turret_at`), per turret its yaw and gun pitch (16 bits each) and 30 bits, then 8
+    bits."""
     w = BitWriter().raw(b"\x00").flag(True).u16(angle16(compass - 90.0)).u16(angle16(pitch * 2)).u16(angle16(-roll))
-    w.flag(False).flag(True).f32(x).f32(y).f32(z).bits(0, wrpl.TURRET_AT)
+    w.flag(False).flag(True).f32(x).f32(y).f32(z).bits(0, turret_at)
     for yaw, gun in turrets:
         w.u16(angle16(yaw)).u16(angle16(gun)).bits(0, wrpl.TURRET_BITS - 32)
     return w.bits(0, wrpl.TURRET_TAIL[0]).bytes()

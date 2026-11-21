@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.1
+
+- Server replays of game version 101421 on (November 2026): tank turrets are read one bit later in the ground
+  state. Read at the old place, every turret's yaw was unrelated to where its player aimed (a median of 88
+  degrees apart), and held to its drive the turrets kept turning. Now they follow the aim as on older replays
+  (median under 1.3 degrees on the samples, every hit's shot line within 3 degrees for 99 % of hits or more).
+  Older replays are read as before. Files of such replays converted before 0.2.1 need converting again.
+- Server replays: `viewYaw` / `viewPitch` for every unit whose player sends a camera (0xF0CC), not only tanks:
+  aircraft, helicopters, ships, and a scout's drone. In a targeting camera (mode 21) the camera's own
+  direction, which follows what the drone's or pod's camera looks at (within half a degree of the sight point);
+  `selfCheck.unitCameras.withDirection` counts them.
+
 ## 0.2.0
 
 - Server replays: each player's camera per unit (0xF0CC): `zoom` and `cameraMode` on unit rows (the gunner's

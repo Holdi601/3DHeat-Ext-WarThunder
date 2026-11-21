@@ -5,6 +5,7 @@ server replay (0xF0CC). Synthetic data only, built to the layout wrpl documents.
 
 from __future__ import annotations
 
+import math
 import struct
 
 import pytest
@@ -144,9 +145,9 @@ def test_no_sensors_no_columns():
     assert convert._sensor_columns(wrpl.flight_sensors(n, bits, "2026", phase)) == {"sensors": "d2-"}
 
 
-def _unit_camera(mode: int, zoom: float) -> bytes:
+def _unit_camera(mode: int, zoom: float, quat: tuple[float, ...] = (0.0, 0.0, 0.0, 1.0)) -> bytes:
     f = lambda *v: struct.pack(f"<{len(v)}f", *v)  # noqa: E731
-    return synth.id_fields({1: (128, f(0.0, 0.0, 0.0, 1.0)), 2: (96, f(4.6, 4.7, 6.8)), 3: (96, f(-0.56, -0.06, -0.82)),
+    return synth.id_fields({1: (128, f(*quat)), 2: (96, f(4.6, 4.7, 6.8)), 3: (96, f(-0.56, -0.06, -0.82)),
                             4: (16, struct.pack("<H", mode)), 5: (32, f(zoom)), 6: (8, 0), 7: (16, b"\x01\x00")})
 
 
@@ -161,9 +162,30 @@ def test_unit_camera_and_views():
     views, check = convert.unit_views(msgs)
     assert check["messages"] == 3 and check["units"] == 1
     assert check["modes"]["29"] == {"near1": 1} and check["modes"]["39"] == {"zoomed": 2}
-    assert convert._view_at(views[42], 10.5) == {"cameraMode": 29, "zoom": pytest.approx(1.19)}
+    # Where the camera looks: its look vector (-0.56, -0.06, -0.82), as a compass heading and a pitch.
+    look = (math.degrees(math.atan2(-0.56, -0.82)) % 360, math.degrees(math.asin(-0.06 / math.hypot(0.56, 0.06, 0.82))))
+    assert convert._view_at(views[42], 10.5) == {"cameraMode": 29, "zoom": pytest.approx(1.19),
+                                                 "viewYaw": pytest.approx(look[0], abs=1e-3),
+                                                 "viewPitch": pytest.approx(look[1], abs=1e-3)}
     assert convert._view_at(views[42], 11.6)["zoom"] == pytest.approx(18.64)
     assert convert._view_at(views[42], 9.0) == {} and convert._view_at(views[42], 13.0) == {}
+    assert check["withDirection"] == 3
+
+
+def test_a_targeting_camera_looks_along_its_quaternion():
+    # A drone's targeting camera (mode 21) turned 90 degrees right about the vertical, 30 down about its right axis:
+    # it looks east and down, whatever look vector it was entered with.
+    yaw = (0.0, math.sin(math.pi / 4), 0.0, math.cos(math.pi / 4))
+    down = (math.sin(math.radians(15)), 0.0, 0.0, math.cos(math.radians(15)))
+    x1, y1, z1, w1 = yaw
+    x2, y2, z2, w2 = down
+    q = (w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2, w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+         w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2, w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2)
+    drone = ecs.Entity(6, "aircraft+player_unit", 0.0, comps={"uid": 77})
+    views, _ = convert.unit_views([convert.UnitMessage(5.0, wrpl.UNIT_CAMERA, drone, _unit_camera(21, 3.17, q))])
+    v = convert._view_at(views[77], 5.2)
+    assert v["cameraMode"] == 21 and v["viewYaw"] == pytest.approx(90.0, abs=0.01)
+    assert v["viewPitch"] == pytest.approx(-30.0, abs=0.01)
 
 
 def test_new_columns_in_the_schema():

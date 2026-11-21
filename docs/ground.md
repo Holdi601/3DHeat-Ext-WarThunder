@@ -19,6 +19,14 @@ before the state. A state whose length does not fit gives no turrets (static
 units send a shorter state). The yaw is relative to the hull, clockwise
 positive, 0 straight ahead; the pitch relative to the hull, up positive.
 
+From game version 101421 (November 2026) one more bit comes before the first
+turret (142, not 141). The replay's header gives the version, and the
+converter reads the turrets at the offset for that version. Read at the old
+offset, a newer replay's turret yaw is unrelated to where its player aims
+(median 88 degrees apart, as for random angles), and the drive limit below
+turns that into turrets that keep turning. Read at 142 the turret follows
+the aim within about a degree (median), as on older replays.
+
 How it was checked:
 
 - **Against the shots:** for every hit by a tank, its main gun's world
@@ -59,7 +67,8 @@ turret has empty turret columns (the viewer may fall back to `viewYaw`).
 the shell's drop.
 
 Ships' states have another layout; their turrets are not read. Aircraft
-send no head or view direction; the AA guns' message 0xD020 stays unread.
+states send no head or view direction (a server replay's player cameras
+give one, see below); the AA guns' message 0xD020 stays unread.
 
 ## The camera
 
@@ -78,6 +87,28 @@ The table has the camera as a track of its own: kind `camera`, track
 place plus field 2, looking along the quaternion (`dirX/Y/Z`, `heading`,
 `pitch`, `roll`), with `zoom`, `aimHeading` and `aimPitch`, and `otherLife`
 the life it follows. `selfCheck.camera` counts the rows and the check.
+
+### Every player's camera (server replays)
+
+A server replay sends every player's camera to their unit as message
+0xF0CC, about 8 a second: field 1 a quaternion, 2 the camera's offset, 3
+a unit vector (where the camera looks), 4 the camera mode, 5 the zoom.
+Each unit row takes its player's last camera message (at most 1 s old):
+`cameraMode`, `zoom`, and where it looks as `viewYaw` / `viewPitch`. A
+ground unit's own aim, where its state sends one, stays the `viewYaw` of
+its rows.
+
+Where the camera looks: in a targeting camera (mode 21: a drone's, a
+helicopter's or a jet's sight or pod) the quaternion's forward (its z
+axis), else field 3. Checked on server replays of ground battles: field 3's
+heading lies within 0.06 degrees (median) of a tank's aim and 0.4 of an
+aircraft's heading in its own view, but a targeting camera keeps the field
+3 it was entered with (25 degrees from where a drone's camera looked,
+median); there the quaternion's forward lies within 0.3 degrees in heading
+and 0.5 in pitch of the line to the point the flight model says the sight
+looks at (`sightX/Y/Z`, `opticX/Y/Z`). So a scout's drone has the view of
+its camera, not of its nose. `selfCheck.unitCameras` counts the messages,
+the units, the modes and the messages with a direction.
 
 ## End of a track
 

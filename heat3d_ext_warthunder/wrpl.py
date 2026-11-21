@@ -1077,6 +1077,18 @@ def _ground_position(body: bytes, directions: bool) -> tuple[float, ...] | None:
 
 #: A tank's ground state: after the position, this many bits come before its first turret, ...
 TURRET_AT = 141
+#: ... one more from game version 101421 on (November 2026): read at 141 there, every turret's yaw is unrelated to
+#: where its player aims (median 88 degrees apart, as far as random angles lie), at 142 it follows the aim as before.
+TURRET_AT_SINCE = ((101421, 142),)
+
+
+def turret_at(version: int) -> int:
+    """The bits after a ground state's position before its first turret, for a replay of game `version`."""
+    at = TURRET_AT
+    for since, bits in TURRET_AT_SINCE:
+        if version >= since:
+            at = bits
+    return at
 #: ... each turret takes this many (yaw u16, gun pitch u16, 30 bits not read), ...
 TURRET_BITS = 62
 #: ... and after the last one come this many more, then the padding to the byte (0-7 bits) and, on some
@@ -1084,10 +1096,11 @@ TURRET_BITS = 62
 TURRET_TAIL = (8, 208)
 
 
-def _ground_turrets(body: bytes, count: int, server: bool = False) -> list[tuple[float, float]]:
+def _ground_turrets(body: bytes, count: int, server: bool = False, turret_at: int = TURRET_AT) -> list[tuple[float, float]]:
     """
     A tank's turrets from its ground state (attitude in 16 bits, not a quaternion): per turret its yaw
-    relative to the hull and its gun's pitch, in degrees. After the position come 141 bits (not read),
+    relative to the hull and its gun's pitch, in degrees. After the position come 141 bits (not read; 142 from game
+    version 101421 on, `turret_at`),
     then per turret 62 bits: the yaw (u16, 360/65536 degrees, signed, positive turned clockwise seen from
     above, 0 straight ahead), the gun's pitch (u16, same scale, signed) and 30 bits not read; then 8
     bits, the padding to the byte and on some states 200 bits more. A body whose length does not fit
@@ -1107,7 +1120,7 @@ def _ground_turrets(body: bytes, count: int, server: bool = False) -> list[tuple
     r.skip(48)
     r.bits(1)
     r.skip(64 if not r.flag() else 96)
-    at = r.pos + TURRET_AT
+    at = r.pos + turret_at
     left = len(body) * 8 - at - TURRET_BITS * count
     if server and count > 0:
         count = min(count, max(0, (len(body) * 8 - at - 32) // TURRET_BITS + 1))
@@ -1131,8 +1144,10 @@ class GroundReader:
     the reader keeps the last 32 bodies of every unit.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, version: int = 0) -> None:
         self.history: dict[int, list[tuple[int, bytes] | None]] = {}
+        #: Where the turrets start in a state, by the replay's game version (`turret_at`).
+        self.turret_at = turret_at(version)
 
     def read(self, payload: bytes) -> list[tuple[Any, ...]]:
         """
@@ -1194,7 +1209,7 @@ class GroundReader:
             if g.flag():
                 aim = struct.unpack("<4f", g.raw(16))
             if pos is not None:
-                out.append((uid, *pos, [] if directions else _ground_turrets(body, turrets, server), aim))
+                out.append((uid, *pos, [] if directions else _ground_turrets(body, turrets, server, self.turret_at), aim))
             if g.flag():
                 for _ in range(turrets):
                     if not g.flag():

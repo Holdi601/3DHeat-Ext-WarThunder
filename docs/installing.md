@@ -17,7 +17,7 @@ installed with it.
 2. Open a terminal in that folder and type `pip install -e .`. This installs
    two commands: `heat3d-wt-replay` (replays) and `heat3d-wt-level` (levels).
 3. Check it: `heat3d-wt-replay --version`. You should see
-   `heat3d-wt-replay 0.2.0`. `heat3d-wt-replay --help` lists the options:
+   `heat3d-wt-replay 0.2.1`. `heat3d-wt-replay --help` lists the options:
 
 ![heat3d-wt-replay --help](assets/img/help.svg)
 

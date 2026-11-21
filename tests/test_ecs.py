@@ -458,6 +458,17 @@ def test_tank_turrets_and_the_recording_players_aim():
     assert wrpl._ground_turrets(body[:-6], 2) == []
 
 
+def test_turrets_one_bit_later_from_game_version_101421():
+    assert wrpl.turret_at(101404) == 141 and wrpl.turret_at(101421) == 142 and wrpl.turret_at(0) == 141
+    body = synth.tank_state(10.0, 20.0, 30.0, [(30.0, -5.0)], turret_at=142)
+    batch = synth.ground(None, 1, message=wrpl.GROUND_SERVER, tanks={177: (body, 1)})
+    (*_, turrets, _aim), = wrpl.GroundReader(101421).read(batch)
+    assert turrets == [pytest.approx((30.0, -5.0), abs=0.01)]
+    # Read as an older replay's, the same state's turret is a bit off: another angle altogether.
+    (*_, turrets, _aim), = wrpl.GroundReader(101404).read(batch)
+    assert turrets[0][0] != pytest.approx(30.0, abs=1.0)
+
+
 PLANE = [(20, "transform", "TMatrix"), (21, "team", "int"), (22, "unit__className", "ecs::string"),
          (23, "uid", "int"), (24, "unit__playerId", "int")]
 

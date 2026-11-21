@@ -95,7 +95,8 @@ HINTS = {
                     "turretYaw": "degrees relative to the hull, clockwise seen from above positive, 0 straight ahead",
                     "gunPitch": "degrees relative to the hull, up positive",
                     "viewYaw": "where the player looks: compass degrees in the world, clockwise from north, as "
-                               "aimHeading (not relative to the hull)",
+                               "aimHeading (not relative to the hull); a ground unit's aim, else (server replays) "
+                               "its player's camera: a targeting camera's (a drone's, a pod's) own direction",
                     "viewPitch": "where the player looks: degrees up in the world, as aimPitch",
                     "camera": "kind 'camera' rows: the recording player's replay camera, its own track",
                     "zoom": "the camera's zoom: on 'camera' rows the recording player's; on a unit's rows (server "
@@ -484,7 +485,7 @@ def read(paths: list[Path]) -> Replay:
     frames: list[tuple[float, list[Sample]]] = []
     shells: dict[int, list[tuple]] = defaultdict(list)
     problems, seen = r.problems, r.packets
-    ground = wrpl.GroundReader()
+    ground = wrpl.GroundReader(int(header.get("version") or 0))
     unzstd = _decompress()
     if header.get("settingsSize"):
         try:
@@ -1764,7 +1765,7 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
 
 def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = None,
          rpm: dict[int, tuple] | None = None, extra: list[dict[str, Any]] | None = None,
-         views: dict[int, tuple[list[float], list[tuple[int, float]]]] | None = None) -> list[dict[str, Any]]:
+         views: dict[int, tuple[list[float], list[tuple]]] | None = None) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = list(extra or [])
     by_uid: dict[int, list[Life]] = defaultdict(list)
     rpm = rpm or {}
@@ -2721,13 +2722,44 @@ def camera_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]],
 VIEW_HOLD = 1.0
 
 
-def unit_views(msgs: list[UnitMessage]) -> tuple[dict[int, tuple[list[float], list[tuple[int, float]]]], dict[str, Any]]:
+#: The camera mode of a targeting camera (a drone's, a helicopter's or a jet's sight or pod, wrpl.read_unit_camera).
+TARGETING_CAMERA = 21
+
+
+def _camera_direction(c: dict[str, Any]) -> tuple[float, float] | None:
+    """
+    Where a player's camera (0xF0CC) looks, as a compass heading and a pitch (degrees): in a targeting camera its
+    quaternion's forward (its z axis), else its look vector (field 3). Checked on server replays of ground battles:
+    the look vector's heading lies within 0.06 degrees (median) of a tank's aim and 0.4 of an aircraft's heading in
+    its own view, but a targeting camera keeps the look it was entered with (25 degrees from where a drone's
+    camera looked, median); there the quaternion's forward lies within 0.3 degrees in heading and 0.5 in pitch of
+    the line to the point the flight model says the sight looks at (`sightX/Y/Z`, `opticX/Y/Z`).
+    """
+    v = None
+    q = c.get("quat") or []
+    if c.get("mode") == TARGETING_CAMERA and len(q) == 4 and all(math.isfinite(a) for a in q):
+        x, y, z, w = q
+        # The quaternion turning (0, 0, 1): its third column.
+        v = (2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y))
+    elif len(c.get("look") or []) == 3:
+        v = tuple(c["look"])
+    if v is None or not all(math.isfinite(a) for a in v):
+        return None
+    n = math.sqrt(sum(a * a for a in v))
+    if not 0.9 < n < 1.1:
+        return None
+    return math.degrees(math.atan2(v[0], v[2])) % 360.0, math.degrees(math.asin(max(-1.0, min(1.0, v[1] / n))))
+
+
+def unit_views(msgs: list[UnitMessage]) -> tuple[dict[int, tuple[list[float], list[tuple]]], dict[str, Any]]:
     """
     Each uid's player camera over time (0xF0CC, server replays; see wrpl.read_unit_camera): uid -> (times, (mode,
-    zoom) per message), and a check: messages, units, how often each mode came with a zoom near 1 (no sight).
+    zoom, where it looks: compass heading and pitch or None, `_camera_direction`) per message), and a check:
+    messages, units, how often each mode came with a zoom near 1 (no sight), messages with a direction.
     """
-    out: dict[int, tuple[list[float], list[tuple[int, float]]]] = {}
+    out: dict[int, tuple[list[float], list[tuple]]] = {}
     modes: dict[int, Counter] = defaultdict(Counter)
+    looks = 0
     for m in msgs:
         if m.mid != wrpl.UNIT_CAMERA or m.uid is None:
             continue
@@ -2739,20 +2771,29 @@ def unit_views(msgs: list[UnitMessage]) -> tuple[dict[int, tuple[list[float], li
             continue
         ts, vs = out.setdefault(m.uid, ([], []))
         ts.append(m.t)
-        vs.append((c["mode"], c["zoom"]))
+        look = _camera_direction(c)
+        looks += look is not None
+        vs.append((c["mode"], c["zoom"], look))
         modes[c["mode"]]["near1" if abs(c["zoom"] - 1.1) <= 0.1 else "zoomed"] += 1
     check = {"messages": sum(len(v[0]) for v in out.values()), "units": len(out),
-             "modes": {str(k): dict(v) for k, v in sorted(modes.items())}}
+             "modes": {str(k): dict(v) for k, v in sorted(modes.items())}, "withDirection": looks}
     return out, check
 
 
-def _view_at(view: tuple[list[float], list[tuple[int, float]]], t: float) -> dict[str, Any]:
-    """The unit's player camera at t: the last message at most VIEW_HOLD seconds before it."""
+def _view_at(view: tuple[list[float], list[tuple]], t: float) -> dict[str, Any]:
+    """
+    The unit's player camera at t: the last message at most VIEW_HOLD seconds before it - its mode, zoom and where
+    it looks (`viewYaw`, `viewPitch`; a ground unit's own aim, where it sends one, replaces them in `rows`).
+    """
     ts, vs = view
     i = bisect.bisect_right(ts, t) - 1
     if i < 0 or t - ts[i] > VIEW_HOLD:
         return {}
-    return {"cameraMode": vs[i][0], "zoom": vs[i][1]}
+    out: dict[str, Any] = {"cameraMode": vs[i][0], "zoom": vs[i][1]}
+    look = vs[i][2] if len(vs[i]) > 2 else None
+    if look is not None:
+        out.update(viewYaw=round(look[0], 3), viewPitch=round(look[1], 3))
+    return out
 
 
 def rpm_series(msgs: list[UnitMessage]) -> dict[int, tuple[list[float], list[list[int]]]]:

@@ -53,7 +53,7 @@ You should see `Python 3.` and a number of 10 or more, for example
    pip install -e .
    ```
 
-   You should see, at the end: `Successfully installed heat3d-ext-warthunder-0.2.0`
+   You should see, at the end: `Successfully installed heat3d-ext-warthunder-0.2.1`
    (maybe with more names).
 4. Check it:
 
@@ -61,7 +61,7 @@ You should see `Python 3.` and a number of 10 or more, for example
    heat3d-wt-replay --version
    ```
 
-   You should see: `heat3d-wt-replay 0.2.0`
+   You should see: `heat3d-wt-replay 0.2.1`
 
 ## How to read the commands on these pages
 
