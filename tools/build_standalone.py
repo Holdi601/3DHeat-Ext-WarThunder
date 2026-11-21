@@ -54,10 +54,11 @@ def build(cfg, spec) -> Path:
     )
     args = [
         sys.executable, "-m", "PyInstaller", "--noconfirm", "--onedir", "--console", "--name", spec.id,
-        "--distpath", str(work / "dist"), "--workpath", str(work / "work"), "--specpath", str(work),
+        "--paths", str(ROOT), "--distpath", str(work / "dist"), "--workpath", str(work / "work"), "--specpath", str(work),
         "--collect-submodules", package, "--collect-data", package, "--hidden-import", "tkinter",
         *[a for h in cfg.get("hidden_imports", []) for a in ("--hidden-import", h)],
         *[a for c in cfg.get("collect", []) for a in ("--collect-all", c)],
+        *[a for c in cfg.get("collect_submodules", []) for a in ("--collect-submodules", c)],
         str(entry),
     ]
     subprocess.run(args, check=True, cwd=ROOT)

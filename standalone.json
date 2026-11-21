@@ -1,5 +1,6 @@
 {
   "spec": "heat3d_ext_warthunder.standalone_spec",
+  "collect_submodules": ["numpy", "pyarrow", "zstandard", "PIL"],
   "platforms": {
     "windows-x64": {"build": true, "tested": true, "note": "replays and levels; CI builds and smoke-runs, levels checked on a real install"},
     "linux-x64": {"build": true, "tested": false, "note": "native and Steam/Proton installs found; CI builds and smoke-runs; replays need no Oodle, levels need a native Oodle library from the install"},

@@ -26,13 +26,13 @@ jobs:
       matrix: ${{ steps.m.outputs.matrix }}
       version: ${{ steps.m.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: m
         shell: python
         run: |
           import json, os
           cfg = json.load(open("standalone.json"))
-          runners = {"windows-x64": "windows-latest", "linux-x64": "ubuntu-22.04", "macos-arm64": "macos-14"}
+          runners = {"windows-x64": "windows-latest", "linux-x64": "ubuntu-22.04", "macos-arm64": "macos-15"}
           inc = [{"platform": p, "os": runners[p]} for p, v in cfg["platforms"].items() if v.get("build")]
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("matrix=" + json.dumps({"include": inc}) + "\n")
@@ -45,14 +45,14 @@ jobs:
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[test]" pyinstaller==6.11.1
+          python -m pip install -e ".[test]" pyinstaller pyinstaller-hooks-contrib
       - name: Tests (no game files; the ones that need an install skip)
         run: python -m pytest -q -m "not local" ${{ matrix.platform == 'windows-x64' && 'tests' || 'tests/test_standalone.py' }}
       - name: Build and smoke-run
@@ -74,7 +74,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       TAG: v${{ needs.plan.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           path: dl
