@@ -15,9 +15,17 @@ from __future__ import annotations
 
 import ctypes
 import os
+import sys
 from pathlib import Path
 
-_DLL_NAMES = tuple(f"oo2core_{v}_win64.dll" for v in range(9, 2, -1))
+# The library loads only in a process of its own system: the Windows DLL on
+# Windows; a native game install on Linux or macOS carries its own build.
+if sys.platform == "win32":
+    _DLL_NAMES = tuple(f"oo2core_{v}_win64.dll" for v in range(9, 2, -1))
+elif sys.platform == "darwin":
+    _DLL_NAMES = tuple(n for v in range(9, 2, -1) for n in (f"liboo2coremac64.2.{v}.dylib", f"liboo2coremac64.{v}.dylib"))
+else:
+    _DLL_NAMES = tuple(n for v in range(9, 2, -1) for n in (f"liboo2corelinux64.so.{v}", f"liboo2corelinux64.{v}.so"))
 
 _library: ctypes.CDLL | None = None
 _library_path: Path | None = None
@@ -36,7 +44,7 @@ def _candidates(game: Path | None, extra: str | os.PathLike[str] | None) -> list
         out += [p / n for n in _DLL_NAMES] if p.is_dir() else [p]
     roots: list[Path] = []
     if game:
-        roots += [game / "win-arm64ec", game / "win64", game]
+        roots += [game / "win-arm64ec", game / "win64", game / "linux64", game / "macosx", game]
     from .install import steam_libraries
 
     for lib in steam_libraries():

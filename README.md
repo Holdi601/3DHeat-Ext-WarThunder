@@ -28,7 +28,17 @@ Each game reader is its own small project with its own licence file, releases an
 tracker, so it can be installed, updated, maintained - or withdrawn on a rights holder's
 request - on its own, without affecting the viewer or the other tools.
 
-## Quick start for new users
+## The standalone program
+
+No Python needed: download the file for your system (Windows, Linux incl. Steam Deck, macOS) from the
+[latest release](https://github.com/Holdi601/3DHeat-Ext-WarThunder/releases/latest), check it against
+`SHA256SUMS`, unpack it and start `heat3d-warthunder`. Its window finds your install, says what is missing,
+lists the levels that are new or changed since the last extraction and extracts the ones you pick into the
+3DHeat levels folder, converts replays, and asks before it updates itself. `heat3d-warthunder --help` lists
+its commands (every command below runs through it too). The 3DHeat app's Extractors panel can install and
+update it for you. See [Installing](https://holdi601.github.io/3DHeat-Ext-WarThunder/installing.html).
+
+## Quick start for new users (Python)
 
 You need: Windows, [Python](https://www.python.org/downloads/) 3.10 or later
 ("Add python.exe to PATH" ticked in its installer), War Thunder installed, and

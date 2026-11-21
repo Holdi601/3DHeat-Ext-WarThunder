@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0
+
+- A standalone program for Windows, Linux and macOS (no Python needed), built by CI with a `SHA256SUMS` file.
+  Without arguments it opens a window: what is found and what is missing (install, Oodle library, disk space),
+  the levels folder, the levels as new / changed by a game update / extracted by an older version / up to date,
+  extraction of the picked ones one at a time, replay conversion, and updates.
+- Each extracted level is recorded in `<levels>/warthunder/.heat3d-extract.json` (extractor version, game build,
+  size and SHA-256 of its game file), so new levels from a game update are found and only those extracted:
+  `status --json`, `extract --new` / `--changed` / `--outdated` / `<level>...`, `--progress-json`.
+- Updates ask first (update now / later / skip this version) unless automatic updates were chosen
+  (`--auto-update`, the window's checkbox, or `HEAT3D_AUTO_UPDATE=1`).
+- The install is also found in Steam libraries on Linux (native, flatpak, Steam Deck) and macOS, and in the
+  launcher's folders there; a native Oodle library from such an install is used for levels.
+
 ## 0.2.6
 
 - 0.2.5 stopped a conversion when a level file was there but could not be decoded (no Oodle library, as on
