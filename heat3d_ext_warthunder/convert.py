@@ -2095,15 +2095,27 @@ UNIT_EVENTS = {
 
 #: Unit kinds whose 0xF0E9 hit point is in their own frame, in cm (checked on aircraft and ships).
 IN_FRAME_KINDS = {"aircraft", "helicopter", "ship", "boat"}
-#: Ground units: their point is a signed 16-bit fraction of GROUND_RANGE m (a step of 50/32768 m, 1.5 mm), and taken
-#: only within GROUND_REACH m of the unit's origin each way. Fitted against the vehicles' own damage-model parts (each
-#: hit names the part it struck): on six sample ground battles (1,729 hits on 104 vehicle models) the points lie on
-#: the named part's surface, a median 1 mm off at 50 m; at 48 or 51.2 m the median is 4-7 cm, at 44 or 54 m 11-15 cm.
-#: (An earlier fit to turret heights took 20 m: 1,600 steps for 2.2-2.7 m roofs is about 650 steps a metre, not
-#: 1,638.)
+#: Ground units: their point is a signed 16-bit fraction of a range in m that depends on the replay's game version
+#: (`ground_range`), and taken only within GROUND_REACH m of the unit's origin each way. Fitted against the vehicles'
+#: own damage-model parts (each hit names the part it struck): on six sample ground battles of game version 101421
+#: (1,729 hits on 104 vehicle models) the points lie on the named part's surface, a median 1 mm off at 50 m; at 48
+#: or 51.2 m the median is 4-7 cm, at 44 or 54 m 11-15 cm. Replays of older versions (101404) use 20 m: read at 50 m
+#: none of their points lies within 0.5 m of the part hit, at 20 m nearly all do.
 GROUND_KINDS = {"tank", "apc", "spaa", "truck"}
-GROUND_RANGE = 50.0
+#: The range before game version 101421, ...
+GROUND_RANGE = 20.0
+#: ... and from the versions named here on (step 50/32768 m, 1.5 mm).
+GROUND_RANGE_SINCE = ((101421, 50.0),)
 GROUND_REACH = 6.0
+
+
+def ground_range(version: int) -> float:
+    """The range in m of a ground unit's 16-bit hit point, for a replay of game `version`."""
+    rng = GROUND_RANGE
+    for since, metres in GROUND_RANGE_SINCE:
+        if version >= since:
+            rng = metres
+    return rng
 
 
 def _basis(s: Sample) -> tuple[tuple[float, ...], tuple[float, ...], tuple[float, ...]] | None:
@@ -2192,6 +2204,7 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
                 best = e
         return best
 
+    ground_rng = ground_range(int(r.header.get("version") or 0))
     out: list[dict[str, Any]] = []
     check: Counter = Counter()
     # What each hit did: the 0xF144 sent to the unit with it (within 5 ms; the nearest not yet taken).
@@ -2226,12 +2239,12 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
             # An aircraft's and a ship's hit point is in the unit's own frame, whatever part it names (ships'
             # points lie inside their hulls, 95% within 41 m along, 9 m up, 4.6 m across a destroyer).
             # A ground unit's is not in centimetres (as read it lay 25-40 m off a 7 m tank) but a 16-bit fraction of
-            # GROUND_RANGE (see there; 83% of 6,077 tank hits lie on the side facing a shooter 30 m or more away):
-            # taken where it lies on the hull (within 6 m each way), else the unit's centre.
+            # the game version's range (`ground_range`; 83% of 6,077 tank hits lie on the side facing a shooter 30 m or
+            # more away): taken where it lies on the hull (within 6 m each way), else the unit's centre.
             local = hit["local"]
             kind = victim.figure if victim is not None else ""
             if kind in GROUND_KINDS:
-                local = tuple(c * 100 * GROUND_RANGE / 32768 for c in local)
+                local = tuple(c * 100 * ground_rng / 32768 for c in local)
             in_frame = kind in IN_FRAME_KINDS or (kind in GROUND_KINDS and max(abs(c) for c in local) <= GROUND_REACH)
             if vs is not None:
                 target = (_rotate(vs, local) if in_frame else None) or (vs.x, vs.y, vs.z)

@@ -65,7 +65,7 @@ For specialists, the messages read:
 
 | Message | What, and the check |
 |---|---|
-| 0xF0E9 UnitHitEffects | one projectile's hit: the shooter's uid, the damage-model part hit (one or two bytes) and the hit point in the unit's frame (x forward, y up, z left): centimetres on aircraft and ships, 50/32768 m a step on ground units (fitted to the vehicles' damage-model parts: the points lie on the part hit). `hitLocalX/Y/Z` in metres. Becomes a `shot` row ([Gunfire](hits.md#gunfire)). The attacker of nearly every hit and kill record is among these shooters; the hit points lie on the side facing the shooter |
+| 0xF0E9 UnitHitEffects | one projectile's hit: the shooter's uid, the damage-model part hit (one or two bytes) and the hit point in the unit's frame (x forward, y up, z left): centimetres on aircraft and ships, on ground units 50/32768 m a step in replays of game version 101421 on and 20/32768 m in older ones (fitted to the vehicles' damage-model parts: the points lie on the part hit). `hitLocalX/Y/Z` in metres. Becomes a `shot` row ([Gunfire](hits.md#gunfire)). The attacker of nearly every hit and kill record is among these shooters; the hit points lie on the side facing the shooter |
 | 0xF133 UnitOnExplosion | the same shooter uid |
 | 0xF04B OnUnitDead | `dead` rows: every kill record's victim has one within 2 s |
 | 0xD047 FmwRpm | the engines' rpm (`rpm`); agrees with the cockpit's rpm gauge |

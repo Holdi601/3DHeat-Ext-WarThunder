@@ -29,7 +29,7 @@ options (your battles then land as `.wrpl` files in its `Replays` folder); no Gi
 New to the command line? Read [Before you start](before-you-start.md) first.
 
 ```bash
-python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.3.zip
+python -m pip install https://github.com/Holdi601/3DHeat-Ext-WarThunder/archive/refs/tags/v0.2.4.zip
 heat3d-wt-replay "C:\Program Files (x86)\Steam\steamapps\common\War Thunder\Replays" -o out
 heat3d-wt-level list                              # the levels of your install
 heat3d-wt-level extract <level> -o levels         # one level as a 3D model

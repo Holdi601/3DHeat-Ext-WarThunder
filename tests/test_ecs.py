@@ -148,7 +148,7 @@ def test_ground_attitude_from_a_quaternion():
     assert got[4] is None and got[5] is None
 
 
-def battle_with_entities(more: list[bytes] | None = None) -> bytes:
+def battle_with_entities(more: list[bytes] | None = None, version: int = 101404) -> bytes:
     """Two fighters (uids 344, 345) and a tank (177), created by the entity stream; 344 drops a bomb at 6 s."""
     air = [(20, "transform", "TMatrix"), (21, "team", "int"), (22, "unit__className", "ecs::string"),
            (23, "uid", "int"), (24, "unit__playerId", "int")]
@@ -185,7 +185,7 @@ def battle_with_entities(more: list[bytes] | None = None) -> bytes:
             packets.append(synth.packet(4, None, synth.kill(344, 0, "f_15a", 345, 7, "us_aim9l_sidewinder")))
     packets += more or []
     packets.append(synth.packet(0, 21000, b""))
-    return synth.replay(packets, {"timePlayed": 21.0, "authorUserId": "111", "author": "Pilot One"})
+    return synth.replay(packets, {"timePlayed": 21.0, "authorUserId": "111", "author": "Pilot One"}, version=version)
 
 
 def test_convert_names_units_from_the_entity_stream(tmp_path):
@@ -387,12 +387,17 @@ def test_messages_to_units_name_their_entity(tmp_path):
     assert {(r["message"], r["uid"]) for r in side if r["packet"] == 4} >= {("0xf0e9", 345), ("0xd047", 344)}
 
 
-@pytest.mark.parametrize("sent, local", [((983, 328, -197), (1.5, 0.5, 0.3)), ((6000, 500, -300), None)])
-def test_a_ground_units_hit_point_is_a_fraction_of_50_m_and_on_its_hull(tmp_path, sent, local):
-    """On the tank (177), the point's int16 are steps of 50/32768 m: 1.5 m ahead is kept; 9 m off the hull is not."""
+@pytest.mark.parametrize("version, sent, local", [
+    (101421, (983, 328, -197), (1.5, 0.5, 0.3)), (101421, (6000, 500, -300), None),
+    (101404, (2458, 819, -492), (1.5, 0.5, 0.3)), (101404, (15000, 1250, -750), None),
+    (101404, (983, 328, -197), (0.6, 0.2, 0.12)),
+])
+def test_a_ground_units_hit_point_is_a_fraction_of_the_versions_range_and_on_its_hull(tmp_path, version, sent, local):
+    """On the tank (177), the point's int16 are steps of 50/32768 m from game version 101421 on, of 20/32768 m before:
+    1.5 m ahead is kept; 9 m off the hull is not."""
     more = [synth.packet(4, 10900, synth.unit_message(3, 0xF0E9, synth.hit_effect(344, 7, sent)))]
     f = tmp_path / "u.wrpl"
-    f.write_bytes(battle_with_entities(more))
+    f.write_bytes(battle_with_entities(more, version=version))
     tpath, _ = convert.convert([f], tmp_path / "out")
     shot = next(r for r in pq.read_table(tpath).to_pylist() if r["event"] == "shot")
     assert shot["otherVehicle"] == "germ_flakpz_gepard"
@@ -456,6 +461,11 @@ def test_tank_turrets_and_the_recording_players_aim():
     assert aim == pytest.approx((-60.0, 2.0, 500.0, 500.0))
     # A state too short for its turret count (a static unit's) gives none.
     assert wrpl._ground_turrets(body[:-6], 2) == []
+
+
+def test_ground_hit_range_by_game_version():
+    assert convert.ground_range(101404) == 20.0 and convert.ground_range(101421) == 50.0
+    assert convert.ground_range(101500) == 50.0 and convert.ground_range(0) == 20.0
 
 
 def test_turrets_one_bit_later_from_game_version_101421():

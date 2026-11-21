@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.4
+
+- Server replays of game versions before 101421 (before about 11 November 2026): a ground unit's hit point is a
+  16-bit fraction of 20 m there, not 50 m. 0.2.3 read every replay at 50 m, so on these older replays the points
+  lay 2.5 times too far from the vehicle's origin. The range now follows the replay's game version: 20 m before
+  101421, 50 m from 101421 on. Replays of 101421 and later convert as in 0.2.3.
+- Files of replays before game version 101421 converted with 0.2.3 need converting again for their hit points.
+
 ## 0.2.3
 
 - Server replays: hits on a damage-model part with a one-byte number (parts 0-63, about one hit in ten, most of them
