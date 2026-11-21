@@ -51,7 +51,7 @@ reading instructions, so the viewer needs no form filled in.
 | `alive` | 0 for a unit's samples after its death (its wreck): a ground unit's or ship's until the game removes it or its samples end, an aircraft's for at most 60 s |
 | `otherVehicle`, `otherLife` | a `shot`'s victim: its vehicle and its `life` |
 | `hitLocalX`, `hitLocalY`, `hitLocalZ`, `hitDirX`, `hitDirY`, `hitDirZ` | a `shot`'s hit point in the victim's own frame (m; x forward, y up, z left; see [Messages to units](how-it-reads.md#messages-to-units)) and the way the shot came, turned into that frame by the victim's attitude then |
-| `hitPart`, `hitFlag` | a `shot`'s hit message: its part word as sent, and its high byte |
+| `hitPart`, `hitFlag` | a `shot`'s hit message: the damage-model part hit as sent (one or two bytes, little-endian; see [Gunfire](hits.md#gunfire)), and its second byte (0 for a one-byte part) |
 | `cost_fired_sl`, `cost_lost_sl`, `earn_sl`, `earn_rp`, `rewardType`, `currency`, `econ_basis`, `won`, `matchWon`, `round`, `roundEndReason` | what the battle cost and earned, who won and how it ended: see [Economy](economy.md) |
 | `other`, `weapon` | kills: the other side and the weapon; hits: who hit (from the record's uid, else its player slot), their vehicle; launches: the weapon; destroyed modules: who last hit the unit within 5 s before, and `part <n>` |
 

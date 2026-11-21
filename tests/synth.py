@@ -458,9 +458,16 @@ def unit_message(index: int, mid: int, body: bytes, generation: int = 0) -> byte
     return b"\xff\x07" + uleb(index << 10 | generation) + le(mid, 2) + body
 
 
-def hit_effect(shooter_uid: int, number: int, local_cm: tuple[int, int, int]) -> bytes:
+def hit_part(number: int, flag: int = 0) -> bytes:
+    """A hit's part as sent: byte 0 the flag (bit 0) and the low six bits (bits 1-6), bit 7 set when byte 1 follows
+    with the bits above."""
+    b0 = flag & 1 | (number & 63) << 1
+    return bytes([b0]) if number < 64 else bytes([b0 | 0x80, number >> 6])
+
+
+def hit_effect(shooter_uid: int, number: int, local_cm: tuple[int, int, int], part: bytes = b"\xb0\x46") -> bytes:
     """0xF0E9's body: field 1 a bit count and the hit (shooter, kind, number, 0, part, x y z in cm as sent: z left)."""
-    inner = le(shooter_uid, 2) + b"\x04" + le(number, 2) + b"\x00" + b"\xb0\x46" + struct.pack("<3h", *local_cm)
+    inner = le(shooter_uid, 2) + b"\x04" + le(number, 2) + b"\x00" + part + struct.pack("<3h", *local_cm)
     inner += bytes(22)
     field = uleb(len(inner) * 8) + inner
     return id_fields({1: (len(field) * 8, field)})

@@ -21,6 +21,14 @@ its bursts can be told, but not where those rounds went. Heavy AA and
 artillery send each single shot (`gun_shot`, no direction), 40 mm AA guns
 their bursts (`fire_start`, `fire_stop`).
 
+Each hit names the damage-model part it struck (`hitPart`, as sent). The
+part is a number of one or two bytes: in the first byte bit 0 is a flag and
+bits 1-6 are the number's low six bits; when its bit 7 is set, a second
+byte follows with the bits above (its low seven). Parts 0-63 take one
+byte, the rest two. The number is the part's place in the game's list of
+part names, built from `config/damagemodelparts.blk` of your install. The
+hit point follows the part, so its place depends on the part's length.
+
 ## Hit outcomes
 
 With every projectile hit on a ground unit the server sends message 0xF144

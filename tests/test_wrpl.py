@@ -271,3 +271,22 @@ def test_hits_take_the_weapon_that_reloads_after_them():
     assert rows[3]["calibre"] == 7.62 and rows[3]["ammoType"] == "kinetic" and "ammoSlot" not in rows[3]
     assert rows[7]["ammoType"] == "explosive" and rows[7]["calibre"] == 125.0
     assert check["killsWeaponCalibreAgree"] == 1 and check["hitsWithAmmoName"] == 3
+
+
+@pytest.mark.parametrize("number, sent", [(0, b"\x00"), (1, b"\x02"), (63, b"\x7e"), (64, b"\x80\x01"),
+                                          (65, b"\x82\x01"), (4504, b"\xb0\x46"), (8191, b"\xfe\x7f")])
+@pytest.mark.parametrize("flag", [0, 1])
+def test_a_hits_part_is_one_or_two_bytes_and_the_point_follows_it(number, sent, flag):
+    """
+    The part: byte 0 bit 0 a flag, bits 1-6 the low six bits, bit 7 set when byte 1 follows with the bits above. Up
+    to 63 one byte, from 64 two (the most: 8191). The hit point comes right after it, whichever length.
+    """
+    part = synth.hit_part(number, flag)
+    assert part == bytes([sent[0] | flag]) + sent[1:]
+    word, n, size = wrpl.hit_part(part + b"\xff\xff", 0)
+    assert (n, size) == (number, len(sent)) and word == int.from_bytes(part, "little")
+    h = wrpl.read_hit_effect(synth.hit_effect(344, 7, (150, 50, -30), part=part))
+    assert h["shooter"] == 344 and h["number"] == 7 and h["kind"] == 4
+    assert h["part"] == word and h["partNumber"] == number
+    assert h["local"] == pytest.approx((1.5, 0.5, 0.3))
+

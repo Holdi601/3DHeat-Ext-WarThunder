@@ -2095,13 +2095,14 @@ UNIT_EVENTS = {
 
 #: Unit kinds whose 0xF0E9 hit point is in their own frame, in cm (checked on aircraft and ships).
 IN_FRAME_KINDS = {"aircraft", "helicopter", "ship", "boat"}
-#: Ground units: their point is a signed 16-bit fraction of GROUND_RANGE m (a step of 20/32768 m, 0.61 mm), and taken
-#: only within GROUND_REACH m of the unit's origin each way. Fitted on the ten ground test battles (5,000 tank hits
-#: of five tank families): the hits' top (97th percentile up) lies 1,520-1,640 steps above the origin for turret
-#: roofs 2.2-2.7 m high, their sides (97th percentile across) 1,620-1,930 steps out for half-widths of 1.75-1.88 m;
-#: 32768 / 20 = 1,638 steps a metre. Read as mm (a step of 1 mm, as before), the points lay 1.6 times too far out.
+#: Ground units: their point is a signed 16-bit fraction of GROUND_RANGE m (a step of 50/32768 m, 1.5 mm), and taken
+#: only within GROUND_REACH m of the unit's origin each way. Fitted against the vehicles' own damage-model parts (each
+#: hit names the part it struck): on six sample ground battles (1,729 hits on 104 vehicle models) the points lie on
+#: the named part's surface, a median 1 mm off at 50 m; at 48 or 51.2 m the median is 4-7 cm, at 44 or 54 m 11-15 cm.
+#: (An earlier fit to turret heights took 20 m: 1,600 steps for 2.2-2.7 m roofs is about 650 steps a metre, not
+#: 1,638.)
 GROUND_KINDS = {"tank", "apc", "spaa", "truck"}
-GROUND_RANGE = 20.0
+GROUND_RANGE = 50.0
 GROUND_REACH = 6.0
 
 
@@ -2222,9 +2223,8 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
             victim, vs = where(m.uid, m.t)
             shooter, ss = where(hit["shooter"], m.t)
             target = None
-            # An aircraft's and a ship's hit point is in the unit's own frame, whatever the byte read as `aligned`
-            # (the high byte of the part number: ships' "unaligned" points lie inside their hulls, 95% within
-            # 41 m along, 9 m up, 4.6 m across a destroyer, as many facing the shooter as the "aligned" ones).
+            # An aircraft's and a ship's hit point is in the unit's own frame, whatever part it names (ships'
+            # points lie inside their hulls, 95% within 41 m along, 9 m up, 4.6 m across a destroyer).
             # A ground unit's is not in centimetres (as read it lay 25-40 m off a 7 m tank) but a 16-bit fraction of
             # GROUND_RANGE (see there; 83% of 6,077 tank hits lie on the side facing a shooter 30 m or more away):
             # taken where it lies on the hull (within 6 m each way), else the unit's centre.
@@ -3885,14 +3885,15 @@ def summary(r: Replay, all_lives: list[Life], table_rows: list[dict[str, Any]], 
                         "install's weapon files (README: Hit outcomes)",
             "hitLocalX": "shot rows: the hit point on the unit hit, in its own frame as the replay sends it (m; "
                          "hitLocalX forward, hitLocalY up, hitLocalZ right): aircraft and ships as sent (cm), "
-                         "ground units' read as a 16-bit fraction of 20 m and kept only within 6 m of the unit (about one in six lies "
-                         "farther, what it is is not known; those rows have none); hitDirX/Y/Z the way "
+                         "ground units' read as a 16-bit fraction of 50 m and kept only within 6 m of the unit (rows "
+                         "farther out have none); hitDirX/Y/Z the way "
                          "the shot travelled (shooter to hit point, a unit vector) "
                          "in the same frame, by the unit's attitude at the hit; otherVehicle and otherLife the unit "
-                         "hit's vehicle id and life; hitPart the u16 the hit message sends before the point "
-                         "(hits with the same number lie together on a vehicle: 1.1 m from their mean point on average "
-                         "in the four test replays, against 3.5 m for all of a vehicle's hits; which part it names "
-                         "is not known); hitFlag its high byte (on ships it runs with the hull section hit)",
+                         "hit's vehicle id and life; hitPart the damage-model part hit as the "
+                         "message sends it before the point, one or two bytes little-endian (the part number: bits 1-6 "
+                         "of the first byte, and when its bit 7 is set the second byte's low seven bits above them; "
+                         "the place in the game's list of part names from config/damagemodelparts.blk); hitFlag its "
+                         "second byte (0 for a one-byte part)",
             "fire_on": "a vehicle catches fire (fire_off: that fire is out), at the vehicle; fireId its two ids "
                        "('first:node'), fireKind the kind the game sends (a number; names not known), "
                        "fireLocalX/Y/Z where it burns in the vehicle's frame (m; forward, up, right) when the "

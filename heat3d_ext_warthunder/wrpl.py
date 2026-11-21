@@ -1516,13 +1516,27 @@ def _le16(b: bytes, at: int) -> int:
     return b[at] | b[at + 1] << 8
 
 
+def hit_part(v: bytes, at: int) -> tuple[int, int, int]:
+    """
+    A hit's damage-model part at `at`: (the word as sent, the part number, its length in bytes). Byte 0: bit 0 a
+    flag, bits 1-6 the number's low six bits; bit 7 set when byte 1 follows with the bits above (its low seven). The
+    number is the part's place in the game's list of part names (built from config/damagemodelparts.blk). The word
+    is the one or two bytes little-endian, so a one-byte part's word has no high byte.
+    """
+    b0 = v[at]
+    if not b0 & 0x80:
+        return b0, (b0 >> 1) & 63, 1
+    b1 = v[at + 1]
+    return b0 | b1 << 8, (b0 >> 1) & 63 | (b1 & 0x7F) << 6, 2
+
+
 def read_hit_effect(body: bytes) -> dict[str, Any] | None:
     """
     0xF0E9 UnitHitEffects, to the unit hit: one projectile's hit. Field 1 is a
     bit stream (LEB128 bit count, then its bytes): the shooter's uid (u16),
-    a byte, a u16 the hit's number, a byte, a u16, and the hit point in the
-    unit's own frame as three int16 in cm (x forward, y up, z left; returned
-    in m as x forward, y up, z right). Checked
+    a byte, a u16 the hit's number, a byte, the part hit (one or two bytes, see
+    `hit_part`), and the hit point in the unit's own frame as three int16 in cm
+    (x forward, y up, z left; returned in m as x forward, y up, z right). Checked
     on the air arcade battle: of 148 hit and kill records with these messages
     on the victim in the 3 s before, 147 have the record's attacker among
     their shooters (the one other: the victim itself); the hit points lie on
@@ -1533,14 +1547,17 @@ def read_hit_effect(body: bytes) -> dict[str, Any] | None:
         return None
     raw = f[1]
     _, at = _uleb(raw, 0)
-    if at + 14 > len(raw):
+    if at + 13 > len(raw):
         return None
     v = raw[at:]
     shooter = _le16(v, 0) & NO_UID
-    local = [x / 100.0 for x in struct.unpack_from("<3h", v, 8)]
+    word, number, size = hit_part(v, 6)
+    p = 6 + size
+    if p + 6 > len(v):
+        return None
+    local = [x / 100.0 for x in struct.unpack_from("<3h", v, p)]
     return {"shooter": shooter, "local": (local[0], local[1], -local[2]), "number": _le16(v, 3), "kind": v[2],
-            "part": _le16(v, 6), "aligned": v[7] in (0x43, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4D, 0x23),
-            "shell": shell_signature(v[14:])}
+            "part": word, "partNumber": number, "shell": shell_signature(v[p + 6:])}
 
 
 #: In the rest of a 0xF0E9 hit (after the point; a bit stream not decoded): a byte 0x30-0x3F, a byte with its low six

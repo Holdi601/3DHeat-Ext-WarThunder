@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.3
+
+- Server replays: hits on a damage-model part with a one-byte number (parts 0-63, about one hit in ten, most of them
+  hull front, side and top plates) had their hit point read one byte late, so `hitLocalX/Y/Z`, `targetX/Y/Z`
+  and the shot direction of those hits were wrong. The part is now read as one or two bytes and the point after
+  it. `hitPart` holds the part as sent: one byte for those hits, so `hitFlag` is 0 there. See
+  [Gunfire](docs/hits.md#gunfire).
+- Server replays: a ground unit's hit point is a 16-bit fraction of 50 m, not 20 m (a step of 1.5 mm). Read at
+  20 m, the points lay 2.5 times too close to the vehicle's origin. Checked against the vehicles' own damage-model
+  parts, which each hit names: on six sample ground battles the points now lie on the surface of the part hit
+  (median distance 1 mm). Within 0.5 m of the part hit: one-byte hits 0 % before, 99.8 % now; two-byte hits 6 %
+  before, 67 % now. Ground hits kept in the vehicle's frame are still those within 6 m of its origin.
+- Files converted before 0.2.3 need converting again for their hit points.
+
 ## 0.2.2
 
 - `heat3d-wt-level layouts`: each level's game-mode layouts from the multiplayer missions of your install, as

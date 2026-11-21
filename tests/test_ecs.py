@@ -387,9 +387,9 @@ def test_messages_to_units_name_their_entity(tmp_path):
     assert {(r["message"], r["uid"]) for r in side if r["packet"] == 4} >= {("0xf0e9", 345), ("0xd047", 344)}
 
 
-@pytest.mark.parametrize("sent, local", [((2458, 819, -492), (1.5, 0.5, 0.3)), ((15000, 500, -300), None)])
-def test_a_ground_units_hit_point_is_a_fraction_of_20_m_and_on_its_hull(tmp_path, sent, local):
-    """On the tank (177), the point's int16 are steps of 20/32768 m: 1.5 m ahead is kept; 9 m off the hull is not."""
+@pytest.mark.parametrize("sent, local", [((983, 328, -197), (1.5, 0.5, 0.3)), ((6000, 500, -300), None)])
+def test_a_ground_units_hit_point_is_a_fraction_of_50_m_and_on_its_hull(tmp_path, sent, local):
+    """On the tank (177), the point's int16 are steps of 50/32768 m: 1.5 m ahead is kept; 9 m off the hull is not."""
     more = [synth.packet(4, 10900, synth.unit_message(3, 0xF0E9, synth.hit_effect(344, 7, sent)))]
     f = tmp_path / "u.wrpl"
     f.write_bytes(battle_with_entities(more))
@@ -402,16 +402,16 @@ def test_a_ground_units_hit_point_is_a_fraction_of_20_m_and_on_its_hull(tmp_path
         assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx(local, abs=1e-3)
 
 
-def test_every_hit_point_is_in_the_unit_frame(tmp_path):
-    """A hit whose part's high byte was once read as "another frame" (0x07, as ships' hull sections) is placed too."""
-    body = synth.hit_effect(344, 7, (150, 50, -30))
-    assert body.count(b"\xb0\x46") == 1
-    more = [synth.packet(4, 10900, synth.unit_message(2, 0xF0E9, body.replace(b"\xb0\x46", b"\x10\x07")))]
+@pytest.mark.parametrize("part, word", [(b"\x90\x07", 0x0790), (b"\x10", 0x10)])
+def test_every_hit_point_is_in_the_unit_frame(tmp_path, part, word):
+    """Whatever its part (two bytes with a high byte once read as "another frame", or one byte), a hit is placed."""
+    body = synth.hit_effect(344, 7, (150, 50, -30), part=part)
+    more = [synth.packet(4, 10900, synth.unit_message(2, 0xF0E9, body))]
     f = tmp_path / "u.wrpl"
     f.write_bytes(battle_with_entities(more))
     tpath, _ = convert.convert([f], tmp_path / "out")
     shot = next(r for r in pq.read_table(tpath).to_pylist() if r["event"] == "shot")
-    assert shot["hitFlag"] == 0x07
+    assert shot["hitPart"] == word and shot["hitFlag"] == word >> 8
     # Sent z left: 0.3 m to the right.
     assert (shot["hitLocalX"], shot["hitLocalY"], shot["hitLocalZ"]) == pytest.approx((1.5, 0.5, 0.3), abs=1e-3)
     assert shot["targetZ"] == pytest.approx(1300.0 + 200 * 9.9 + 1.5, abs=0.6)
