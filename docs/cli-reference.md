@@ -36,18 +36,20 @@ options:
 ## `heat3d-wt-level`
 
 ```text
-usage: heat3d-wt-level [-h] [--version] {list,extract} ...
+usage: heat3d-wt-level [-h] [--version] {list,extract,layouts} ...
 
 War Thunder levels into 3DHeat .glb levels
 
 positional arguments:
-  {list,extract}
-    list          list the levels in the install
-    extract       extract levels
+  {list,extract,layouts}
+    list                list the levels in the install
+    extract             extract levels
+    layouts             each level's game-mode layouts (capture zones, battle areas,
+                        spawns...)
 
 options:
-  -h, --help      show this help message and exit
-  --version       show program's version number and exit
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
 ```
 
 ### `heat3d-wt-level list`
@@ -93,6 +95,23 @@ options:
   --no-terrain-colour   texture the ground with the tactical map, not the land classes
   --no-texture          do not texture the ground with the tactical map
   --skip-existing       leave levels whose .glb exists
+```
+
+### `heat3d-wt-level layouts`
+
+```text
+usage: heat3d-wt-level layouts [-h] [--all] [--extracted] -o OUT [--game GAME]
+                               [levels ...]
+
+positional arguments:
+  levels         level names (wildcards allowed)
+
+options:
+  -h, --help     show this help message and exit
+  --all          every level with multiplayer missions
+  --extracted    only the levels already extracted into the output folder
+  -o, --out OUT  output folder; each level goes in <out>/<level>/
+  --game GAME    War Thunder folder
 ```
 
 ## `heat3d-wt-ranges`

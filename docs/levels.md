@@ -120,6 +120,25 @@ LOD distance and the seconds; `parts.heightmap.rings` each ground ring's step
 and triangles; `parts.terrainColour` the land classes and their colours, roads
 and ground decals; `trianglesTotal`, `glbBytes` and `secondsBy` the totals.
 
+## Game-mode layouts
+
+`heat3d-wt-level layouts <level>... | --all | --extracted -o <folder>` reads the
+multiplayer missions of your install (`mis.vromfs.bin`) and writes each level's
+`<folder>/<level>/<level>.layouts.json` beside its `.glb`. The viewer draws the
+layout on the level by itself (Objectives panel, and the Tactics board):
+
+- one layout per mission and difficulty (arcade, realistic, simulator; one
+  layout where they are the same): capture zones with their letters, the
+  battle area, the ground the battle excludes and each side's spawn kill area
+  (hatched as out of bounds), spawn points (ground, air, helicopter, naval,
+  convoys), airfields, helipads, bases and bombing targets;
+- where a mission has separate sets for battle-rating tiers (airfields, air
+  spawns, bombing targets), each tier is a stage of the layout, picked under
+  **Layout**.
+
+`--extracted` writes the levels already extracted into the output folder. A
+mission may swap the sides at random: team 1 is the mission's first side.
+
 ## What is read, and how well
 
 | Part | Status |

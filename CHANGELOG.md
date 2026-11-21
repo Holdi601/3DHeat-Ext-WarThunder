@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+- `heat3d-wt-level layouts`: each level's game-mode layouts from the multiplayer missions of your install, as
+  `<level>.layouts.json` beside the level: capture zones, battle areas, excluded ground and spawn kill areas (out
+  of bounds), spawn points, airfields, helipads, bases and bombing targets, per mission and difficulty, with
+  battle-rating tiers as stages. Docs: [Levels](docs/levels.md#game-mode-layouts).
+
 ## 0.2.1
 
 - Server replays of game version 101421 on (November 2026): tank turrets are read one bit later in the ground

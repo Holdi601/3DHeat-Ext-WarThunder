@@ -1,8 +1,11 @@
 """
-`heat3d-wt-level list` and `heat3d-wt-level extract <level>... | --all -o <folder>`
+`heat3d-wt-level list`, `heat3d-wt-level extract <level>... | --all -o <folder>` and
+`heat3d-wt-level layouts <level>... | --all -o <folder>`
 
 Reads War Thunder's level files from the user's own install and writes each
-level as `<folder>/<level>/<level>.glb`, `.json` and the tactical map PNGs.
+level as `<folder>/<level>/<level>.glb`, `.json` and the tactical map PNGs;
+`layouts` writes each level's game-mode layouts from its missions as
+`<folder>/<level>/<level>.layouts.json` (layouts.py).
 Prints `ok <glb> <triangles>` or `failed <level>: <why>` per level; exits 1 when
 any failed, 2 when the game was not found or nothing was asked for.
 """
@@ -60,7 +63,15 @@ def main(argv: list[str] | None = None) -> int:
     ex.add_argument("--no-terrain-colour", action="store_true", help="texture the ground with the tactical map, not the land classes")
     ex.add_argument("--no-texture", action="store_true", help="do not texture the ground with the tactical map")
     ex.add_argument("--skip-existing", action="store_true", help="leave levels whose .glb exists")
+    lo = sub.add_parser("layouts", help="each level's game-mode layouts (capture zones, battle areas, spawns...)")
+    lo.add_argument("levels", nargs="*", help="level names (wildcards allowed)")
+    lo.add_argument("--all", action="store_true", help="every level with multiplayer missions")
+    lo.add_argument("--extracted", action="store_true", help="only the levels already extracted into the output folder")
+    lo.add_argument("-o", "--out", type=Path, required=True, help="output folder; each level goes in <out>/<level>/")
+    lo.add_argument("--game", help="War Thunder folder")
     args = ap.parse_args(argv)
+    if args.cmd == "layouts":
+        return _layouts(args)
 
     try:
         game = _game(args)
@@ -114,6 +125,42 @@ def main(argv: list[str] | None = None) -> int:
                 traceback.print_exc()
         finally:
             lock.close()
+    return 1 if failed else 0
+
+
+def _layouts(args) -> int:
+    import json
+
+    from . import layouts
+    from .vromfs import Vromfs
+
+    root = find_game(args.game)
+    if root is None or not (root / "mis.vromfs.bin").is_file():
+        print("War Thunder not found: pass --game <folder> or set HEAT3D_WT_GAME", file=sys.stderr)
+        return 2
+    arc = Vromfs(root / "mis.vromfs.bin")
+    index = layouts.mission_index(arc)
+    wanted = [lv for lv in sorted(index) if args.all or args.extracted
+              or any(fnmatch.fnmatch(lv, w) for w in args.levels)]
+    if args.extracted:
+        wanted = [lv for lv in wanted if (args.out / lv / f"{lv}.glb").is_file()]
+    if not wanted:
+        print("no level with missions matches", file=sys.stderr)
+        return 2
+    failed = 0
+    for lv in wanted:
+        try:
+            doc = layouts.level_layouts(arc, lv, index[lv], f"heat3d-wt-level {__version__}")
+            dest = args.out / lv / f"{lv}.layouts.json"
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            tmp = dest.with_suffix(".tmp")
+            tmp.write_text(json.dumps(doc, separators=(",", ":")), encoding="utf-8")
+            tmp.replace(dest)
+            n, o, z, s = layouts.counts(doc)
+            print(f"ok {dest} {n} layouts, {o} objectives, {z} zones, {s} spawns", flush=True)
+        except Exception as e:
+            failed += 1
+            print(f"failed {lv}: {type(e).__name__}: {e}", flush=True)
     return 1 if failed else 0
 
 
