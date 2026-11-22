@@ -248,3 +248,15 @@ def test_the_part_struck_and_a_destroyed_module_are_named_the_games_way(tmp_path
     assert next(r for r in rows if r["event"] == "shot")["hitPartName"] == "turret_front"
     m = next(r for r in rows if r["event"] == "module_destroyed")
     assert m["weapon"] == "part 5" and m["partName"] == "track_l" and m["partGroup"] == "tracks"
+
+
+@pytest.mark.parametrize("agree, disagree, version, ok, by", [
+    (20, 1, 101404, True, "fires"), (5, 9, 101421, False, "fires"), (1, 1, 101404, False, "version"),
+    (0, 0, 101421, True, "version"),
+])
+def test_the_games_numbering_is_trusted_by_the_fires_else_the_version(agree, disagree, version, ok, by):
+    got = convert.numbering_matches({"partNamesAgree": agree, "partNamesDisagree": disagree}, version)
+    assert got["matches"] is ok and got["by"] == by
+    po = damage_parts.PartOrder(SimpleNamespace(blk=lambda p: (_ for _ in ()).throw(KeyError(p))))
+    po._global, po.global_ok = ["default", "engine"], ok
+    assert po.global_name(1) == ("engine" if ok else "")

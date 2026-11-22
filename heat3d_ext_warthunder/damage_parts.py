@@ -83,6 +83,8 @@ class PartOrder:
         self._kept: dict[str, list[str]] | None = None
         self._more = more_kept
         self._new = False
+        #: False for a replay that numbers the game's part list otherwise (an older game version): `global_name` ''.
+        self.global_ok = True
 
     @classmethod
     def from_game(cls, game: str | os.PathLike[str] | None = None, archive=None) -> "PartOrder":
@@ -196,6 +198,8 @@ class PartOrder:
 
     def global_name(self, number: int) -> str:
         """A part's name by the game's own numbering (`global_names`), '' when not known."""
+        if not self.global_ok:
+            return ""
         if self._global is None:
             self._global = global_names(self.archive) if self.archive is not None else []
         return self._global[number] if 0 <= number < len(self._global) else ""

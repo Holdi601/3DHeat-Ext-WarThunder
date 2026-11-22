@@ -172,6 +172,16 @@ vehicle's unit file as that machine has it.
 
 The game's own part numbering (that of `hitPart` and of the fires' nodes,
 `config/damagemodelparts.blk`) names the part a hit struck: `hitPartName`.
+This list grows with game updates, so a replay of an older game version
+numbers many parts differently from a newer install. Each fire names its
+part both ways, so the fires tell: where three or more fires are named both
+ways and nine in ten agree, or (with fewer fires) from game version 101421
+on, the game's names are written; otherwise `hitPartName`, `fireNode` and
+`partName` stay empty and the numbers are kept
+(`selfCheck.damageParts.gameNumbering`). The vehicles' own lists change less
+between updates; their names (`damagedParts`, `firePart`) are written for
+every replay and may be off for some vehicles in a replay older than the
+install.
 
 Fires name their part both ways: `fire_on` and `fire_off` rows have
 `firePart` (the vehicle's own number, the first of `fireId`) and `fireNode`

@@ -11,7 +11,9 @@
 - The parts each hit damaged: `damagedPartIds`, `damagedParts` (crew members, ammunition racks, engine, breech,
   tracks ...), `damagedGroups`, `crewDamaged`, `ammoDamaged`; a list without a hit is a `parts_damaged` row. The
   names come from the vehicle's unit file and damage model in your install, read while converting. Fires get
-  `firePart` and `fireNode`, destroyed modules `partName` and `partGroup`, hits `hitPartName`.
+  `firePart` and `fireNode`, destroyed modules `partName` and `partGroup`, hits `hitPartName`. The game's names
+  (`hitPartName`, `fireNode`, `partName`) are written only where the replay's fires show it numbers the parts as
+  the install does (an older game version does not; `selfCheck.damageParts.gameNumbering`).
 - Ammunition: `ammoSource` (`recorded`, `slot`, `speed`, `slot-speed`, `candidate`, `speed-calibre`, `calibre`,
   `default`) and `ammoConfidence` say where `ammoName`, `ammoType` and `calibre` come from. The killing hit is named
   by its kill even without a loaded slot; a hit's recorded speed picks the one shell of the weapon that fits it

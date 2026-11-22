@@ -2959,6 +2959,23 @@ def _fire_place(r: Replay, eid: int, t: float, first: int, node: int, kind: int)
     return None
 
 
+#: Replays from this game version on number the game's parts as the install read here does (checked: every fire of
+#: the 101421 check battles names the same part both ways; on 101404 the numbers above about 860 are 6 to 32
+#: places lower). Used for a replay with too few fires to tell (`numbering_matches`).
+NUMBERING_SINCE = 101421
+
+
+def numbering_matches(fires_check: dict[str, Any], version: int) -> dict[str, Any]:
+    """Whether a replay numbers the game's part list as the install does: by its fires where it has three or more
+    named both ways (90% must agree), else by its game version (NUMBERING_SINCE)."""
+    agree, disagree = fires_check.get("partNamesAgree", 0), fires_check.get("partNamesDisagree", 0)
+    if agree + disagree >= 3:
+        ok, by = agree >= 0.9 * (agree + disagree), "fires"
+    else:
+        ok, by = version >= NUMBERING_SINCE, "version"
+    return {"matches": ok, "by": by, "firesAgree": agree, "firesDisagree": disagree, "replayVersion": version}
+
+
 def fire_rows(r: Replay, all_lives: list[Life],
               parts: "damage_parts.PartOrder | None" = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
@@ -4733,14 +4750,22 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     rpm = rpm_series(msgs)
     arms_install = arsenal.Arsenal.from_game(game)
     parts = damage_parts.PartOrder.from_game(game, arms_install.archive)
+    # The fires first: each names its part both ways, which tells whether this replay numbers the game's parts as
+    # the install does (`numbering_matches`); the game's names (hitPartName, fireNode, partName) only where it does.
+    fires, more["fires"] = fire_rows(r, all_lives, parts)
+    numbering = numbering_matches(more["fires"], int(r.header.get("version") or 0))
+    parts.global_ok = numbering["matches"]
+    if not parts.global_ok:
+        for f in fires:
+            f.pop("fireNode", None)
     extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arms_install, parts)
     more["turretLimit"] = limit_turrets(all_lives, extra, arms_install)
     more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
                                 rpm=_rpm_check(r, rpm, all_lives),
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
-    fires, more["fires"] = fire_rows(r, all_lives, parts)
     more["damageParts"] = {"install": bool(parts), "fromPacks": parts.res_root is not None,
-                           "vehicles": sum(1 for p in parts._parts.values() if p), "kept": parts.save()}
+                           "vehicles": sum(1 for p in parts._parts.values() if p), "kept": parts.save(),
+                           "gameNumbering": numbering}
     cam, more["camera"] = camera_rows(r, all_lives)
     views, more["unitCameras"] = unit_views(msgs)
     data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam, views, parts)
