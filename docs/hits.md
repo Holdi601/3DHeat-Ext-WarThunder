@@ -94,8 +94,29 @@ aircraft, all bits clear: aircraft and ship hits have no outcome.
 * **The signature** (`hitShell`) is not a shell's id: one signature can
   stand for several shells, and one shell can come with several signatures.
   It is kept raw.
+* **Aircraft and ships** fire from the weapons of their own files: an
+  aircraft's flight model (`gamedata/flightmodels/<vehicle>.blk`) puts them
+  in slots, each slot's presets naming their weapon files, and a ship's unit
+  file lists them like a tank's. A kill names the round that made it: a
+  gun's by the round's type (`ap_i_ball_M8`, `frag_i_t`), a rocket's,
+  missile's, bomb's or torpedo's by its own name (`su_r_77_1`, `de_sc500`);
+  that names the killing hit (`recorded`). The other hits get a calibre where
+  the replay tells it: the one calibre of the unit's guns its signature can
+  have (an aircraft's signatures are read among all its guns, its cannons
+  too); a hit that burst, from a unit that launched no rocket, missile, bomb
+  or torpedo in the two minutes before, by its guns that fire bursting rounds
+  when they share a calibre; a hit that did not burst, from a unit whose guns
+  have one calibre, that one.
+* **The belt** (`ammoBelt`). An aircraft's gun (and a machine gun) loads a
+  belt: a set of rounds in order, the gun's own (`default`) or one the
+  vehicle buys (`50cal_universal`, `mg151_stealth`). Where the rounds a
+  shooter's kills name with one calibre are all in one belt of its guns of
+  that calibre and in no other, that belt is every hit's of the shooter's
+  vehicle with that calibre. The round of a hit by a belt is not in the
+  replay: only the killing round is named.
 
-Not found: ricochet; the shell's own id in the hit message.
+Not found: ricochet; the shell's own id in the hit message; the speed of a
+hit on an aircraft (0xF15F comes with hits that went into an armoured unit).
 
 ## Hit keys
 
@@ -149,8 +170,19 @@ penetration). A list with no such hit (an explosion near the vehicle) is a
 |---|---|
 | `damagedPartIds` | the numbers as sent, comma-separated |
 | `damagedParts` | their names (`driver_dm`, `ammo_turret_03_dm`, `engine_dm` ...); `#<number>` where the install does not tell |
-| `damagedGroups` | what kinds of part: `crew`, `ammo`, `fuel`, `engine`, `transmission`, `gun`, `turret_drive`, `tracks`, `optics`, `armour`, `equipment` |
+| `damagedGroups` | what kinds of part: `crew`, `ammo`, `fuel`, `engine`, `transmission`, `gun`, `turret_drive`, `tracks`, `optics`, `armour`, `equipment`; an aircraft's also `airframe` (fuselage, wings, spars, tail), `controls` (control surfaces, flaps, airbrakes), `rotor`, `gear` |
 | `crewDamaged`, `ammoDamaged` | how many crew members, how many ammunition racks |
+| `destroyedParts` | the modules the hit destroyed (0xF118, `module_destroyed` rows at the same moment), the game's names |
+| `damagedFrom` | `destroyed` where the damaged parts are the destroyed modules (below) |
+
+Aircraft get no 0xF13A. What a hit did to one is the modules it destroyed:
+the game sends 0xF118 (`module_destroyed`) for each, by the game's part
+numbering, and those of a unit at the moment of a hit go to that hit like a
+list of damaged parts (`destroyedParts`). A unit that gets no 0xF13A in the
+replay has them as its `damagedParts` too (`fuse1_dm`, `wing_l_dm`,
+`pilot_dm`, `tank2_dm` ...; `damagedFrom` is then `destroyed` and
+`damagedPartIds` the game's numbers), so a pilot killed, a wing or an engine
+shot off shows the same way as a tank's crew.
 
 The vehicle's own list: the parts of its unit file's `DamageParts`
 (`gamedata/units/tankmodels/<vehicle>.blk`, its groups in order, depth
@@ -171,17 +203,37 @@ of the install. A file `heat3d-part-orders.json` beside such a copy's
 vehicle's unit file as that machine has it.
 
 The game's own part numbering (that of `hitPart` and of the fires' nodes,
-`config/damagemodelparts.blk`) names the part a hit struck: `hitPartName`.
-This list grows with game updates, so a replay of an older game version
-numbers many parts differently from a newer install. Each fire names its
-part both ways, so the fires tell: where three or more fires are named both
-ways and nine in ten agree, or (with fewer fires) from game version 101421
-on, the game's names are written; otherwise `hitPartName`, `fireNode` and
-`partName` stay empty and the numbers are kept
-(`selfCheck.damageParts.gameNumbering`). The vehicles' own lists change less
-between updates; their names (`damagedParts`, `firePart`) are written for
-every replay and may be off for some vehicles in a replay older than the
-install.
+`config/damagemodelparts.blk`) names the part a hit struck: `hitPartName`,
+and `hitPartNumber` its place in your install's list (where the replay's
+game version numbers it otherwise, the number to look it up by). This list
+grows with game updates: a newer list has the older one's names in their
+order, with new ones put in between, so a replay of an older game version
+numbers many parts lower than a newer install. Each fire names its part both
+ways, so the fires tell which lists a replay goes by
+(`selfCheck.damageParts.gameNumbering`: `numbering`, `by`, `firesAgree`,
+`firesDisagree`, `tried`):
+
+1. Your install's, where three or more fires are named both ways and nine in
+   ten agree (`matches`: the replay numbers parts as the install does).
+2. Else an older game version's own archive, where this machine keeps one
+   and nine in ten fires agree with its lists: the converter keeps a copy of
+   the install's `aces.vromfs.bin` once per game version (about 20 MB, in
+   `~/.cache/heat3d-wt/archives`, `HEAT3D_WT_ARCHIVES` names another
+   folder), so replays of today's version still name their parts after the
+   next update; an `aces.vromfs.bin.*` copy beside the install is read too.
+3. Else the table of the replay's game version: where the names were put in
+   between since (game version 101404: from its part 903 on six places
+   later, from 933 on eight, from 2363 on thirty-two, against the archive of
+   2.61.0.37), with your install's vehicle lists; taken where eight in ten
+   fires agree.
+
+A replay with fewer than three such fires goes by its game version: the
+install's from 101421 on, else that version's kept archive, else its table.
+Where none fits, `hitPartName`, `fireNode` and `partName` stay empty and the
+numbers are kept. The vehicles' own lists change less between updates; their
+names (`damagedParts`, `firePart`) come from the same lists (an older
+archive's where one is taken) and may be off for some vehicles in a replay
+older than the install otherwise.
 
 Fires name their part both ways: `fire_on` and `fire_off` rows have
 `firePart` (the vehicle's own number, the first of `fireId`) and `fireNode`

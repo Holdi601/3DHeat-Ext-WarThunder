@@ -34,20 +34,36 @@ def is_crew(part: str) -> bool:
     return bool(CREW.match(part or ""))
 
 
+#: Part name prefixes by group (the first that fits wins): ground vehicles' and ships' parts, then aircraft's
+#: (`fuse1`, `wing_l`, `spar1_l`, `stab1`, `fin`, `aileron_r`, `elevator0`, `tank2`, `oil1`, `water1`, `gun3`,
+#: `gear_r`; `tank`, `oil` and `water` are an aircraft's fuel tanks and its engines' oil and coolant).
+GROUPS = (("ammo", "ammo"), ("fuel_tank", "fuel"), ("engine", "engine"), ("transmission", "transmission"),
+          ("radiator", "engine"), ("gun_barrel", "gun"), ("cannon_breech", "gun"),
+          ("autoloader", "gun"), ("drive_turret", "turret_drive"), ("turret_hydraulics", "turret_drive"),
+          ("track", "tracks"), ("wheel", "tracks"), ("optic", "optics"),
+          ("commander_panoramic", "optics"), ("body_", "armour"), ("superstructure", "armour"),
+          ("turret_", "armour"), ("gun_mask", "armour"), ("ex_", "armour"), ("cover", "armour"),
+          ("radio", "equipment"), ("electronic", "equipment"), ("fire_control", "equipment"),
+          ("power_system", "equipment"), ("driver_controls", "equipment"),
+          ("wingcontrol", "controls"), ("tailcontrol", "controls"), ("cockpit_countrol", "controls"),
+          ("aileron", "controls"), ("elevator", "controls"), ("rudder", "controls"), ("flap", "controls"),
+          ("airbrake", "controls"), ("fuse", "airframe"), ("wing", "airframe"), ("spar", "airframe"),
+          ("stab", "airframe"), ("fin", "airframe"), ("keel", "airframe"), ("tail", "airframe"),
+          ("tank", "fuel"), ("oil", "engine"), ("water", "engine"), ("prop", "engine"), ("fan", "engine"),
+          ("rotor", "rotor"), ("gun", "gun"), ("mgun", "gun"), ("cannon", "gun"), ("gear", "gear"),
+          ("bomb_pylon", "equipment"), ("rocket_pylon", "equipment"), ("armor", "armour"),
+          ("firewall_armor", "armour"))
+
+
 def part_group(part: str) -> str:
-    """A part's kind for analysis: crew, ammo, fuel, engine, transmission, gun (barrel, breech), turret_drive,
-    tracks (and wheels), optics, armour (hull, turret plates, screens), equipment, or ''."""
+    """A part's kind for analysis: crew, ammo, fuel, engine, transmission, gun (barrel, breech; an aircraft's
+    guns), turret_drive, tracks (and wheels), optics, armour (hull, turret plates, screens), equipment, an
+    aircraft's airframe (fuselage, wings, spars, tail), controls (control surfaces, flaps, airbrakes), rotor and
+    gear, or ''."""
     p = (part or "").lower()
     if is_crew(p):
         return "crew"
-    for prefix, group in (("ammo", "ammo"), ("fuel_tank", "fuel"), ("engine", "engine"), ("transmission", "transmission"),
-                          ("radiator", "engine"), ("gun_barrel", "gun"), ("cannon_breech", "gun"),
-                          ("autoloader", "gun"), ("drive_turret", "turret_drive"), ("turret_hydraulics", "turret_drive"),
-                          ("track", "tracks"), ("wheel", "tracks"), ("optic", "optics"),
-                          ("commander_panoramic", "optics"), ("body_", "armour"), ("superstructure", "armour"),
-                          ("turret_", "armour"), ("gun_mask", "armour"), ("ex_", "armour"), ("cover", "armour"),
-                          ("radio", "equipment"), ("electronic", "equipment"), ("fire_control", "equipment"),
-                          ("power_system", "equipment"), ("driver_controls", "equipment")):
+    for prefix, group in GROUPS:
         if p.startswith(prefix):
             return group
     return ""
@@ -85,6 +101,10 @@ class PartOrder:
         self._new = False
         #: False for a replay that numbers the game's part list otherwise (an older game version): `global_name` ''.
         self.global_ok = True
+        #: An older game's numbering read against this list (`OLDER_NUMBERING`: its runs and length), else None.
+        self.shift: tuple[tuple[tuple[int, int], ...], int] | None = None
+        #: The install's place of each game part name (set while converting), for `hitPartNumber`.
+        self.install_index: dict[str, int] = {}
 
     @classmethod
     def from_game(cls, game: str | os.PathLike[str] | None = None, archive=None) -> "PartOrder":
@@ -196,13 +216,101 @@ class PartOrder:
         p = self.parts(vehicle)
         return p[number] if 0 <= number < len(p) else ""
 
+    def global_list(self) -> list[str]:
+        """The game's part names in its own numbering (`global_names`) as this archive has them."""
+        if self._global is None:
+            self._global = global_names(self.archive) if self.archive is not None else []
+        return self._global
+
+    def game_number(self, number: int) -> int | None:
+        """The place in `global_list` of a part a replay numbers `number` (`shift` applied), None when not in it."""
+        if self.shift is not None:
+            runs, length = self.shift
+            if not 0 <= number < length:
+                return None
+            number += next((d for start, d in reversed(runs) if number >= start), 0)
+        return number if 0 <= number < len(self.global_list()) else None
+
     def global_name(self, number: int) -> str:
         """A part's name by the game's own numbering (`global_names`), '' when not known."""
         if not self.global_ok:
             return ""
-        if self._global is None:
-            self._global = global_names(self.archive) if self.archive is not None else []
-        return self._global[number] if 0 <= number < len(self._global) else ""
+        n = self.game_number(number)
+        return "" if n is None else self.global_list()[n]
+
+    def with_numbering(self, names: list[str], shift: tuple[tuple[tuple[int, int], ...], int] | None) -> "PartOrder":
+        """This vehicle part order with another game part list and numbering (`OLDER_NUMBERING`); never saved."""
+        po = PartOrder(self.archive, self.res_root, None, (*self._more, *((self.kept_path,) if self.kept_path else ())))
+        po._index, po._parts, po._global, po.shift = self._index, self._parts, list(names), shift
+        return po
+
+
+#: Older game versions' part numbering: the replay's game version -> `archive`, the version of that game's own
+#: aces.vromfs.bin (read instead where one is kept, see `kept_archives`), and its numbering against the list of the
+#: archive version `base`: numbers below `length` are in the older list, and from each run's start on the base
+#: numbers that part that many places later (the base list holds the older one in order, with names inserted).
+#: 101404 (replays until about 2026-11-11) against 2.61.0.37: found by comparing both archives'
+#: config/damagemodelparts.blk (5,079 and 5,130 names, the older all in the newer in order); on 31 battles the fires
+#: of 101404 replays name 309 of 310 parts alike both ways with the older archive's lists, 286 of 310 with this
+#: table and the newer archive's own vehicle lists (some vehicles' lists changed too).
+OLDER_NUMBERING: dict[int, dict] = {
+    101404: {"archive": "2.59.0.100", "base": "2.61.0.37", "length": 5079,
+             "runs": ((0, 0), (903, 6), (933, 8), (2363, 32))},
+}
+
+
+def archive_version(path: str | os.PathLike[str]) -> str:
+    """An aces.vromfs.bin's version ("2.61.0.37", from its extended header), '' when it states none."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(24)
+    except OSError:
+        return ""
+    if len(head) < 24 or head[:4] != b"VRFx" or int.from_bytes(head[16:18], "little") < 8:
+        return ""
+    return ".".join(str(b) for b in reversed(head[20:24]))
+
+
+def archives_dir() -> Path:
+    """Where copies of the install's aces.vromfs.bin are kept, one per game version (`keep_archive`):
+    `HEAT3D_WT_ARCHIVES`, else ~/.cache/heat3d-wt/archives."""
+    return Path(os.environ.get("HEAT3D_WT_ARCHIVES") or Path.home() / ".cache" / "heat3d-wt" / "archives")
+
+
+def keep_archive(root: str | os.PathLike[str] | None) -> str:
+    """Keep a copy of the install's aces.vromfs.bin (about 20 MB) under `archives_dir()` once per version, so that
+    replays of this game version can still be named after the next update; its version, '' when not kept."""
+    if root is None:
+        return ""
+    src = Path(root) / "aces.vromfs.bin"
+    ver = archive_version(src)
+    if not ver:
+        return ""
+    dst = archives_dir() / f"aces-{ver}.vromfs.bin"
+    if dst.is_file():
+        return ver
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        tmp = dst.with_name(dst.name + f".{os.getpid()}.part")
+        tmp.write_bytes(src.read_bytes())
+        tmp.replace(dst)
+    except OSError:
+        return ""
+    return ver
+
+
+def kept_archives(root: str | os.PathLike[str] | None) -> dict[str, Path]:
+    """Every game archive this machine has, by version: those kept (`archives_dir`) and any `aces.vromfs.bin.*`
+    copy beside the install (an older one kept by hand), the install's own last."""
+    out: dict[str, Path] = {}
+    places = sorted(archives_dir().glob("aces-*.vromfs.bin")) if archives_dir().is_dir() else []
+    if root is not None:
+        places += sorted(Path(root).glob("aces.vromfs.bin.*")) + [Path(root) / "aces.vromfs.bin"]
+    for p in places:
+        ver = archive_version(p) if p.is_file() else ""
+        if ver:
+            out[ver] = p
+    return out
 
 
 _TEMPLATE = re.compile(r"#(\d+)(?::(\d+))?#")

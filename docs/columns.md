@@ -6,7 +6,7 @@ nav_order: 91
 # Column list
 
 This page is generated from the code by `tools/gen_docs_reference.py`; do not edit it by hand.
-What each column means is on [The table](table.md). The table has **155 columns**:
+What each column means is on [The table](table.md). The table has **159 columns**:
 
 | # | Column | Type |
 |---|---|---|
@@ -108,60 +108,64 @@ What each column means is on [The table](table.md). The table has **155 columns*
 | 96 | `fireNode` | text |
 | 97 | `partName` | text |
 | 98 | `partGroup` | text |
-| 99 | `rpm` | decimal |
-| 100 | `vx` | decimal |
-| 101 | `vy` | decimal |
-| 102 | `vz` | decimal |
-| 103 | `engine` | text |
-| 104 | `afterburner` | decimal |
-| 105 | `engineCondition` | decimal |
-| 106 | `ammo` | text |
-| 107 | `throttle` | decimal |
-| 108 | `elevator` | decimal |
-| 109 | `aileron` | decimal |
-| 110 | `rudder` | decimal |
-| 111 | `ias` | decimal |
-| 112 | `vario` | decimal |
-| 113 | `fuel` | decimal |
-| 114 | `manifoldPressure` | decimal |
-| 115 | `gear` | decimal |
-| 116 | `oilTemperature` | decimal |
-| 117 | `headTemperature` | decimal |
-| 118 | `turretYaw` | decimal |
-| 119 | `gunPitch` | decimal |
-| 120 | `turrets` | text |
-| 121 | `turretYawRaw` | decimal |
-| 122 | `gunPitchRaw` | decimal |
-| 123 | `viewYaw` | decimal |
-| 124 | `viewPitch` | decimal |
-| 125 | `aimHeading` | decimal |
-| 126 | `aimPitch` | decimal |
-| 127 | `aimDistance` | decimal |
-| 128 | `zoom` | decimal |
-| 129 | `cameraMode` | whole number |
-| 130 | `sensors` | text |
-| 131 | `sensorModes` | text |
-| 132 | `sensorContacts` | text |
-| 133 | `sensorLocks` | text |
-| 134 | `opticX` | decimal |
-| 135 | `opticY` | decimal |
-| 136 | `opticZ` | decimal |
-| 137 | `lockX` | decimal |
-| 138 | `lockY` | decimal |
-| 139 | `lockZ` | decimal |
-| 140 | `sightX` | decimal |
-| 141 | `sightY` | decimal |
-| 142 | `sightZ` | decimal |
-| 143 | `difficulty` | text |
-| 144 | `gameMode` | text |
-| 145 | `cost_fired_sl` | decimal |
-| 146 | `cost_lost_sl` | decimal |
-| 147 | `earn_sl` | decimal |
-| 148 | `earn_rp` | decimal |
-| 149 | `currency` | text |
-| 150 | `econ_basis` | text |
-| 151 | `rewardType` | text |
-| 152 | `won` | whole number |
-| 153 | `matchWon` | whole number |
-| 154 | `round` | whole number |
-| 155 | `roundEndReason` | text |
+| 99 | `hitPartNumber` | decimal |
+| 100 | `destroyedParts` | text |
+| 101 | `damagedFrom` | text |
+| 102 | `ammoBelt` | text |
+| 103 | `rpm` | decimal |
+| 104 | `vx` | decimal |
+| 105 | `vy` | decimal |
+| 106 | `vz` | decimal |
+| 107 | `engine` | text |
+| 108 | `afterburner` | decimal |
+| 109 | `engineCondition` | decimal |
+| 110 | `ammo` | text |
+| 111 | `throttle` | decimal |
+| 112 | `elevator` | decimal |
+| 113 | `aileron` | decimal |
+| 114 | `rudder` | decimal |
+| 115 | `ias` | decimal |
+| 116 | `vario` | decimal |
+| 117 | `fuel` | decimal |
+| 118 | `manifoldPressure` | decimal |
+| 119 | `gear` | decimal |
+| 120 | `oilTemperature` | decimal |
+| 121 | `headTemperature` | decimal |
+| 122 | `turretYaw` | decimal |
+| 123 | `gunPitch` | decimal |
+| 124 | `turrets` | text |
+| 125 | `turretYawRaw` | decimal |
+| 126 | `gunPitchRaw` | decimal |
+| 127 | `viewYaw` | decimal |
+| 128 | `viewPitch` | decimal |
+| 129 | `aimHeading` | decimal |
+| 130 | `aimPitch` | decimal |
+| 131 | `aimDistance` | decimal |
+| 132 | `zoom` | decimal |
+| 133 | `cameraMode` | whole number |
+| 134 | `sensors` | text |
+| 135 | `sensorModes` | text |
+| 136 | `sensorContacts` | text |
+| 137 | `sensorLocks` | text |
+| 138 | `opticX` | decimal |
+| 139 | `opticY` | decimal |
+| 140 | `opticZ` | decimal |
+| 141 | `lockX` | decimal |
+| 142 | `lockY` | decimal |
+| 143 | `lockZ` | decimal |
+| 144 | `sightX` | decimal |
+| 145 | `sightY` | decimal |
+| 146 | `sightZ` | decimal |
+| 147 | `difficulty` | text |
+| 148 | `gameMode` | text |
+| 149 | `cost_fired_sl` | decimal |
+| 150 | `cost_lost_sl` | decimal |
+| 151 | `earn_sl` | decimal |
+| 152 | `earn_rp` | decimal |
+| 153 | `currency` | text |
+| 154 | `econ_basis` | text |
+| 155 | `rewardType` | text |
+| 156 | `won` | whole number |
+| 157 | `matchWon` | whole number |
+| 158 | `round` | whole number |
+| 159 | `roundEndReason` | text |

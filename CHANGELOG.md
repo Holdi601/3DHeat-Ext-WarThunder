@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.0
+
+- Aircraft and ship hits get their ammunition (the killing round, missile, bomb or torpedo by name, the calibre of
+  the others, the belt an aircraft's gun fired) and the modules each hit destroyed; replays of game version 101404
+  name the parts they hit.
+- An aircraft's weapons are read from its flight model's weapon slots, a ship's from its unit file: a kill names
+  its round (`ap_i_ball_M8`, `frag_i_t`) or its missile, bomb or torpedo (`su_r_77_1`, `de_sc500`), which names
+  the killing hit; other hits get a calibre from their signature among the unit's guns, from its guns that fire
+  bursting rounds (a burst hit when the unit launched nothing in the two minutes before) or from its one calibre
+  of guns. `ammoBelt`: the belt (`default`, `50cal_universal` ...) where the rounds the shooter's kills name are
+  in one belt only. See [Ammunition](docs/hits.md#ammunition).
+- The modules a hit destroyed (0xF118) go on the hit: `destroyedParts`. A unit that gets no lists of damaged
+  parts (aircraft) has them as its `damagedParts`, `damagedGroups`, `crewDamaged` too (`damagedFrom`
+  `destroyed`); new part groups `airframe`, `controls`, `rotor`, `gear` for aircraft parts.
+- Older game versions' part numbering: replays of game 101404 number the game's parts lower than today's install
+  (names were put in between since). Such a replay is now named by a kept copy of that version's
+  `aces.vromfs.bin` where this machine has one (the converter keeps one per game version in
+  `~/.cache/heat3d-wt/archives`, `HEAT3D_WT_ARCHIVES`), else by the table of where the names were put in; the
+  fires tell which fits (`selfCheck.damageParts.gameNumbering`: `named`, `numbering`, `tried`). `hitPartNumber`
+  is the struck part's place in your install's list.
+- Files converted before 0.5.0 need converting again for these columns.
+
+
 ## 0.4.0
 
 - Its own icon: the 3DHeat cube with a text badge for its game (letters in 3DHeat's colours), as the

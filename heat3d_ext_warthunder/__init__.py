@@ -6,4 +6,4 @@ as a command (`heat3d-wt-replay`) when it is installed.
 `heat3d-wt-level` reads the game's own levels into .glb levels for the viewer.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
