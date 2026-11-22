@@ -6,7 +6,7 @@ nav_order: 91
 # Column list
 
 This page is generated from the code by `tools/gen_docs_reference.py`; do not edit it by hand.
-What each column means is on [The table](table.md). The table has **122 columns**:
+What each column means is on [The table](table.md). The table has **155 columns**:
 
 | # | Column | Type |
 |---|---|---|
@@ -75,60 +75,93 @@ What each column means is on [The table](table.md). The table has **122 columns*
 | 63 | `fireLocalX` | decimal |
 | 64 | `fireLocalY` | decimal |
 | 65 | `fireLocalZ` | decimal |
-| 66 | `rpm` | decimal |
-| 67 | `vx` | decimal |
-| 68 | `vy` | decimal |
-| 69 | `vz` | decimal |
-| 70 | `engine` | text |
-| 71 | `afterburner` | decimal |
-| 72 | `engineCondition` | decimal |
-| 73 | `ammo` | text |
-| 74 | `throttle` | decimal |
-| 75 | `elevator` | decimal |
-| 76 | `aileron` | decimal |
-| 77 | `rudder` | decimal |
-| 78 | `ias` | decimal |
-| 79 | `vario` | decimal |
-| 80 | `fuel` | decimal |
-| 81 | `manifoldPressure` | decimal |
-| 82 | `gear` | decimal |
-| 83 | `oilTemperature` | decimal |
-| 84 | `headTemperature` | decimal |
-| 85 | `turretYaw` | decimal |
-| 86 | `gunPitch` | decimal |
-| 87 | `turrets` | text |
-| 88 | `turretYawRaw` | decimal |
-| 89 | `gunPitchRaw` | decimal |
-| 90 | `viewYaw` | decimal |
-| 91 | `viewPitch` | decimal |
-| 92 | `aimHeading` | decimal |
-| 93 | `aimPitch` | decimal |
-| 94 | `aimDistance` | decimal |
-| 95 | `zoom` | decimal |
-| 96 | `cameraMode` | whole number |
-| 97 | `sensors` | text |
-| 98 | `sensorModes` | text |
-| 99 | `sensorContacts` | text |
-| 100 | `sensorLocks` | text |
-| 101 | `opticX` | decimal |
-| 102 | `opticY` | decimal |
-| 103 | `opticZ` | decimal |
-| 104 | `lockX` | decimal |
-| 105 | `lockY` | decimal |
-| 106 | `lockZ` | decimal |
-| 107 | `sightX` | decimal |
-| 108 | `sightY` | decimal |
-| 109 | `sightZ` | decimal |
-| 110 | `difficulty` | text |
-| 111 | `gameMode` | text |
-| 112 | `cost_fired_sl` | decimal |
-| 113 | `cost_lost_sl` | decimal |
-| 114 | `earn_sl` | decimal |
-| 115 | `earn_rp` | decimal |
-| 116 | `currency` | text |
-| 117 | `econ_basis` | text |
-| 118 | `rewardType` | text |
-| 119 | `won` | whole number |
-| 120 | `matchWon` | whole number |
-| 121 | `round` | whole number |
-| 122 | `roundEndReason` | text |
+| 66 | `ammoSource` | text |
+| 67 | `ammoConfidence` | decimal |
+| 68 | `ammoSpeedError` | decimal |
+| 69 | `hitPartName` | text |
+| 70 | `hitKey` | text |
+| 71 | `shellSpeed` | decimal |
+| 72 | `shellValue` | decimal |
+| 73 | `shellPointX` | decimal |
+| 74 | `shellPointY` | decimal |
+| 75 | `shellPointZ` | decimal |
+| 76 | `shellDirX` | decimal |
+| 77 | `shellDirY` | decimal |
+| 78 | `shellDirZ` | decimal |
+| 79 | `shellLocalX` | decimal |
+| 80 | `shellLocalY` | decimal |
+| 81 | `shellLocalZ` | decimal |
+| 82 | `shellLocalDirX` | decimal |
+| 83 | `shellLocalDirY` | decimal |
+| 84 | `shellLocalDirZ` | decimal |
+| 85 | `afterHitMessage` | text |
+| 86 | `afterHitFlags` | decimal |
+| 87 | `afterHitValue` | decimal |
+| 88 | `afterHitCount` | decimal |
+| 89 | `damagedPartIds` | text |
+| 90 | `damagedParts` | text |
+| 91 | `damagedGroups` | text |
+| 92 | `crewDamaged` | decimal |
+| 93 | `ammoDamaged` | decimal |
+| 94 | `damagedFlags` | text |
+| 95 | `firePart` | text |
+| 96 | `fireNode` | text |
+| 97 | `partName` | text |
+| 98 | `partGroup` | text |
+| 99 | `rpm` | decimal |
+| 100 | `vx` | decimal |
+| 101 | `vy` | decimal |
+| 102 | `vz` | decimal |
+| 103 | `engine` | text |
+| 104 | `afterburner` | decimal |
+| 105 | `engineCondition` | decimal |
+| 106 | `ammo` | text |
+| 107 | `throttle` | decimal |
+| 108 | `elevator` | decimal |
+| 109 | `aileron` | decimal |
+| 110 | `rudder` | decimal |
+| 111 | `ias` | decimal |
+| 112 | `vario` | decimal |
+| 113 | `fuel` | decimal |
+| 114 | `manifoldPressure` | decimal |
+| 115 | `gear` | decimal |
+| 116 | `oilTemperature` | decimal |
+| 117 | `headTemperature` | decimal |
+| 118 | `turretYaw` | decimal |
+| 119 | `gunPitch` | decimal |
+| 120 | `turrets` | text |
+| 121 | `turretYawRaw` | decimal |
+| 122 | `gunPitchRaw` | decimal |
+| 123 | `viewYaw` | decimal |
+| 124 | `viewPitch` | decimal |
+| 125 | `aimHeading` | decimal |
+| 126 | `aimPitch` | decimal |
+| 127 | `aimDistance` | decimal |
+| 128 | `zoom` | decimal |
+| 129 | `cameraMode` | whole number |
+| 130 | `sensors` | text |
+| 131 | `sensorModes` | text |
+| 132 | `sensorContacts` | text |
+| 133 | `sensorLocks` | text |
+| 134 | `opticX` | decimal |
+| 135 | `opticY` | decimal |
+| 136 | `opticZ` | decimal |
+| 137 | `lockX` | decimal |
+| 138 | `lockY` | decimal |
+| 139 | `lockZ` | decimal |
+| 140 | `sightX` | decimal |
+| 141 | `sightY` | decimal |
+| 142 | `sightZ` | decimal |
+| 143 | `difficulty` | text |
+| 144 | `gameMode` | text |
+| 145 | `cost_fired_sl` | decimal |
+| 146 | `cost_lost_sl` | decimal |
+| 147 | `earn_sl` | decimal |
+| 148 | `earn_rp` | decimal |
+| 149 | `currency` | text |
+| 150 | `econ_basis` | text |
+| 151 | `rewardType` | text |
+| 152 | `won` | whole number |
+| 153 | `matchWon` | whole number |
+| 154 | `round` | whole number |
+| 155 | `roundEndReason` | text |

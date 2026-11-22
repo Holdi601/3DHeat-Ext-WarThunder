@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import arsenal, ecs, economy, names as vehicle_names, objectives as mission_objectives, wrpl
+from . import arsenal, damage_parts, ecs, economy, names as vehicle_names, objectives as mission_objectives, wrpl
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
 AIR_TYPES = {"fighter", "assault", "bomber", "helicopter", "attack_helicopter", "utility_helicopter", "aircraft"}
@@ -79,7 +79,8 @@ HINTS = {
                   "rollRaw", "targetX", "targetY", "targetZ", "otherVehicle", "otherLife", "hitLocalX", "hitLocalY",
                   "hitLocalZ", "hitDirX", "hitDirY", "hitDirZ", "hitPart", "hitFlag", "hitFlags", "hitOutcome",
                   "hitShell", "calibre", "ammoType", "ammoName", "ammoSlot", "fireId", "fireKind",
-                  "fireLocalX", "fireLocalY", "fireLocalZ", "rpm", "vx", "vy", "vz", "engine", "afterburner",
+                  "fireLocalX", "fireLocalY", "fireLocalZ", "ammoSource", "ammoConfidence", "ammoSpeedError", "hitPartName", "hitKey", "shellSpeed", "shellValue", "shellPointX", "shellPointY", "shellPointZ", "shellDirX", "shellDirY", "shellDirZ", "shellLocalX", "shellLocalY", "shellLocalZ", "shellLocalDirX", "shellLocalDirY", "shellLocalDirZ", "afterHitMessage", "afterHitFlags", "afterHitValue", "afterHitCount", "damagedPartIds", "damagedParts", "damagedGroups", "crewDamaged", "ammoDamaged", "damagedFlags", "firePart", "fireNode", "partName", "partGroup",
+                  "rpm", "vx", "vy", "vz", "engine", "afterburner",
                   "engineCondition", "ammo", "throttle", "elevator", "aileron", "rudder", "ias", "vario", "fuel",
                   "manifoldPressure", "gear", "oilTemperature", "headTemperature", "turretYaw", "gunPitch",
                   "turrets", "turretYawRaw", "gunPitchRaw", "viewYaw", "viewPitch", "aimHeading", "aimPitch", "aimDistance", "zoom", "cameraMode",
@@ -188,6 +189,39 @@ COLUMNS = [
     ("fireLocalX", "f32"),
     ("fireLocalY", "f32"),
     ("fireLocalZ", "f32"),
+    ("ammoSource", "str"),
+    ("ammoConfidence", "f32"),
+    ("ammoSpeedError", "f32"),
+    ("hitPartName", "str"),
+    ("hitKey", "str"),
+    ("shellSpeed", "f32"),
+    ("shellValue", "f32"),
+    ("shellPointX", "f32"),
+    ("shellPointY", "f32"),
+    ("shellPointZ", "f32"),
+    ("shellDirX", "f32"),
+    ("shellDirY", "f32"),
+    ("shellDirZ", "f32"),
+    ("shellLocalX", "f32"),
+    ("shellLocalY", "f32"),
+    ("shellLocalZ", "f32"),
+    ("shellLocalDirX", "f32"),
+    ("shellLocalDirY", "f32"),
+    ("shellLocalDirZ", "f32"),
+    ("afterHitMessage", "str"),
+    ("afterHitFlags", "f32"),
+    ("afterHitValue", "f32"),
+    ("afterHitCount", "f32"),
+    ("damagedPartIds", "str"),
+    ("damagedParts", "str"),
+    ("damagedGroups", "str"),
+    ("crewDamaged", "f32"),
+    ("ammoDamaged", "f32"),
+    ("damagedFlags", "str"),
+    ("firePart", "str"),
+    ("fireNode", "str"),
+    ("partName", "str"),
+    ("partGroup", "str"),
     ("rpm", "f32"),
     ("vx", "f32"),
     ("vy", "f32"),
@@ -1902,7 +1936,8 @@ def weapons(r: Replay, all_lives: list[Life]) -> list[Weapon]:
 
 def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = None,
          rpm: dict[int, tuple] | None = None, extra: list[dict[str, Any]] | None = None,
-         views: dict[int, tuple[list[float], list[tuple]]] | None = None) -> list[dict[str, Any]]:
+         views: dict[int, tuple[list[float], list[tuple]]] | None = None,
+         parts: "damage_parts.PartOrder | None" = None) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = list(extra or [])
     by_uid: dict[int, list[Life]] = defaultdict(list)
     rpm = rpm or {}
@@ -1990,8 +2025,15 @@ def rows(r: Replay, all_lives: list[Life], all_weapons: list[Weapon] | None = No
         if vs is None or victim is None:
             continue
         last = [d for d in damage.get(m.get("uid"), []) if m["t"] - PART_BY_HIT <= d[0] <= m["t"] + 0.5]
+        extra = {}
+        if parts and m.get("part") is not None:
+            # The game's own numbering (as `hitPart`), not the vehicle's: aircraft modules read `fin`, `stab1`.
+            name = parts.global_name(m["part"])
+            if name:
+                extra["partName"] = name
+                extra["partGroup"] = damage_parts.part_group(name + "_dm")
         out.append({**_row(victim, vs, "module_destroyed"), "time": m["t"], "other": last[-1][1] if last else "",
-                    "weapon": f"part {m.get('part')}"})
+                    "weapon": f"part {m.get('part')}", **extra})
     for w in all_weapons or []:
         name = w.kind
         s = _at_time(w.launcher, w.entity.t) if w.launcher is not None else None
@@ -2300,8 +2342,30 @@ def _unrotate(s: Sample, v: tuple[float, float, float]) -> tuple[float, float, f
     return tuple(sum(axis[k] * v[k] for k in range(3)) for axis in b)
 
 
+#: A hit's outcome by rank, for the hit a list of damaged parts (0xF13A, no key) belongs to: of the hits on the unit
+#: within DAMAGED_WINDOW s, the one that did most.
+OUTCOME_RANK = {"kill": 4, "critical": 3, "penetration": 2, "nonpenetration": 1, "splash": 0, "": 0}
+DAMAGED_WINDOW = 0.05
+
+
+def _part_names(parts: "damage_parts.PartOrder | None", vehicle: str, ids: list[int]) -> list[str]:
+    """A vehicle's parts by their numbers in its own list; '#<number>' where the install does not tell."""
+    return [(parts.name(vehicle, i) if parts else "") or f"#{i}" for i in ids]
+
+
+def _damage_columns(names: list[str], ids: list[int], flags: list[int | None]) -> dict[str, Any]:
+    groups = [damage_parts.part_group(n) for n in names]
+    out: dict[str, Any] = {"damagedPartIds": ",".join(str(i) for i in ids), "damagedParts": ",".join(names),
+                           "damagedGroups": ",".join(sorted({g for g in groups if g})),
+                           "crewDamaged": groups.count("crew"), "ammoDamaged": groups.count("ammo")}
+    if any(flags):
+        out["damagedFlags"] = ",".join("" if f is None else str(f) for f in flags)
+    return out
+
+
 def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
-              arms: "arsenal.Arsenal | None" = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+              arms: "arsenal.Arsenal | None" = None,
+              parts: "damage_parts.PartOrder | None" = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
     Rows from the messages to units, and their check:
 
@@ -2354,11 +2418,44 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
     # Each hit, for its ammunition (below): (victim, shooter, time, shell signature, row, burst).
     shells: list[tuple[int, int, float, str, dict[str, Any], bool]] = []
     bursts = set()
+    # The messages about a hit that name it by its key (wrpl.hit_key): the projectile's last step (0xF15F) and
+    # what came after the hit (0xF117, 0xF13C); the parts a hit damaged (0xF13A, no key) by unit and moment.
+    states: dict[str, dict[str, Any]] = {}
+    after: dict[str, list[tuple[float, int, dict[str, Any]]]] = defaultdict(list)
+    damaged: dict[tuple[int, float], list[tuple[float, int, int | None, UnitMessage]]] = defaultdict(list)
     for m in msgs:
         if m.mid == 0xF133:
             d = wrpl.read_unit_explosion(m.body)
             if d is not None and d["number"] is not None:
                 bursts.add((d["shooter"], d["number"]))
+        elif m.mid == 0xF15F:
+            d = wrpl.decode_unit_message(m.mid, m.body)
+            if d and d["key"]:
+                states.setdefault(d["key"], d)
+                check["shellStates"] += 1
+        elif m.mid in (0xF117, 0xF13C):
+            d = wrpl.decode_unit_message(m.mid, m.body)
+            if not d or not d.get("key"):
+                continue
+            after[d["key"]].append((m.t, m.mid, d))
+            check["afterHit"] += 1
+            life, s = where(m.uid, m.t)
+            if s is None:
+                check["afterHitWithoutPlace"] += 1
+                continue
+            row = {**_row(life, s, "after_hit"), "time": m.t, "hitKey": d["key"],
+                   "afterHitMessage": f"{m.mid:04X}", "afterHitValue": d.get("value")}
+            if m.mid == 0xF117:
+                row["afterHitFlags"] = d.get("n")
+            else:
+                row.update(afterHitFlags=d.get("flags"), afterHitCount=d.get("n"))
+            out.append(row)
+        elif m.mid == 0xF13A and m.uid is not None:
+            d = wrpl.read_part_damaged(m.body)
+            if d is not None:
+                damaged[(m.uid, round(m.t, 4))].append((m.t, d["part"], d["flag"], m))
+                check["partsDamaged"] += 1
+    hit_rows: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for m in msgs:
         if m.mid == 0xF0E9:
             try:
@@ -2400,6 +2497,27 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
                 row.update(otherVehicle=victim.vehicle, otherLife=victim.id)
             row["hitPart"] = hit["part"]
             row["hitFlag"] = hit["part"] >> 8
+            pname = parts.global_name(hit["partNumber"]) if parts else ""
+            if pname:
+                row["hitPartName"] = pname
+            key = hit.get("key") or ""
+            if key:
+                row["hitKey"] = key
+                st = states.get(key)
+                if st is not None:
+                    check["shotsWithShellState"] += 1
+                    row.update(shellSpeed=st["speed"], shellValue=st["value"],
+                               shellPointX=st["point"][0], shellPointY=st["point"][1], shellPointZ=st["point"][2],
+                               shellDirX=st["dir"][0], shellDirY=st["dir"][1], shellDirZ=st["dir"][2],
+                               shellLocalX=st["localPoint"][0], shellLocalY=st["localPoint"][1],
+                               shellLocalZ=st["localPoint"][2], shellLocalDirX=st["localDir"][0],
+                               shellLocalDirY=st["localDir"][1], shellLocalDirZ=st["localDir"][2])
+                first = next((a for a in after.get(key, []) if a[1] == 0xF117 and abs(a[0] - m.t) <= DAMAGED_WINDOW), None)
+                if first is not None:
+                    row.update(afterHitFlags=first[2].get("n"), afterHitValue=first[2].get("value"))
+                    check["shotsWithAfterHit"] += 1
+            if m.uid is not None:
+                hit_rows[m.uid].append(row)
             best = None
             for rec in on_hit.get(m.uid, []):
                 if not rec[2] and abs(rec[0] - m.t) <= 0.005 and rec[1] & wrpl.HIT_DIRECT \
@@ -2445,6 +2563,37 @@ def unit_rows(r: Replay, msgs: list[UnitMessage], all_lives: list[Life],
                         "player": f"{m.entity.class_name.rpartition('/')[2]} #{m.uid}" if m.uid is not None else "",
                         "Vehicle": m.entity.class_name.rpartition("/")[2], "ai": True, "isPlayer": False,
                         "x": pos[0], "y": pos[1], "z": pos[2]})
+    # The parts each hit damaged (0xF13A): on the hit on that unit at that moment that did most, else a row of its own.
+    taken: dict[int, tuple[list[int], list[str], list[int | None]]] = {}
+    for (uid, _), items in sorted(damaged.items(), key=lambda kv: kv[0][1]):
+        t = items[0][0]
+        ids = [i for _, i, _, _ in items]
+        flags = [f for _, _, f, _ in items]
+        life, s = where(uid, t)
+        e = items[0][3].entity
+        vehicle = life.vehicle if life is not None else (e.class_name.rpartition("/")[2] if e is not None else "")
+        names = _part_names(parts, vehicle, ids)
+        check["partsNamed"] += sum(1 for n in names if not n.startswith("#"))
+        best = None
+        for row in hit_rows.get(uid, []):
+            dt = abs(row["time"] - t)
+            if dt <= DAMAGED_WINDOW:
+                rank = (OUTCOME_RANK.get(row.get("hitOutcome") or "", 0), -dt)
+                if best is None or rank > best[0]:
+                    best = (rank, row)
+        if best is not None:
+            row = best[1]
+            prev = taken.get(id(row))
+            if prev is not None:
+                ids, names, flags = prev[0] + ids, prev[1] + names, prev[2] + flags
+            taken[id(row)] = (ids, names, flags)
+            row.update(_damage_columns(names, ids, flags))
+            check["damageListsOnHits"] += 1
+        elif s is not None:
+            out.append({**_row(life, s, "parts_damaged"), "time": t, **_damage_columns(names, ids, flags)})
+            check["damageListsOwnRow"] += 1
+        else:
+            check["damageListsWithoutPlace"] += 1
     check["ammunition"] = _shot_ammo(r, msgs, shells, arms)
     return out, dict(check)
 
@@ -2492,6 +2641,62 @@ def shots_fired(msgs: list[UnitMessage]) -> dict[int, list[tuple[float, int, int
     return out
 
 
+#: How sure a hit's ammunition is (`ammoConfidence`) by where its name came from (`ammoSource`): `recorded` the kill
+#: it made names it; `slot` a kill by the same loaded slot (0xF0BD) names it; `speed` its own impact speed
+#: (`shellSpeed`) fits that shell alone among the weapon's (`speed_match`); `slot-speed` the hits of its slot that
+#: have a speed fit it; `candidate` the weapon has one shell of what the hit did (burst or not); `speed-calibre`
+#: several shells fit its speed and share a calibre (and the type where they share it); `calibre` only the
+#: calibre is known (the weapon's or, for a machine gun, by its hits' signature), the type only as kinetic or
+#: explosive (`default`).
+AMMO_CONFIDENCE = {"recorded": 1.0, "slot": 0.9, "speed": 0.85, "slot-speed": 0.75, "candidate": 0.6,
+                   "speed-calibre": 0.6, "calibre": 0.4, "default": 0.4}
+#: A shell fits a hit's speed when the drag model (arsenal.impact_speed) puts it within SPEED_FIT of the speed, and
+#: the next-best shell is at least SPEED_MARGIN further off (fractions of the speed).
+SPEED_FIT, SPEED_MARGIN = 0.03, 0.01
+
+
+def _distance(row: dict[str, Any]) -> float:
+    """From the shooter's place to the hit (m), 0 when the hit has no point."""
+    if row.get("targetX") is None:
+        return 0.0
+    return math.dist((row["x"], row["y"], row["z"]), (row["targetX"], row["targetY"], row["targetZ"]))
+
+
+def speed_match(guns: list["arsenal.Gun"], speed: float,
+                distance: float) -> tuple[str, float, float | None, str] | None:
+    """
+    What a hit's impact speed (`speed`, m/s, after `distance` m) says of its shell among those `guns` can fire:
+    (name, relative error observed / expected - 1, calibre mm, type). The name is that of the one shell within
+    SPEED_FIT whose next-best is SPEED_MARGIN further off, else '' with the calibre and type all shells within
+    SPEED_FIT share (None and '' where they differ); None when no shell fits.
+    """
+    fits = []
+    for g in guns:
+        for name, props in g.props.items():
+            v = arsenal.impact_speed(props, distance)
+            if v:
+                fits.append((abs(speed / v - 1), name, speed / v - 1, g.shells[name][1] or g.calibre,
+                             g.shells[name][0]))
+    fits.sort(key=lambda f: f[0])
+    if not fits or fits[0][0] > SPEED_FIT:
+        return None
+    near = [f for f in fits if f[0] <= SPEED_FIT]
+    best = fits[0]
+    rival = next((f for f in fits[1:] if f[1] != best[1]), None)
+    if rival is None or rival[0] - best[0] >= SPEED_MARGIN:
+        return best[1], round(best[2], 4), best[3], best[4]
+    cals = {f[3] for f in near}
+    types = {f[4] for f in near}
+    return "", round(best[2], 4), (cals.pop() if len(cals) == 1 else None), (types.pop() if len(types) == 1 else "")
+
+
+def _shell_of(guns: list["arsenal.Gun"], name: str) -> tuple[str, float | None] | None:
+    for g in guns:
+        if name in g.shells:
+            return g.shells[name]
+    return None
+
+
 def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, float, str, dict[str, Any], bool]],
                arms: "arsenal.Arsenal | None") -> dict[str, Any]:
     """
@@ -2518,6 +2723,7 @@ def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, fl
       `kinetic`.
     """
     arms = arms or arsenal.Arsenal()
+    speed_named: set[tuple[int, str, int, int]] = set()
     fired = shots_fired(msgs)
     loads: dict[tuple[int, int], list[tuple[float, int]]] = defaultdict(list)
     for uid, v in fired.items():
@@ -2555,6 +2761,7 @@ def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, fl
     for i, h in enumerate(hits):
         by_victim[h[0]].append(i)
     named: dict[tuple[int, str, int, int], str] = {}
+    recorded: dict[int, str] = {}  # the killing hit: the ammunition its kill names
     kills_checked = kills_agree = 0
     for k in r.kills:
         killer = (k.get("killerUid") or 0) & wrpl.NO_UID
@@ -2562,6 +2769,10 @@ def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, fl
         for i in by_victim.get(k.get("victimUid"), []):
             if hits[i][1] == killer and hits[i][2] <= k["t"] + 0.05 and (last is None or hits[i][2] >= hits[last][2]):
                 last = i
+        if last is not None and k.get("weapon") and last not in slot_of:
+            veh = hits[last][4].get("Vehicle") or ""
+            if _shell_of(arms.guns(veh), str(k["weapon"]).lower()) is not None:
+                recorded[last] = str(k["weapon"]).lower()
         if last is None or last not in slot_of or not k.get("weapon"):
             continue
         veh = hits[last][4].get("Vehicle") or ""
@@ -2575,6 +2786,32 @@ def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, fl
             kills_agree += agree
         if agree:
             named.setdefault((killer, veh, *slot_of[last]), str(k["weapon"]).lower())
+            recorded[last] = str(k["weapon"]).lower()
+    # The projectile's speed at the hit (0xF15F, `shellSpeed`) against each shell the weapon can fire: a slot that
+    # no kill names is named by its hits' speeds when they agree.
+    by_speed: dict[int, tuple[str, float]] = {}
+    for i, (_, shooter, _, _, row, burst) in enumerate(hits):
+        if row.get("shellSpeed") is None:
+            continue
+        veh = row.get("Vehicle") or ""
+        guns = arms.guns(veh)
+        if i in slot_of:
+            w = slot_of[i][0]
+            pool = [guns[w]] if w < len(guns) else []
+        else:
+            pool = guns
+        got = speed_match(pool, row["shellSpeed"], _distance(row))
+        if got is not None:
+            by_speed[i] = got
+    speed_slots: dict[tuple[int, str, int, int], Counter] = defaultdict(Counter)
+    for i, (name, *_) in by_speed.items():
+        if i in slot_of and name:
+            speed_slots[(hits[i][1], hits[i][4].get("Vehicle") or "", *slot_of[i])][name] += 1
+    for key, votes in speed_slots.items():
+        name, n = votes.most_common(1)[0]
+        if key not in named and n * 2 > sum(votes.values()):
+            named[key] = name
+            speed_named.add(key)
     # Machine guns: the calibre each signature can be on each vehicle.
     # A signature whose hits came mostly from guns 0xF0BD counts is a gun's (its hits without a slot: the vehicle's
     # main gun, below), not a machine gun's.
@@ -2600,38 +2837,65 @@ def _shot_ammo(r: Replay, msgs: list[UnitMessage], hits: list[tuple[int, int, fl
     check: Counter = Counter()
     for i, (_, shooter, _, sig, row, burst) in enumerate(hits):
         veh = row.get("Vehicle") or ""
-        kind, name, cal = ("explosive" if burst else "kinetic"), "", None
+        guns = arms.guns(veh)
+        kind, name, cal, source = ("explosive" if burst else "kinetic"), "", None, "default"
+        pool: list[arsenal.Gun] = []
         if i in slot_of:
             w, slot = slot_of[i]
             row["ammoSlot"] = f"{w}/{slot}"
-            guns = arms.guns(veh)
             gun = guns[w] if w < len(guns) else None
+            pool = [gun] if gun else []
             cal = gun.calibre if gun else None
-            name = named.get((shooter, veh, w, slot), "")
-            shell = gun.shells.get(name) if gun and name else None
-            if shell:
-                kind = shell[0] or kind
-                cal = shell[1] or cal
-            elif name:
-                cal = calibre_of(name) or cal
             check["hitsWithShot"] += 1
+            if (shooter, veh, w, slot) in named:
+                name = named[(shooter, veh, w, slot)]
+                source = "slot-speed" if (shooter, veh, w, slot) in speed_named else "slot"
         elif sig in mg_cals and not burst:
             cal = mg_cals[sig]
             check["hitsByMachineGun"] += 1
         elif burst or sig in gun_sigs:
-            main = next((g for g in arms.guns(veh) if not g.machine_gun and g.calibre), None)
+            main = next((g for g in guns if not g.machine_gun and g.calibre), None)
+            pool = [main] if main else []
             cal = main.calibre if main else None
             check["hitsByMainGun"] += 1
+        if i in recorded:
+            name, source = recorded[i], "recorded"
+        elif i in by_speed and by_speed[i][0] and (not name or source == "slot-speed"):
+            name, source = by_speed[i][0], "speed"
+        elif i in by_speed and not name and by_speed[i][2]:
+            # Several shells fit the speed: their calibre (and type) where they share it.
+            cal, source = by_speed[i][2], "speed-calibre"
+            if by_speed[i][3]:
+                kind = by_speed[i][3]
+        elif not name and pool:
+            # The one shell of the weapon that fits what the hit did (burst or not).
+            fits = [n for g in pool for n, sh in g.shells.items() if (sh[0] in arsenal.EXPLOSIVE) == burst
+                    and sh[0] not in ("smoke", "practice")]
+            if len(set(fits)) == 1:
+                name, source = fits[0], "candidate"
+        shell = _shell_of(guns, name) if name else None
+        if shell is not None:
+            kind = shell[0] or kind
+            cal = shell[1] or cal
+        elif name:
+            cal = calibre_of(name) or cal
         row["ammoType"] = kind
+        row["ammoSource"] = source if (name or cal) else ""
+        row["ammoConfidence"] = AMMO_CONFIDENCE[source] if (name or source == "speed-calibre") else (
+            AMMO_CONFIDENCE["calibre"] if cal else None)
+        if i in by_speed:
+            row["ammoSpeedError"] = by_speed[i][1]
         if name:
             row["ammoName"] = name
             check["hitsWithAmmoName"] += 1
+            check[f"source_{source}"] += 1
         if cal:
             row["calibre"] = cal
             check["hitsWithCalibre"] += 1
         check[f"type_{kind}"] += 1
     return {"hits": len(hits), "roundsLoaded": sum(len(v) for v in fired.values()), **dict(check),
-            "slotsNamedByKills": len(named), "killsWeaponCalibreChecked": kills_checked,
+            "slotsNamedByKills": len(named) - len(speed_named), "slotsNamedBySpeed": len(speed_named),
+            "hitsNamedBySpeed": len(by_speed), "killsWeaponCalibreChecked": kills_checked,
             "killsWeaponCalibreAgree": kills_agree, "machineGunSignatures": {s: c for s, c in sorted(mg_cals.items())},
             "install": bool(arms), "hitsWithShell": sum(1 for h in hits if h[3]),
             "hitsThatBurst": sum(1 for h in hits if h[5])}
@@ -2695,7 +2959,8 @@ def _fire_place(r: Replay, eid: int, t: float, first: int, node: int, kind: int)
     return None
 
 
-def fire_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def fire_rows(r: Replay, all_lives: list[Life],
+              parts: "damage_parts.PartOrder | None" = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
     `fire_on` and `fire_off` rows: a fire on a vehicle (see FIRES_EVENT),
     at the vehicle, with `fireId` (its two ids), `fireKind` and, when the
@@ -2736,7 +3001,7 @@ def fire_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]], d
 
     def close(eid: int, t: float, key: tuple[int, int]) -> None:
         fire = burning[eid].pop(key)
-        row(eid, t, "fire_off", {k: v for k, v in fire.items() if k in ("fireId", "fireKind")})
+        row(eid, t, "fire_off", {k: v for k, v in fire.items() if k in ("fireId", "fireKind", "firePart", "fireNode")})
         check["fireSeconds"] += t - fire["_t"]
 
     for t, eid, fires in lists:
@@ -2747,6 +3012,17 @@ def fire_rows(r: Replay, all_lives: list[Life]) -> tuple[list[dict[str, Any]], d
             if key in burning[eid]:
                 continue
             fire: dict[str, Any] = {"fireId": f"{key[0]}:{key[1]}", "fireKind": kind, "_t": t}
+            if parts:
+                e = ents.get(eid)
+                life = life_of(eid, t)
+                vehicle = life.vehicle if life is not None else (e.class_name.rpartition("/")[2] if e is not None else "")
+                own, node = parts.name(vehicle, key[0]), parts.global_name(key[1])
+                if own:
+                    fire["firePart"] = own
+                if node:
+                    fire["fireNode"] = node
+                if own and node:
+                    check["partNamesAgree" if own == node + "_dm" else "partNamesDisagree"] += 1
             place = _fire_place(r, eid, t, key[0], key[1], kind)
             if place is not None:
                 fire.update(fireLocalX=place[0], fireLocalY=place[1], fireLocalZ=place[2])
@@ -4456,15 +4732,18 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     msgs = unit_messages(r)
     rpm = rpm_series(msgs)
     arms_install = arsenal.Arsenal.from_game(game)
-    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arms_install)
+    parts = damage_parts.PartOrder.from_game(game, arms_install.archive)
+    extra, more["unitMessages"] = unit_rows(r, msgs, all_lives, arms_install, parts)
     more["turretLimit"] = limit_turrets(all_lives, extra, arms_install)
     more["unitMessages"].update(shooters=_shooter_check(r, msgs), deaths=_death_check(r, msgs),
                                 rpm=_rpm_check(r, rpm, all_lives),
                                 withEntity=sum(1 for m in msgs if m.entity is not None), messages=len(msgs))
-    fires, more["fires"] = fire_rows(r, all_lives)
+    fires, more["fires"] = fire_rows(r, all_lives, parts)
+    more["damageParts"] = {"install": bool(parts), "fromPacks": parts.res_root is not None,
+                           "vehicles": sum(1 for p in parts._parts.values() if p), "kept": parts.save()}
     cam, more["camera"] = camera_rows(r, all_lives)
     views, more["unitCameras"] = unit_views(msgs)
-    data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam, views)
+    data = rows(r, all_lives, all_weapons, rpm, extra + fires + cam, views, parts)
     board = scoreboard(r)
     result = battle_result(r, roster, board)
     eco = economy.Economy.from_game(game, arms_install)

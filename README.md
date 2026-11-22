@@ -175,7 +175,7 @@ table, the match document and three sidecars, packed. With `--loose`:
 
 `<match>` is `<map>_<AB|RB|SB>_<mode>_<start, UTC>_<session id>`.
 
-The table's columns (105), in short:
+The table's columns (155), in short:
 
 | Columns | What |
 |---|---|
@@ -186,8 +186,11 @@ The table's columns (105), in short:
 | `alive`, `extrapolated`, `moved`, `xRaw` ... `rollRaw` | wreck or alive; dead-reckoned or worked-out samples; the replay's values before smoothing |
 | `other`, `otherVehicle`, `otherLife`, `weapon`, `weaponName`, `mission` | the other unit of an event; the weapon |
 | `targetX/Y/Z`, `hitLocalX/Y/Z`, `hitDirX/Y/Z`, `hitPart`, `hitFlag(s)`, `hitOutcome`, `hitShell` | where a hit landed, in the world and on the vehicle; what it did |
-| `calibre`, `ammoType`, `ammoName`, `ammoSlot` | the ammunition |
-| `fireId`, `fireKind`, `fireLocalX/Y/Z` | a vehicle on fire |
+| `hitKey`, `hitPartName`, `shellSpeed`, `shellPointX/Y/Z`, `shellDirX/Y/Z`, `shellLocalX/Y/Z`, `shellLocalDirX/Y/Z`, `shellValue` | which hit; the part struck; the projectile's speed, place and direction at the hit |
+| `afterHitMessage`, `afterHitFlags`, `afterHitValue`, `afterHitCount` | what came after a hit (raw) |
+| `damagedPartIds`, `damagedParts`, `damagedGroups`, `crewDamaged`, `ammoDamaged`, `damagedFlags`, `partName`, `partGroup` | the parts a hit damaged: crew, ammunition, modules; a destroyed module |
+| `calibre`, `ammoType`, `ammoName`, `ammoSlot`, `ammoSource`, `ammoConfidence`, `ammoSpeedError` | the ammunition, and where it is known from |
+| `fireId`, `fireKind`, `fireLocalX/Y/Z`, `firePart`, `fireNode` | a vehicle on fire |
 | `rpm`, `engine`, `afterburner`, `engineCondition`, `ammo`, `throttle`, `elevator`, `aileron`, `rudder`, `ias`, `vario`, `fuel`, `manifoldPressure`, `gear`, `oilTemperature`, `headTemperature` | aircraft engines, controls and cockpit instruments |
 | `turretYaw`, `gunPitch`, `turrets`, `turretYawRaw`, `gunPitchRaw`, `viewYaw`, `viewPitch`, `aimHeading`, `aimPitch`, `aimDistance`, `zoom` | tank turrets, where players look and aim, the camera |
 | `difficulty`, `gameMode` | the battle mode |

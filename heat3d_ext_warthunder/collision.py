@@ -278,3 +278,54 @@ def load_shape(index: ResourceIndex, name: str) -> Shape | None:
         (word,) = struct.unpack_from("<I", head, 4)
         blob = head + fh.read(word & 0x3FFFFFFF)
     return read_collision(blob)
+
+
+def node_names(blob: bytes) -> list[str]:
+    """The names of a collision resource's nodes, in the resource's order (the name pool, array 9; a node record's
+    first word is its name's offset there). The triangle chunks are read past, not kept."""
+    (label,) = struct.unpack_from("<I", blob, 0)
+    if label & 0xFFFF0000 != COLLISION_CLASS or label & 0xFFFF != 3:
+        raise CollisionError("not a collision resource this reader knows")
+    (word,) = struct.unpack_from("<I", blob, 4)
+    fmt, n = word >> 30, word & 0x3FFFFFFF
+    body = blob[8 : 8 + n]
+    if fmt == 2:
+        (src,) = struct.unpack_from("<i", body, 0)
+        body = oodle.decompress(body[4:], src)
+    elif fmt == 1:
+        import zstandard
+
+        body = zstandard.ZstdDecompressor().decompressobj().decompress(body)
+    r = _Reader(body)
+    counts = struct.unpack_from(f"<{_ARRAYS}I", r.take(108), 64)
+    r.take(8 * counts[0])
+    nodes: list[tuple[int, int]] = []
+    pool = b""
+    for aid in range(_ARRAYS):
+        if aid == 0:
+            for _ in range(counts[0]):
+                nodes.append(struct.unpack_from("<II", r.take(48), 0))
+        elif aid == 4:
+            for _, n_idx in nodes:
+                if n_idx:
+                    _chunk(r)
+        elif aid == 9:
+            pool = r.take(counts[9])
+        elif aid != 5 and counts[aid]:
+            r.take(counts[aid] * _ELEM[aid])
+    out = []
+    for at, _ in nodes:
+        if at < len(pool):
+            end = pool.find(b"\0", at)
+            out.append(pool[at : end if end >= 0 else len(pool)].decode("latin1"))
+    return out
+
+
+def load_blob(where: tuple[Path, int]) -> bytes:
+    """A collision resource's bytes at (pack, offset)."""
+    path, ofs = where
+    with path.open("rb") as fh:
+        fh.seek(ofs)
+        head = fh.read(8)
+        (word,) = struct.unpack_from("<I", head, 4)
+        return head + fh.read(word & 0x3FFFFFFF)

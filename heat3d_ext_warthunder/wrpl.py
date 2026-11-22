@@ -1484,7 +1484,7 @@ UNIT_MESSAGES = {
     0xF033: "UnitRepair", 0xF04B: "OnUnitDead", 0xF04D: "UnitDoExplosion", 0xF04F: "F04F", 0xF050: "UnitBailoutResponse",
     0xF052: "F052", 0xF054: "UnitRearm", 0xF061: "F061", 0xF09A: "DvmUnreliableHpReflectionData", 0xF09F: "F09F",
     0xF0A0: "GmDoSingleShotUnreliable", 0xF0A1: "F0A1", 0xF0AB: "DvmCutDecor", 0xF0B1: "UnitSingleShot",
-    0xF0BD: "UnitBulletRearm", 0xF0E6: "GmApplyExplosionImpulse", 0xF0E9: "UnitHitEffects", 0xF117: "F117",
+    0xF0BD: "UnitBulletRearm", 0xF0E6: "GmApplyExplosionImpulse", 0xF0E9: "UnitHitEffects", 0xF117: "F117", 0xF13A: "F13A", 0xF13C: "F13C",
     0xF133: "UnitOnExplosion", 0xF13E: "F13E", 0xF144: "UnitOnHit", 0xF15F: "F15F", 0xF0CC: "F0CC",
 }
 
@@ -1557,7 +1557,20 @@ def read_hit_effect(body: bytes) -> dict[str, Any] | None:
         return None
     local = [x / 100.0 for x in struct.unpack_from("<3h", v, p)]
     return {"shooter": shooter, "local": (local[0], local[1], -local[2]), "number": _le16(v, 3), "kind": v[2],
-            "part": word, "partNumber": number, "shell": shell_signature(v[p + 6:])}
+            "part": word, "partNumber": number, "shell": shell_signature(v[p + 6:]), "key": hit_key(v)}
+
+
+def hit_key(v: bytes) -> str:
+    """
+    A hit's key, "shooter:kind:number", from the six bytes that start it (the shooter's uid as a u16, low 11 bits;
+    a byte; the hit's number, u16; a byte). The same six bytes open (or, split over two fields, make up) the other
+    messages about that hit: 0xF0C2, 0xF117, 0xF13C, 0xF15F (`read_shell_state`) and 0xF133's explosion. On the
+    ground test battle (2,048 hits) 687 of 715 0xF117 and 360 of 444 0xF15F name a hit by it; the number rises by
+    four from one shot of a shooter to the next.
+    """
+    if len(v) < 5:
+        return ""
+    return f"{_le16(v, 0) & NO_UID}:{v[2]}:{_le16(v, 3)}"
 
 
 #: In the rest of a 0xF0E9 hit (after the point; a bit stream not decoded): a byte 0x30-0x3F, a byte with its low six
@@ -1689,6 +1702,48 @@ def read_part_list(body: bytes) -> dict[str, Any] | None:
     return {"records": [[a, round(b, 4), round(c, 6), d] for a, b, c, d in recs]}
 
 
+#: 0xF15F, to a unit hit by a projectile that went into it (penetrations, critical hits, kills; ~10% of all hits,
+#: none of those that did not get through): the projectile's last simulation step. Field 1 the shooter's uid (u16),
+#: field 2 a record: a u32, the time (f32, s), a byte, then the rest of the hit's key (`hit_key`: the byte, the
+#: number, the byte), 12 zero bytes, and from byte 25 floats: the point where the step began (world, m), the
+#: projectile's direction (world, unit), the same point and direction in the unit's own frame (x forward, y up,
+#: z left as sent), its speed (m/s), and one more float (`value`, not known). Checked on the ground test battle:
+#: the point lies on the line from shooter to hit (median 1.3 m off), the local direction is the hit's own
+#: (`hitDir`, dot 1.000 on 99.4%), the speed is the weapon blk's muzzle speed less the drag over the distance
+#: (3BM42 1,702 m/s at short range, blk 1,700; 3UBR8 1,112-1,122, blk 1,120). Field 3 repeats field 1.
+SHELL_STATE_AT = 25
+
+
+def read_shell_state(body: bytes) -> dict[str, Any] | None:
+    """0xF15F: the projectile at its hit (see SHELL_STATE_AT): key, point, dir, localPoint, localDir, speed, value."""
+    f = id_field_map(body)
+    if 1 not in f or 2 not in f:
+        return None
+    a, b = f[1][1], f[2][1]
+    if len(a) < 2 or len(b) < SHELL_STATE_AT + 56:
+        return None
+    fl = struct.unpack_from("<14f", b, SHELL_STATE_AT)
+    if not all(math.isfinite(x) and abs(x) < 1e7 for x in fl):
+        return None
+    return {"key": hit_key(a[:2] + b[9:12]), "time": struct.unpack_from("<f", b, 4)[0],
+            "point": fl[0:3], "dir": fl[3:6], "localPoint": (fl[6], fl[7], -fl[8]),
+            "localDir": (fl[9], fl[10], -fl[11]), "speed": fl[12], "value": fl[13]}
+
+
+def read_part_damaged(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF13A, to a unit hit: one part of it that a hit damaged: field 2 the part's number in the vehicle's own list
+    (u16, see damage_parts.py), field 3 a byte (0 in the battles read). A hit that damages several parts sends one
+    message for each, at the same moment. No key: it belongs to the hit on the unit at that moment. Checked on the
+    ground test battle: 252 of 254 within 0.05 s of a hit on the unit, all of them with a critical or kill bit; the
+    fires' own part numbers (convert.FIRES_EVENT) are in their hit's list for 30 of 43 fires.
+    """
+    f = id_field_map(body)
+    if 2 not in f or len(f[2][1]) < 1:
+        return None
+    return {"part": int.from_bytes(f[2][1][:2], "little"), "flag": f[3][1][0] if 3 in f and f[3][1] else None}
+
+
 def read_after_hit(body: bytes) -> dict[str, Any] | None:
     """
     0xF117, to a unit just hit (all 40 of the arcade battle within 3 s of a
@@ -1702,15 +1757,29 @@ def read_after_hit(body: bytes) -> dict[str, Any] | None:
         return None
     a = f[1][1]
     return {"a": a[0], "b": int.from_bytes(a[1:3], "little"), "c": int.from_bytes(a[3:5], "little"), "d": a[5],
-            "n": f[2][1][0] if 2 in f and f[2][1] else None,
+            "n": f[2][1][0] if 2 in f and f[2][1] else None, "key": hit_key(a),
             "value": round(struct.unpack("<f", f[3][1][:4])[0], 4) if 3 in f and len(f[3][1]) >= 4 else None}
+
+
+def read_after_hit_2(body: bytes) -> dict[str, Any] | None:
+    """
+    0xF13C, to a unit just hit: like 0xF117 (field 1 the hit's key, `hit_key`), then a byte of bits (field 2), a
+    small number (field 3: 1-3) and a float (field 4). Sent on critical hits and kills, first at the hit and often
+    again about 0.33 s later. Meaning not known.
+    """
+    f = id_field_map(body)
+    if 1 not in f or len(f[1][1]) < 6 or 4 not in f or len(f[4][1]) < 4:
+        return None
+    return {"key": hit_key(f[1][1]), "flags": f[2][1][0] if 2 in f and f[2][1] else None,
+            "n": f[3][1][0] if 3 in f and f[3][1] else None, "value": round(struct.unpack("<f", f[4][1][:4])[0], 4)}
 
 
 def decode_unit_message(mid: int, body: bytes) -> dict[str, Any] | list | None:
     """A message to a unit decoded as far as it is known (None when nothing is)."""
     reader = {0xF0E9: read_hit_effect, 0xF133: read_unit_explosion, 0xF13E: read_part_damage, 0xD047: read_rpm,
               0xF031: read_effect, 0xD041: read_gunner, 0xD048: read_part_list, 0xF117: read_after_hit,
-              0xD0FE: read_projectile_hit_replay, 0xF144: read_unit_on_hit, 0xF0CC: read_unit_camera}.get(mid)
+              0xD0FE: read_projectile_hit_replay, 0xF144: read_unit_on_hit, 0xF0CC: read_unit_camera,
+              0xF15F: read_shell_state, 0xF13A: read_part_damaged, 0xF13C: read_after_hit_2}.get(mid)
     if reader is None:
         return None
     try:

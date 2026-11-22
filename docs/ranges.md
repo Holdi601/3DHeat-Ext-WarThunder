@@ -41,7 +41,7 @@ was not found.
 
 | Part | What it holds |
 |---|---|
-| Weapons | per weapon: its class (machine gun, cannon, gun, missile, bomb, rocket, torpedo), its least, best and most range in metres; for shells their speed and flight distance and the gun's sight range; for missiles the guidance, seeker, lock distance, G limit and launch tables; the names a replay may use for it |
+| Weapons | per weapon: its class (machine gun, cannon, gun, missile, bomb, rocket, torpedo), its least, best and most range in metres; for shells their speed and flight distance and the gun's sight range, and every shell the weapon can fire (its modifications' too: `mod`) with its static data: type, mass, calibres, drag (`Cx`), explosive, ricochet / slope / normalisation presets, armour power table and de Marre coefficients; for missiles the guidance, seeker, lock distance, G limit and launch tables; the names a replay may use for it |
 | Units | per ground vehicle, aircraft, helicopter and ship: its weapons, its sensors, and its sights |
 | Sights | gunner, commander and driver (aircraft: the gun sight and the targeting pod): widest and narrowest field of view, thermal imager and its generation, night vision, and whether the sight turns with the gun, the turret or the hull |
 | Sensors | radars (reach for their reference target size, search sector, modes including ground and sea), infrared search and track, passive receivers, radar warning receivers, missile and laser warners, laser rangefinders |

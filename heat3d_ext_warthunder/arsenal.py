@@ -38,6 +38,74 @@ def ammo_type(bullet_type: str) -> str:
     return ""
 
 
+def _f(v):
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+
+def shell_props(bullet) -> dict:
+    """
+    A weapon blk's `bullet` block as the shell's static data: `speed` (muzzle, m/s), `mass` (kg), `caliber` (mm;
+    a sub-calibre shell's flight and hit calibres `ballisticCaliber`, `damageCaliber`), `Cx` (drag coefficient), `maxDistance` (m), `explosiveMass` (kg) and `explosiveType`, `bulletType` and
+    `ammoType` (`ammo_type`), the presets that set its ricochet, slope effect and normalisation, its armour power
+    table (`armorPower`: [[distance m, mm], ...] from `ArmorPower0m` .. `ArmorPower10000m`, the game's own
+    penetration at 0 degrees, kinetic shells that state one) and its de Marre coefficients (`demarre`: k and the
+    speed, mass and calibre powers, kinetic shells without a table). Values the block does not state are left out.
+    """
+    out: dict = {"name": str(bullet.get("bulletName") or "").lower()}
+    bt = str(bullet.get("bulletType") or "")
+    if bt:
+        out["bulletType"] = bt
+        out["ammoType"] = ammo_type(bt)
+    for k in ("speed", "mass", "Cx", "maxDistance", "explosiveMass"):
+        v = _f(bullet.get(k))
+        if v is not None:
+            out[k] = round(v, 6)
+    for k in ("caliber", "ballisticCaliber", "damageCaliber"):
+        cal = _f(bullet.get(k))
+        if cal:
+            out[k] = round(cal * 1000, 2)
+    for k in ("explosiveType", "ricochetPreset", "slopeEffectPreset", "normalizationPreset"):
+        v = bullet.get(k)
+        if isinstance(v, str) and v:
+            out[k] = v
+    ap = bullet.block("armorpower")
+    if ap is not None:
+        rows = []
+        for k, v in (ap.params.items() if isinstance(ap.params, dict) else ap.params):
+            if isinstance(v, (list, tuple)) and len(v) >= 2 and str(k).lower().startswith("armorpower"):
+                rows.append([round(float(v[1]), 1), round(float(v[0]), 2)])
+        if rows:
+            out["armorPower"] = sorted(rows)
+    dmg = bullet.block("damage")
+    kin = dmg.block("kinetic") if dmg is not None else None
+    if kin is not None and _f(kin.get("demarrePenetrationK")) is not None:
+        out["demarre"] = {"k": round(_f(kin.get("demarrePenetrationK")), 4),
+                          **{n: round(_f(kin.get(f"demarre{n[0].upper()}{n[1:]}Pow")) or 0, 4)
+                             for n in ("speed", "mass", "caliber")}}
+    return out
+
+
+#: The drag coefficient of a shell whose block states none: fitted to the recorded speeds of such shells beyond
+#: 300 m on the check battles (median 0.353; AP, APCBC, APHEBC, HE, HEAT alike). Shells that state their Cx fit it
+#: within 1-4% the same way.
+DEFAULT_CX = 0.35
+
+
+def impact_speed(props: dict, distance: float) -> float | None:
+    """A shell's speed after `distance` m of flat flight: the muzzle speed less the drag of air at sea level
+    (dv/ds = -k v, k = rho Cx A / 2m, A by `ballisticCaliber` where the shell states one, else `caliber`; Cx
+    DEFAULT_CX where the shell states none); None without speed, mass and calibre."""
+    v0, m, cal, cx = (props.get(k) for k in ("speed", "mass", "caliber", "Cx"))
+    cal = props.get("ballisticCaliber") or cal
+    cx = cx or DEFAULT_CX
+    if not (v0 and m and cal):
+        return None
+    import math
+
+    area = math.pi * (cal / 2000.0) ** 2
+    return v0 * math.exp(-1.225 * cx * area / (2 * m) * max(0.0, distance))
+
+
 @dataclass
 class Gun:
     """One weapon of a vehicle: its blk's file name, calibre (mm), shells by name: (type, calibre mm), and each
@@ -48,6 +116,7 @@ class Gun:
     calibre: float | None = None
     shells: dict[str, tuple[str, float | None]] = field(default_factory=dict)
     mods: dict[str, str] = field(default_factory=dict)
+    props: dict[str, dict] = field(default_factory=dict)  # each shell's static data (`shell_props`)
 
     @property
     def machine_gun(self) -> bool:
@@ -106,12 +175,14 @@ class Arsenal:
 
         def walk(blk, mod: str = "") -> None:
             for c in blk.blocks:
-                if c.name == "bullet" and c.get("bulletName"):
+                if c.name == "bullet" and (c.get("bulletName") or c.get("bulletType")):
+                    # A machine gun's belt names its rounds by type only ("t_ball", "ap_i_ball").
                     cal = c.get("caliber")
                     cal = round(cal * 1000, 1) if isinstance(cal, float) else None
-                    name = str(c.get("bulletName")).lower()
+                    name = str(c.get("bulletName") or c.get("bulletType")).lower()
                     gun.shells.setdefault(name, (ammo_type(c.get("bulletType") or ""), cal))
                     gun.mods.setdefault(name, mod)
+                    gun.props.setdefault(name, shell_props(c))
                     if gun.calibre is None and cal:
                         gun.calibre = cal
                 if c.name not in ("sabot", "rocket"):

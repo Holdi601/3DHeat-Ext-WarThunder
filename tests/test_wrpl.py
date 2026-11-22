@@ -267,7 +267,9 @@ def test_hits_take_the_weapon_that_reloads_after_them():
             (9, 7, 61.0, "00c01f20", rows[6], False), (9, 7, 90.0, "", rows[7], True)]
     check = _shot_ammo(R(), msgs, hits, Arms())
     assert rows[0] == {"Vehicle": "tank_x", "ammoSlot": "0/0", "ammoType": "APFSDS", "ammoName": "125mm_3bm46",
-                       "calibre": 125.0}
+                       "calibre": 125.0, "ammoSource": "slot", "ammoConfidence": 0.9}
+    # The killing hit is named by its kill itself.
+    assert rows[2]["ammoSource"] == "recorded" and rows[2]["ammoConfidence"] == 1.0
     assert rows[3]["calibre"] == 7.62 and rows[3]["ammoType"] == "kinetic" and "ammoSlot" not in rows[3]
     assert rows[7]["ammoType"] == "explosive" and rows[7]["calibre"] == 125.0
     assert check["killsWeaponCalibreAgree"] == 1 and check["hitsWithAmmoName"] == 3

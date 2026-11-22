@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.1
+
+- Hits are keyed: `hitKey` (`shooter:kind:number`) names a hit in every message about it. See
+  [Hits](docs/hits.md#hit-keys).
+- The projectile at the hit, for hits that went into the vehicle: `shellSpeed` (m/s, recorded), `shellPointX/Y/Z`
+  and `shellDirX/Y/Z` (world), `shellLocalX/Y/Z` and `shellLocalDirX/Y/Z` (the vehicle's frame), `shellValue` (raw).
+- What came after a hit: `after_hit` rows (`afterHitMessage`, `afterHitFlags`, `afterHitValue`, `afterHitCount`),
+  kept as sent; the first is also on the shot row.
+- The parts each hit damaged: `damagedPartIds`, `damagedParts` (crew members, ammunition racks, engine, breech,
+  tracks ...), `damagedGroups`, `crewDamaged`, `ammoDamaged`; a list without a hit is a `parts_damaged` row. The
+  names come from the vehicle's unit file and damage model in your install, read while converting. Fires get
+  `firePart` and `fireNode`, destroyed modules `partName` and `partGroup`, hits `hitPartName`.
+- Ammunition: `ammoSource` (`recorded`, `slot`, `speed`, `slot-speed`, `candidate`, `speed-calibre`, `calibre`,
+  `default`) and `ammoConfidence` say where `ammoName`, `ammoType` and `calibre` come from. The killing hit is named
+  by its kill even without a loaded slot; a hit's recorded speed picks the one shell of the weapon that fits it
+  (`ammoSpeedError`), and names its slot when its slot's hits agree; a weapon with one shell of what the hit did
+  names it. Machine-gun belts' rounds are listed by type.
+- The ranges catalogue lists every shell of a weapon, its modifications' too, with its static data: mass, calibres,
+  drag, explosive, presets, armour power table, de Marre coefficients.
+- Files converted before 0.3.1 need converting again for these columns.
+
 ## 0.3.0
 
 - A standalone program for Windows, Linux and macOS (no Python needed), built by CI with a `SHA256SUMS` file.

@@ -142,6 +142,42 @@ class Catalogue:
         self._weapon_of[memo] = out
         return out
 
+    @staticmethod
+    def _shells(b) -> list[dict]:
+        """
+        Every shell the weapon can fire, its stock ones and those of its modifications (a block holding a `bullet`
+        block, named as the vehicle buys it: `mod`): name, `type` (bulletType), speed and maxDistance as before,
+        and the static data of arsenal.shell_props (ammunition type, mass, calibre, drag, explosive, presets,
+        armour power table, de Marre coefficients). A belt's rounds without a name of their own are listed by type.
+        """
+        from .arsenal import shell_props
+
+        out: list[dict] = []
+        seen: set[str] = set()
+
+        def add(bullet, mod: str) -> None:
+            name = str(bullet.get("bulletName") or "")
+            props = shell_props(bullet)
+            key = (name or props.get("bulletType") or "").lower()
+            if not key or key in seen:
+                return
+            seen.add(key)
+            props.pop("name", None)
+            entry = {"name": name, "type": str(bullet.get("bulletType") or ""), "speed": _r(_num(bullet.get("speed"))),
+                     "maxDistance": _r(_num(bullet.get("maxDistance"))), **props}
+            if mod:
+                entry["mod"] = mod
+            out.append({k: v for k, v in entry.items() if v not in (None, "")})
+
+        for c in b.blocks:
+            if c.name == "bullet":
+                add(c, "")
+            elif c.name not in _PROJECTILES:
+                for inner in c.blocks:
+                    if inner.name == "bullet":
+                        add(inner, c.name)
+        return out
+
     def _entry(self, key: str, b, shells: list, air: bool) -> dict | None:
         base = key.rpartition("/")[2].removesuffix(".blk")
         first = shells[0]
@@ -174,9 +210,7 @@ class Catalogue:
                 detail["mostFrom"] = "class value"
             least = 0.0
             detail["calibre"] = _r(mm, 1)
-            detail["shells"] = [{"name": str(s.get("bulletName") or ""), "type": str(s.get("bulletType") or ""),
-                                 "speed": _r(_num(s.get("speed"))), "maxDistance": _r(_num(s.get("maxDistance")))}
-                                for s in shells if s.get("bulletName")][:12]
+            detail["shells"] = self._shells(b)
             if air:
                 shape, cone = "cone", 10.0
         elif kind == "bomb":

@@ -60,27 +60,123 @@ aircraft, all bits clear: aircraft and ship hits have no outcome.
   `explosive`, the rest `kinetic`.
 * **The gun and its slot.** 0xF0BD (UnitBulletRearm) is the next round
   loaded: the weapon's index in the vehicle's weapon list, the ammunition
-  slot and the rounds left. A manual loader's comes a steady reload time
-  after each of its hits, an autocannon's a fraction of a second after. A
+  slot and the rounds left. It is also what tells a change of ammunition: the
+  slot loaded changes. A manual loader's comes a steady reload time after
+  each of its hits, an autocannon's a fraction of a second after. A
   shooter's hits are grouped by vehicle, signature and burst; a group is a
   weapon's when that weapon loads a round within 20 s after half its hits
   or more at a steady delay. `ammoSlot` is `weapon/slot`, the slot loaded
   before the hit: likely the one fired, unless the player changed the
   ammunition in between. Machine guns send no 0xF0BD.
-* **The shell.** A kill's weapon is the shell's id (`125mm_3bm46`); the
-  killer's last hit on the victim gives it to that shooter's slot, where
-  the gun's calibre agrees. Its type and calibre are the weapon file's
-  (`bulletName`, `bulletType`, `caliber`; `apds_fs_*` APFSDS, `heat_fs_*`
-  HEAT-FS, `he_*` HE ...).
-* **The calibre** of the rest: a slot's weapon's; a machine-gun group's the
-  one machine-gun calibre its signature can have; otherwise the vehicle's
-  main gun's. Without the install (`--game`) there is no type, name or
-  calibre beyond `explosive` / `kinetic`.
+* **The shell**, in this order (`ammoSource`, `ammoConfidence`):
+  * `recorded` (1.0): the killing hit; its kill names the shell
+    (`125mm_3bm46`).
+  * `slot` (0.9): another hit of the slot a kill named, where the gun's
+    calibre agrees.
+  * `speed` (0.85): the hit's recorded speed (`shellSpeed`) fits one shell
+    of the weapon alone: the weapon file's muzzle speed less the drag over
+    the distance (mass, `Cx`, the flight calibre) within 3 %, the next-best
+    at least 1 % further off. `ammoSpeedError` is observed / expected - 1.
+  * `slot-speed` (0.75): another hit of a slot whose hits with a speed
+    agree on one shell.
+  * `candidate` (0.6): the weapon has one shell of what the hit did (burst
+    or not).
+  * `speed-calibre` (0.6): several shells fit the speed; their calibre (and
+    type) where they share it.
+  * `calibre` / `default` (0.4): only the calibre: the slot's weapon's, a
+    machine-gun group's one calibre its signature can have, else the main
+    gun's; the type `explosive` or `kinetic`.
 
-Not found: ricochet. Several more messages carry the hit's shooter and
-number (0xF0C2, likely the hit camera's path through the vehicle; 0xF117,
-0xF13C, 0xF13E); they are kept in the sidecar, not decoded. A
-non-penetration stays `nonpenetration`.
+  Its type and calibre are then the weapon file's (`bulletName`,
+  `bulletType`, `caliber`; `apds_fs_*` APFSDS, `heat_fs_*` HEAT-FS, `he_*`
+  HE ...). Without the install (`--game`) there is no type, name or calibre
+  beyond `explosive` / `kinetic`.
+* **The signature** (`hitShell`) is not a shell's id: one signature can
+  stand for several shells, and one shell can come with several signatures.
+  It is kept raw.
+
+Not found: ricochet; the shell's own id in the hit message.
+
+## Hit keys
+
+The first six bytes of a hit (the shooter's uid, a byte, the hit's number, a
+byte) also open the other messages about the same hit. `hitKey` is
+`shooter:kind:number`; the `after_hit` rows carry it too, so a hit and what
+followed it can be joined. A shooter's hit numbers rise by four from one shot
+to the next.
+
+## The projectile at the hit
+
+For hits that went into the vehicle (penetrations, critical hits, kills) the
+server also sends 0xF15F: the projectile's last simulation step before the
+hit. On the shot row:
+
+| Column | What |
+|---|---|
+| `shellSpeed` | the projectile's speed at the hit, m/s (recorded) |
+| `shellPointX/Y/Z` | where that last step began, world (m); on the line from the shooter to the hit |
+| `shellDirX/Y/Z` | the projectile's direction then, world (unit vector): its descent and the true firing line |
+| `shellLocalX/Y/Z`, `shellLocalDirX/Y/Z` | the same point and direction in the vehicle's own frame (x forward, y up, z right) |
+| `shellValue` | one more number of the message (raw; what it is is not known) |
+
+Checked: the local direction is the hit's own direction (`hitDir`), the
+point lies on the shot line, and the speed is the shell's muzzle speed from
+the weapon file less the drag over the distance (see the checks below).
+Hits that did not get through have no such message: their speed is not in
+the replay.
+
+## After the hit
+
+0xF117 and 0xF13C name a hit by its key and follow penetrations, critical
+hits and kills: one at the hit, often another about a third of a second
+later. Each is an `after_hit` row at the vehicle hit, with `hitKey`,
+`afterHitMessage` (`F117` or `F13C`), `afterHitFlags` (a byte of bits),
+`afterHitValue` (a number that grows with the shell's size; likely the
+damage done) and, for 0xF13C, `afterHitCount` (1-3). The first 0xF117 of a
+hit is also on its shot row. These values are kept as sent: what the bits
+and numbers mean is not known.
+
+## Damaged parts
+
+A hit that damages parts of a vehicle sends one 0xF13A per part, at the
+moment of the hit, to the vehicle: the part's number in the vehicle's own
+list. The message has no key; the list goes to the hit on that vehicle at
+that moment (within 0.05 s) that did most (kill, then critical, then
+penetration). A list with no such hit (an explosion near the vehicle) is a
+`parts_damaged` row of its own.
+
+| Column | What |
+|---|---|
+| `damagedPartIds` | the numbers as sent, comma-separated |
+| `damagedParts` | their names (`driver_dm`, `ammo_turret_03_dm`, `engine_dm` ...); `#<number>` where the install does not tell |
+| `damagedGroups` | what kinds of part: `crew`, `ammo`, `fuel`, `engine`, `transmission`, `gun`, `turret_drive`, `tracks`, `optics`, `armour`, `equipment` |
+| `crewDamaged`, `ammoDamaged` | how many crew members, how many ammunition racks |
+
+The vehicle's own list: the parts of its unit file's `DamageParts`
+(`gamedata/units/tankmodels/<vehicle>.blk`, its groups in order, depth
+first) that its damage model has (a node of that name in the vehicle's
+collision model, `content/base/res`). The unit file lists many parts a
+vehicle may not have (75 turret ammunition racks for every tank); the model
+has those it has. Both are read from your install while converting; nothing
+of them is written into the files the converter makes, and nothing of them
+is part of this program.
+
+A machine without the resource packs (a copy of `aces.vromfs.bin` only)
+can use the parts kept by a conversion that had them: each run keeps the
+parts of the vehicles it read in `~/.cache/heat3d-wt/part-orders.json`
+(`HEAT3D_WT_PARTS` names another file), and
+`python -m heat3d_ext_warthunder.damage_parts` keeps those of every vehicle
+of the install. A file `heat3d-part-orders.json` beside such a copy's
+`aces.vromfs.bin` is read too. The kept parts are put in the order of the
+vehicle's unit file as that machine has it.
+
+The game's own part numbering (that of `hitPart` and of the fires' nodes,
+`config/damagemodelparts.blk`) names the part a hit struck: `hitPartName`.
+
+Fires name their part both ways: `fire_on` and `fire_off` rows have
+`firePart` (the vehicle's own number, the first of `fireId`) and `fireNode`
+(the game's number, the second). A destroyed module (`module_destroyed`)
+is numbered the game's way: `partName` and `partGroup`.
 
 ## Vehicle fires
 
@@ -100,7 +196,9 @@ entity, else with the replay (`selfCheck.fires`).
 Checked: each time a tank's fire extinguisher count fell, a fire left its
 list within a fraction of a second; most fire points lie on the same side of
 the vehicle as the hit that lit them. The kinds are numbers; what they name
-is not known, nor which part a node is. Aircraft send no such list: an
+is not known. The two ids name the part that burns: the first by the
+vehicle's own list, the second by the game's (see
+[Damaged parts](#damaged-parts)). Aircraft send no such list: an
 aircraft on fire is not read.
 
 ---
