@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 from .app import paths
-from .app.spec import Check, GameSpec, Input, MapSource, Spec, Task
+from .app.spec import Check, GameSpec, Input, MapSource, Replays, Spec, Task
 
 
 def _find(given: str | None) -> Path | None:
@@ -59,6 +59,12 @@ def _checks(found: dict, levels: Path) -> list[Check]:
         str(lib) if lib else "not found; levels need it (replays do not). Set HEAT3D_OODLE to the file in your install.",
     )]
 
+def _replay_info(path: Path) -> dict:
+    """`info <replay> --json`: the header only (replay_info.py)."""
+    from .replay_info import info
+
+    return info(path)
+
 
 SPEC = Spec(
     id="heat3d-warthunder",
@@ -89,6 +95,7 @@ SPEC = Spec(
         help="each battle becomes one .3dheat file the viewer opens",
     )],
     min_free_gb=5.0,
+    replays=Replays("warthunder", (".wrpl",), lambda r, out: ["heat3d-wt-replay", str(r), "-o", str(out)], info=_replay_info),
     notice="Not affiliated with or endorsed by Gaijin Entertainment.",
 )
 
