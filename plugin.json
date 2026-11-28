@@ -95,7 +95,8 @@
         "names": [
           "heat3d-wt-replay"
         ],
-        "output": "3dheat"
+        "output": "3dheat",
+        "currentFrom": "0.5.0"
       }
     }
   ],
