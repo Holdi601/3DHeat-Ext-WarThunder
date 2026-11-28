@@ -6,7 +6,7 @@ nav_order: 91
 # Column list
 
 This page is generated from the code by `tools/gen_docs_reference.py`; do not edit it by hand.
-What each column means is on [The table](table.md). The table has **159 columns**:
+What each column means is on [The table](table.md). The table has **161 columns**:
 
 | # | Column | Type |
 |---|---|---|
@@ -169,3 +169,5 @@ What each column means is on [The table](table.md). The table has **159 columns*
 | 157 | `matchWon` | whole number |
 | 158 | `round` | whole number |
 | 159 | `roundEndReason` | text |
+| 160 | `mapSide` | whole number |
+| 161 | `mapSideFrom` | text |

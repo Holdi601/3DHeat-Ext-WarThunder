@@ -22,7 +22,10 @@ nav_order: 15
   5 km (the areas spawns are scattered over) too. Each spawn says how many players' tracks began in it (`used`,
   `usedByTeam`). A mission may swap its sides at random (`randomSpawnTeams`): when the spawns show the replay's
   teams the other way round, every `team` is swapped and the name's side kept as `missionTeam`. Convoy routes are
-  not in the missions' waypoints as read; only where convoys appear is given.
+  not in the missions' waypoints as read; only where convoys appear is given. Without the mission file (an
+  install without `mis.vromfs.bin`) there are no spawn areas: the objectives the replay itself names by side
+  (`t1_airfield`, `t2_helipad`...) then decide the swap, each voting for the team whose players started nearer to
+  it (`selfCheck.objectives.teams.from`: `spawns`, `named objectives` or `none`).
 
 The capture zones over time are the sidecar `<match>.objectives.parquet`: the replicated objects of kind 5, one
 per zone - field 2 its owner (0, 1, 2), field 67 its capture progress, a signed byte from -100 to 100 (positive

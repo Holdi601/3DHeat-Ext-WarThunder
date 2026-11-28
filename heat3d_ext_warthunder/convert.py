@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import arsenal, damage_parts, ecs, economy, install, names as vehicle_names, wrpl
+from . import arsenal, damage_parts, ecs, economy, install, mapside, names as vehicle_names, wrpl
 from . import objectives as mission_objectives
 
 #: Vehicle types in the results' crafts_info: which are aircraft, which helicopters, which boats.
@@ -88,7 +88,7 @@ HINTS = {
                   "sensors", "sensorModes", "sensorContacts", "sensorLocks", "opticX", "opticY", "opticZ", "lockX", "lockY",
                   "lockZ", "sightX", "sightY", "sightZ", "difficulty",
                   "gameMode", "cost_fired_sl", "cost_lost_sl", "earn_sl", "earn_rp", "currency", "econ_basis",
-                  "rewardType", "won", "matchWon", "round", "roundEndReason"],
+                  "rewardType", "won", "matchWon", "round", "roundEndReason", "mapSide", "mapSideFrom"],
     },
     # Not mapping hints, a statement of the angles' sense for whoever draws attitudes.
     "conventions": {"heading": "compass degrees, clockwise from north", "pitch": "degrees, nose up positive",
@@ -284,6 +284,8 @@ COLUMNS = [
     ("matchWon", "i16"),
     ("round", "i16"),
     ("roundEndReason", "str"),
+    ("mapSide", "i16"),
+    ("mapSideFrom", "str"),
 ]
 
 
@@ -4140,7 +4142,7 @@ def objectives(r: Replay, all_lives: list[Life], doc: dict[str, Any], game: str 
     starts = [(life.team, life.samples[0].x, life.samples[0].y, life.samples[0].z) for life in all_lives
               if life.samples and life.is_player and life.figure not in NO_TURRETS]
     mission_objectives.spawn_use(objs, starts)
-    teams = mission_objectives.replay_teams(objs)
+    teams = mission_objectives.replay_teams(objs, starts)
     # The scoreboard's capture moments: a player's captureZone count rising.
     gains: list[tuple[float, str]] = []
     slot_team = {int(k): str(v.get("team") or "") for k, v in r.slots.items() if isinstance(v, dict)}
@@ -4175,6 +4177,85 @@ def objectives(r: Replay, all_lives: list[Life], doc: dict[str, Any], game: str 
              "spawnsUsedByOtherTeam": sum(1 for o in objs if o.get("team") and any(
                  k != str(o["team"]) for k in (o.get("usedByTeam") or {}))), "teams": teams}
     return objs, rows, check
+
+
+#: The rows that can show where a team spawned: its players' vehicles (not their projectiles, effects or cameras).
+SPAWN_KINDS = frozenset({"aircraft", "helicopter", "tank", "apc", "spaa", "truck", "ship", "boat"})
+_AIR_SPAWN = re.compile(r"air|bomber|heli|plane")
+
+
+def mission_line(objs: list[dict[str, Any]], game_mode: str) -> tuple[float, float] | None:
+    """
+    The battle's spawn line in the viewer's world (east, south) from the mission's spawn areas: from the centre of
+    the side 1 (`t1_`) areas the battle's players began in to that of the side 2 areas, each area counted as often as
+    tracks began in it (`used`; a mission may hold several spawn layouts, of which a battle uses one), a ground
+    battle's tank spawns only (not its aircraft's). None without the mission's spawn areas (no mission file in the
+    install) or where no track began in them.
+    """
+    acc: dict[int, list[float]] = {1: [0.0, 0.0, 0.0], 2: [0.0, 0.0, 0.0]}
+    for o in objs:
+        t = o.get("missionTeam", o.get("team"))
+        if o.get("type") != "spawn" or o.get("source") != "mission" or t not in (1, 2) or not o.get("used"):
+            continue
+        if game_mode == "ground" and _AIR_SPAWN.search((o.get("name") or "").lower()):
+            continue
+        pts = o.get("points") or [o["position"]]
+        w = float(o["used"])
+        acc[t][0] += w * sum(p[0] for p in pts) / len(pts)
+        acc[t][1] -= w * sum(p[2] for p in pts) / len(pts)
+        acc[t][2] += w
+    if not (acc[1][2] and acc[2][2]):
+        return None
+    c = {t: (v[0] / v[2], v[1] / v[2]) for t, v in acc.items()}
+    return c[2][0] - c[1][0], c[2][1] - c[1][1]
+
+
+def map_sides(data: list[dict[str, Any]], objs: list[dict[str, Any]], game_mode: str,
+              teams: dict[str, Any]) -> dict[str, Any]:
+    """
+    Each row's map side (`mapSide` 1 / 2, `mapSideFrom`; mapside.py, the rule every 3DHeat converter and the
+    viewer share): the two teams' spawns are their players' vehicles' first positions; the spawn line is the
+    mission's own where the install has the mission file (`mission_line`), else the match's. The check: which
+    team is side 1, and whether that agrees with which team began in the mission's side 1 spawn areas.
+    """
+    import numpy as np
+
+    n = len(data)
+    if not n:
+        return {"rows": 0}
+    team = [str(row.get("team") or "") for row in data]
+    track = [str(row.get("track") or "") for row in data]
+    time = np.array([row.get("time") if row.get("time") is not None else np.nan for row in data], dtype=float)
+    x = np.array([row.get("x") if row.get("x") is not None else np.nan for row in data], dtype=float)
+    z = np.array([row.get("z") if row.get("z") is not None else np.nan for row in data], dtype=float)
+    east, south = mapside.world_ground(x, x, z, HINTS["axes"])
+    line = mission_line(objs, game_mode)
+    players = np.array([bool(row.get("isPlayer")) and row.get("kind") in SPAWN_KINDS for row in data])
+    units = np.array([row.get("kind") in SPAWN_KINDS for row in data])
+    mask = players
+    side, fro = mapside.map_sides(None, track, team, east, south, time, None, line, mask)
+    if not (side > 0).any():
+        mask = units  # no player vehicles of both teams (a battle against AI): any unit's
+        side, fro = mapside.map_sides(None, track, team, east, south, time, None, line, mask)
+    for row, s, f in zip(data, side.tolist(), fro):
+        row["mapSide"] = s
+        row["mapSideFrom"] = f
+    side1 = sorted({t for t, s in zip(team, side.tolist()) if s == 1})
+    side2 = sorted({t for t, s in zip(team, side.tolist()) if s == 2})
+    out: dict[str, Any] = {"line": "the mission's spawn areas used" if line else "the battle's first positions",
+                           "side1": side1, "side2": side2, "spawnRows": "players" if mask is players else "units",
+                           "rows": {"spawn": int((side > 0).sum()), "unknown": int((side == 0).sum())}}
+    if line:
+        held = mapside.orient(line)
+        out["lineDeg"] = round(math.degrees(math.atan2(-line[1], line[0])) % 180.0, 1)
+        out["held"] = "east" if abs(held[1]) <= abs(held[0]) * mapside._FLAT else "north"
+        # The mission's side 1 spawns lie first along the line: they are map side 1 or 2.
+        first = 1 if mapside.side_one_first((0.0, 0.0), line, line) else 2
+        out["missionTeam1Side"] = first
+        if teams.get("from") == "spawns" and side1 and len(side1) == 1:
+            t1 = "2" if teams.get("swapped") else "1"
+            out["agreesWithSpawnAreas"] = (side1[0] == t1) == (first == 1)
+    return out
 
 
 def objectives_table(rows: list[dict[str, Any]]):
@@ -5044,7 +5125,6 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     folder.mkdir(parents=True, exist_ok=True)
     tpath = folder / f"{name}.parquet"
     jpath = folder / f"{name}.match.json"
-    pq.write_table(table(data), tpath, compression="snappy", row_group_size=256_000)
     pq.write_table(messages_table(r, msgs), folder / f"{name}.messages.parquet", compression="zstd")
     pq.write_table(flight_table(r), folder / f"{name}.flight.parquet", compression="zstd")
     doc = summary(r, all_lives, data, check, all_units, all_weapons, more, names)
@@ -5059,6 +5139,9 @@ def convert(paths: list[Path], out: Path, game: str | None = None, smoothing: bo
     for k in doc["kills"]:
         k["weaponName"] = arms.lookup(k.get("weapon") or "")[0]
     doc["objectives"], zone_rows, doc["selfCheck"]["objectives"] = objectives(r, all_lives, doc, game)
+    doc["selfCheck"]["mapSide"] = map_sides(data, doc["objectives"], doc["battle"].get("gameMode") or "",
+                                            doc["selfCheck"]["objectives"].get("teams") or {})
+    pq.write_table(table(data), tpath, compression="snappy", row_group_size=256_000)
     pq.write_table(objectives_table(zone_rows), folder / f"{name}.objectives.parquet", compression="zstd")
     jpath.write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
     return tpath, jpath

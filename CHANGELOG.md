@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0
+
+- Every row says which side of the map its team plays (`mapSide` 1 / 2, `mapSideFrom`): side 1 is the same side of a map in every battle, while `team` 1 starts on either - the same team assignment in Excel, Python or 3DHeat. The rule is the one every 3DHeat converter shares ([Map side](https://github.com/Holdi601/3DHeat/blob/main/docs/map-side.md)): the players' vehicles' first positions are the teams' spawns, the line between them is the one through the mission's spawn areas the battle used (where the install has the mission file), held pointing north, or east within 22.5 degrees of east-west, and the team whose spawn lies first along it (the south team, or the west) is side 1. Checked in `selfCheck.mapSide`.
+- Objectives without the mission file: an install without `mis.vromfs.bin` gave no spawn areas, so the objectives kept the mission's own team numbers even where the battle had the sides the other way round (`swapped` always false). The objectives the replay itself names by side (`t1_airfield`, `t2_helipad`...) now decide the swap, each voting for the team whose players started nearer to it; `selfCheck.objectives.teams.from` says which (`spawns`, `named objectives`, `none`).
+
 ## 0.7.0
 
 - Levels of game builds 2.61 and later: their land is read from the rendered land mesh (the finest LOD of every

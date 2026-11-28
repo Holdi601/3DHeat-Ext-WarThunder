@@ -339,11 +339,16 @@ def spawn_use(objectives: list[dict[str, Any]], starts: list[tuple[str, float, f
             o["usedByTeam"] = used
 
 
-def replay_teams(objectives: list[dict[str, Any]]) -> dict[str, int]:
+def replay_teams(objectives: list[dict[str, Any]],
+                 starts: list[tuple[str, float, float, float]] | None = None) -> dict[str, Any]:
     """
     The mission's sides (`t1_`, `t2_` in the names) as the replay's teams: a mission may swap them at random
     (`randomSpawnTeams`), so the spawns decide - when more tracks of team 2 began in the `t1_` spawns than of team
     1 (and the other way round), every objective's `team` is swapped and the name's kept as `missionTeam`.
+
+    Without the mission's spawn areas (no mission file in the install: `mis.vromfs.bin`), the objectives the
+    replay itself names by side (`t1_airfield`, `t2_helipad`...) decide instead: each votes for the team whose
+    players' first positions (`starts`: team, x, y, z; their median) lie nearer to it (`from`: `named objectives`).
     """
     same = swapped = 0
     for o in objectives:
@@ -354,10 +359,32 @@ def replay_teams(objectives: list[dict[str, Any]]) -> dict[str, int]:
                         same += n
                     else:
                         swapped += n
+    source = "spawns" if same or swapped else "none"
+    if not (same or swapped) and starts:
+        centre = {}
+        for team in ("1", "2"):
+            xs = sorted(x for t, x, _, _ in starts if t == team)
+            zs = sorted(z for t, _, _, z in starts if t == team)
+            if xs:
+                centre[team] = (xs[len(xs) // 2], zs[len(zs) // 2])
+        if len(centre) == 2:
+            for o in objectives:
+                if o.get("team") not in (1, 2) or o.get("type") == "capture_zone" or not o.get("position"):
+                    continue
+                if (o.get("radius") or 0.0) > CONTAINER:
+                    continue
+                p = o["position"]
+                near = min(centre, key=lambda t: math.hypot(centre[t][0] - p[0], centre[t][1] - p[2]))
+                if int(near) == o["team"]:
+                    same += 1
+                else:
+                    swapped += 1
+            if same or swapped:
+                source = "named objectives"
     swap = swapped > same
     for o in objectives:
         if o.get("team") in (1, 2):
             o["missionTeam"] = o["team"]
             if swap:
                 o["team"] = 3 - o["team"]
-    return {"spawnsSameTeam": same, "spawnsOtherTeam": swapped, "swapped": swap}
+    return {"spawnsSameTeam": same, "spawnsOtherTeam": swapped, "swapped": swap, "from": source}
