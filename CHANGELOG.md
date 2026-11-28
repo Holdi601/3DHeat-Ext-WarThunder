@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `plugin.json`: the manifest 3DHeat's Games page reads to know what this tool does, which games it is
+  for and how to call it. The release archive carries it and the tool's icon (`icon-64.png`) beside the
+  program.
+
 ## 0.5.0
 
 - Aircraft and ship hits get their ammunition (the killing round, missile, bomb or torpedo by name, the calibre of

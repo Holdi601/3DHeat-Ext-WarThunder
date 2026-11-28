@@ -1,0 +1,157 @@
+{
+  "format": "3dheat-plugin",
+  "version": 1,
+  "id": "warthunder",
+  "name": "War Thunder",
+  "kind": "game",
+  "what": "Your replays as heatmaps, on the game's own maps",
+  "games": [
+    {
+      "id": "warthunder",
+      "name": "War Thunder"
+    }
+  ],
+  "platforms": [
+    "windows-x64",
+    "linux-x64",
+    "macos-arm64"
+  ],
+  "icon": "icon-64.png",
+  "programs": [
+    {
+      "id": "heat3d-warthunder",
+      "repo": "Holdi601/3DHeat-Ext-WarThunder",
+      "verbs": {
+        "check": [
+          "--check",
+          "--json"
+        ],
+        "status": [
+          "status",
+          "--json"
+        ],
+        "extract": [
+          "extract",
+          "{maps}",
+          "--progress-json"
+        ],
+        "convert": [
+          "convert",
+          "{input}",
+          "-o",
+          "{out}"
+        ],
+        "info": [
+          "info",
+          "--json",
+          "{input}"
+        ]
+      }
+    }
+  ],
+  "capabilities": {
+    "maps": {
+      "program": "heat3d-warthunder"
+    },
+    "replays": {
+      "program": "heat3d-warthunder"
+    }
+  },
+  "replays": [
+    {
+      "game": "warthunder",
+      "format": "wrpl",
+      "patterns": [
+        "*.wrpl"
+      ],
+      "folders": [
+        "{steam:War Thunder}/Replays",
+        "{localappdata}/WarThunder/Replays",
+        "{home}/.local/share/WarThunder/Replays",
+        "{programfiles}/WarThunder/Replays",
+        "{programfilesx86}/WarThunder/Replays",
+        "{systemdrive}/Games/WarThunder/Replays",
+        {
+          "path": "{home}/WarThunder/Replays",
+          "os": [
+            "linux",
+            "macos"
+          ]
+        },
+        {
+          "path": "{home}/Games/WarThunder/Replays",
+          "os": [
+            "linux"
+          ]
+        },
+        {
+          "path": "{home}/Library/Application Support/WarThunder/Replays",
+          "os": [
+            "macos"
+          ]
+        }
+      ],
+      "converter": {
+        "names": [
+          "heat3d-wt-replay"
+        ],
+        "output": "3dheat"
+      }
+    }
+  ],
+  "newContent": {
+    "verb": "status",
+    "everyHours": 6,
+    "whileGameClosed": true,
+    "autoExtract": [
+      "new"
+    ]
+  },
+  "requirements": [
+    {
+      "id": "game",
+      "label": "The game installed on this computer",
+      "auto": false
+    }
+  ],
+  "detect": {
+    "steam": [
+      "War Thunder"
+    ],
+    "paths": [
+      "{localappdata}/WarThunder",
+      "{programfiles}/WarThunder",
+      "{programfilesx86}/WarThunder",
+      "{systemdrive}/Games/WarThunder",
+      {
+        "path": "{home}/WarThunder",
+        "os": [
+          "linux",
+          "macos"
+        ]
+      },
+      {
+        "path": "{home}/.local/share/WarThunder",
+        "os": [
+          "linux"
+        ]
+      },
+      {
+        "path": "{home}/Games/WarThunder",
+        "os": [
+          "linux"
+        ]
+      },
+      {
+        "path": "{home}/Library/Application Support/WarThunder",
+        "os": [
+          "macos"
+        ]
+      }
+    ],
+    "processes": [
+      "aces.exe",
+      "aces"
+    ]
+  }
+}
