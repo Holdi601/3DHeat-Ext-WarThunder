@@ -146,6 +146,7 @@ mission may swap the sides at random: team 1 is the mission's first side.
 | Level binary (`levels/<level>.bin`, `DBLD` 3x64): block table | every level checked |
 | Heightmap (`HM2`, versions 0-2; version 2 is 8-bit values in blocks, Oodle or zstd chunks) | every level whose heightmap is version 2 with Oodle chunks; checked by eye against their tactical maps (rivers, valleys, coasts and towns line up) |
 | Land mesh collision (`lmap`, its `LTdump` land ray tracer) | read where a level has one (Oodle-packed). It is the game's collision surface, not the rendered mesh, so it is coarser where the land is flat |
+| Rendered land mesh (`lmap` mesh data: vertex data as a render instance's, per cell a `ShaderMesh` per LOD; 16-bit positions over the cell in x and z and over the land's height range in y) | the finest LOD of every cell, where a level has no land ray tracer: the levels of game builds 2.61 and later carry none, so their land (air maps, naval and older ground maps without a heightmap, the surroundings of a heightmap) is this mesh; on the levels checked it has about as many triangles as the tracer had, over the same area and heights |
 | Ground colour (`lmap` land classes and weight map, `LMp2` physics map, `hspl` splines) | the land classes' colour maps and detail textures (their average colours) weighted by the weight map, the 1 m biome index of indexed land classes, the road and ground-decal shapes of the physics map in the colour of their spline's or material's texture, cliffs on steep slopes. Checked against the tank maps: roads, towns, lakes, forest belts and rock outcrops line up. The colour formula of War Thunder's own terrain shader is not in the public source; the engine's published one (daNetGame) is used, which comes out more saturated than the tactical map |
 | Water level | `water_level` from the level's BLK in `aces.vromfs.bin` (0 where it has none) |
 | Water heightmap (`WHM`: a grid of flat cells and 130x130 pages of 16-bit heights) | read where a level has one; its rivers slope with the ground |
@@ -155,7 +156,7 @@ mission may swap the sides at random: team 1 is the mission's first side.
 | Render meshes (`RendInst` resources in `content/*/res/*.grp`, materials in `riDesc.bin`) | every LOD's vertices and triangles (float positions; 16 or 32-bit indices, plain or meshoptimizer-packed), each element's material. Decal and impostor-billboard elements are left out; the transparent ones (glass) are kept |
 | Object colours | per material, the average of its diffuse texture's small mip (alpha-weighted for leaves), from the install's texture packs: t0 for most shaders, the first detail diffuse where t0 is an overlay or a mask. One colour per material: no texture on the objects |
 | Collision shapes (`<object>_collision`) | collision resources of stream version 3, used where an object has no render mesh. Only what the game's rays hit (`TRACEABLE` nodes) is drawn, and boxes, spheres and capsules only when the resource has no mesh: the rest are coarse physics stand-ins that would show as cubes around the object |
-| Navigation mesh (`Lnav`), the rendered land mesh, grass, `spgz`, `stbl`, `d2co` | not read |
+| Navigation mesh (`Lnav`), the rendered land mesh's decal, combined and patch meshes, grass, `spgz`, `stbl`, `d2co` | not read |
 
 Levels are compressed with Oodle, which is proprietary. The game ships a copy,
 `<War Thunder>\win-arm64ec\oo2core_9_win64.dll` (an ordinary x64 build), and
@@ -178,8 +179,8 @@ it; no game code was decompiled. Each module names the source files it follows:
   (`sharedInclude/3d/ddsxTex.h`); DXT1/DXT5/BC7 are decoded by Pillow.
 - `dagorlevel.py`: the level binary (`scene/loadLevel.cpp`), the heightmap
   (`heightmap/heightmapPhysHandler.cpp`, `heightMapLand/compressedHeightmap.cpp`),
-  the land ray tracer (`landMesh/lmeshManager.cpp`,
-  `landMesh/landRayTracerSoA4.cpp`) and the water heightmap
+  the land ray tracer and the rendered land mesh (`landMesh/lmeshManager.cpp`,
+  `landMesh/landRayTracerSoA4.cpp`, `landMesh/lmeshRenderer.cpp`) and the water heightmap
   (`fftWater/fftWater.cpp`).
 - `rigen.py`: the placed objects (`rendInst/riGen/riGenData.h`,
   `rendInst/rendInstGen.cpp`, `rendInst/riGen/genObjUtil.h`).

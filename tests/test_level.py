@@ -64,6 +64,24 @@ def test_land_tracer_triangles():
     assert np.allclose(lm.vertices, verts, atol=0.01)
 
 
+@pytest.mark.parametrize("packed", [True, False])
+def test_render_land_mesh_without_tracer(packed):
+    """Levels without a land tracer: the land is read from the render mesh, each cell decoded to world metres."""
+    a = (np.array([[-4000, 10, -4000], [0, 10, -4000], [0, 90, 0], [-4000, 50, 0]], float), np.array([[0, 1, 2], [0, 2, 3]]))
+    b = (np.array([[100, 20, 100], [4000, 20, 100], [4000, 20, 4000]], float), np.array([[0, 1, 2]]))
+    empty = (np.zeros((0, 3)), np.zeros((0, 3), int))
+    # 2 x 2 cells of 4096 m from cell (-1, -1): a in the first, b in the last, two empty.
+    block = levelsynth.render_landmesh_block([a, empty, empty, b], (2, 2), 4096.0, (-1, -1), (0.0, 100.0), packed)
+    data = levelsynth.level(block)
+    lm = dagorlevel.read_landmesh(data, dagorlevel.blocks(data)["lmap"][0])
+    assert lm is not None and lm.grid == (2, 2) and lm.cell_size == 4096.0
+    assert len(lm.faces) == 3 and lm.faces.max() < len(lm.vertices)
+    tri = lm.vertices[lm.faces].reshape(-1, 3)
+    want = np.concatenate([a[0][a[1]], b[0][b[1]]]).reshape(-1, 3)
+    assert sorted(map(tuple, np.round(tri))) == sorted(map(tuple, np.round(want)))
+    assert np.abs(tri - np.round(tri)).max() < 0.2
+
+
 def test_texture_pack_rgb(tmp_path):
     rgb = np.random.default_rng(1).integers(0, 255, (8, 16, 3), dtype=np.uint8)
     path = tmp_path / "maps.dxp.bin"

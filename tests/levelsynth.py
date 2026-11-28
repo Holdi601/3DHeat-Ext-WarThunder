@@ -143,6 +143,64 @@ def landmesh_block(verts: np.ndarray, faces: np.ndarray) -> bytes:
     return _block(b"lmap", head + offsets + _sub(ray, 1))
 
 
+def render_landmesh_block(cells: list[tuple[np.ndarray, np.ndarray]], grid: tuple[int, int], cell_size: float,
+                          origin: tuple[int, int], y_range: tuple[float, float], packed: bool = True) -> bytes:
+    """An lmap block without a land tracer (as the game's 2.61 levels are): the render mesh alone, one vertex
+    buffer of SHORT4 positions (-32767..32767 over each cell in x and z, over `y_range` in y), one LOD per cell,
+    each cell's (world vertices, triangles) or (empty, empty); then the cells' boxes (their union gives y_range)."""
+    mx, my = grid
+    ox, oy = origin
+    y0, y1 = y_range
+    shorts, idx, elems = [], [], []
+    for c, (v, f) in enumerate(cells):
+        if len(f) == 0:
+            elems.append(None)
+            continue
+        cx, cy = c % mx + ox, c // mx + oy
+        centre = np.array([cell_size * (cx + 0.5), 0.5 * (y0 + y1), cell_size * (cy + 0.5)])
+        scale = np.array([cell_size * 0.5, 0.5 * (y1 - y0), cell_size * 0.5])
+        q = np.zeros((len(v), 4), np.int16)
+        q[:, :3] = np.round((np.asarray(v, float) - centre) / scale * 32767.0)
+        sv, si = sum(len(s) for s in shorts), sum(len(i) for i in idx)
+        shorts.append(q)
+        idx.append(np.asarray(f, np.int64).reshape(-1))
+        elems.append((sv, len(v), si, len(f)))
+    verts = np.concatenate(shorts)
+    # Each cell's indices are local to its own vertices: the element's base vertex is its first vertex.
+    allidx = np.concatenate(idx).astype(np.uint16)
+    hdr = bytearray(32 + 32 + 12)
+    struct.pack_into("<II", hdr, 0, 64, 0)
+    struct.pack_into("<II", hdr, 16, 32, 1)
+    struct.pack_into("<IIIIII", hdr, 32, len(verts), 8, len(allidx) * 2, 0x20, 64, 1)
+    struct.pack_into("<iihH", hdr, 64, 7 << 16, 0, 0, 0)
+    body = bytes(hdr) + verts.astype("<i2").tobytes() + allidx.astype("<u2").tobytes()
+    if packed:
+        vdata = struct.pack("<iiiI", 0, 0, 1, len(hdr) | 0xC0000000) + struct.pack("<i", 4) + b"tex\0"
+        vdata += _sub(zstandard.ZstdCompressor().compress(body), 1)
+    else:
+        vdata = struct.pack("<iiiI", 0, 0, 1, len(hdr)) + struct.pack("<i", 4) + b"tex\0" + body
+    cell_blocks = b""
+    for e in elems:
+        lod = b""
+        if e is not None:
+            sv, nv, si, nf = e
+            mesh = bytearray(40 + 48)
+            struct.pack_into("<II", mesh, 0, 40, 1)
+            struct.pack_into("<I", mesh, 32, 0x80000000 | 1)
+            struct.pack_into("<QQQiiiiii", mesh, 40, 0, 0, 0, 0, 0, nv, si, nf, sv)
+            lod = _sub(bytes(mesh), 0)
+        cell_blocks += _sub(_sub(lod, 0) + _sub(b"", 0) + _sub(b"", 0), 0)
+    boxes = np.zeros((mx * my, 6), "<f4")
+    for c in range(mx * my):
+        cx, cy = c % mx + ox, c // mx + oy
+        boxes[c] = (cx * cell_size, y0, cy * cell_size, (cx + 1) * cell_size, y1, (cy + 1) * cell_size)
+    mesh_data = vdata + _sub(cell_blocks + _sub(boxes.tobytes() + np.zeros(mx * my, "<f4").tobytes(), 0), 0)
+    head = b"lndm" + struct.pack("<iffiiiii", 4, 8.0, cell_size, mx, my, ox, oy, 0)
+    end = 16 + len(mesh_data)
+    offsets = struct.pack("<4i", 16, end, end, 0)  # mesh, detail, tile, no ray tracer
+    return _block(b"lmap", head + offsets + mesh_data)
+
+
 def level(*blocks: bytes, box=(-100.0, -10.0, -100.0, 100.0, 50.0, 100.0)) -> bytes:
     out = b"DBLD3x64" + struct.pack("<i", 0)
     out += _block(b"eVER", b"\0" * 8)

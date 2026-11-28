@@ -170,7 +170,8 @@ def read_landmesh(data: bytes, block: Block) -> LandMesh | None:
     base = s + 36
     _mesh_ofs, _detail_ofs, tile_ofs, ray_ofs = struct.unpack_from("<4i", data, base)
     if ray_ofs <= 0:
-        return None
+        # Levels of the game's 2.61 builds carry no land tracer: the land is the render mesh alone.
+        return read_render_landmesh(data, block)
     p = base + tile_ofs
     if use_tile:
         (n,) = struct.unpack_from("<i", data, p)
@@ -225,6 +226,133 @@ def read_landmesh(data: bytes, block: Block) -> LandMesh | None:
     if not vs:
         return None
     return LandMesh(np.concatenate(vs).astype(np.float32), np.concatenate(fs).astype(np.uint32), float(cs), (cx, cy))
+
+
+def _sub_block(data: bytes, p: int) -> tuple[int, int]:
+    """A Dagor `beginBlock`: a 32-bit length (flags in the top two bits); the body's start and end."""
+    (w,) = struct.unpack_from("<I", data, p)
+    return p + 4, p + 4 + (w & 0x3FFFFFFF)
+
+
+def _mesh_elems(data: bytes, a: int, b: int) -> list[tuple[int, int, int, int, int, int]]:
+    """A `ShaderMesh` dump's elements (`dag_shaderMesh.h`, `RElem`): (vdata, sv, numv, si, numf, base vertex)."""
+    from .rendinst import _RELEM
+
+    if b - a < 36:
+        return []
+    ep, en = struct.unpack_from("<II", data, a)
+    out = []
+    for k in range(en):
+        _e, _mat, vd, _o, sv, nv, si, nf, bv = struct.unpack_from("<QQQiiiiii", data, a + ep + _RELEM * k)
+        out.append((int(vd), sv, nv, si, nf, bv))
+    return out
+
+
+def read_render_landmesh(data: bytes, block: Block) -> LandMesh | None:
+    """The land's render mesh, the finest LOD of every cell (`LandMeshManager::loadMeshData`,
+    `prog/gameLibs/landMesh/lmeshManager.cpp`; positions decoded as `LandMeshRenderer::getCellState` does).
+
+    The mesh data starts with four counts (textures, materials, vertex datas, the header size with its packing in
+    the top bits), the texture-name table, then the vertex data laid out as a render instance's
+    (`rendinst.read_resource`); then a block of cells (`x + y * mapSizeX`), each a block of LOD blocks (a
+    `ShaderMesh` each), the decal, the combined and optionally the patches mesh; then the cells' bounding boxes.
+    Positions are SHORT4, -32767..32767 over the cell in x and z (cell centre `landCellSize * (x + originX + 0.5)`)
+    and over the whole land's height range (the union of the cell boxes) in y."""
+    from . import rendinst as ri
+
+    s = block.start
+    _version, _gcs, lcs, mx, my, ox, oy, _use_tile = struct.unpack_from("<iffiiiii", data, s + 4)
+    base = s + 36
+    mesh_ofs, detail_ofs = struct.unpack_from("<2i", data, base)
+    if mesh_ofs <= 0 or detail_ofs <= mesh_ofs or mx <= 0 or my <= 0:
+        return None
+    p = base + mesh_ofs
+    _n_tex, _n_mat, n_vd, hdr_w = struct.unpack_from("<iiiI", data, p)
+    p += 16
+    (sz,) = struct.unpack_from("<i", data, p)
+    p += 4 + sz
+    if (hdr_w & 0xE0000000) == 0xC0000000:
+        hdr_sz = hdr_w & ~0xC0000000
+        stream, p = ri._block(data, p)
+    elif hdr_w & 0xC0000000:
+        raise LevelError("land mesh vertex data packed with zlib or LZMA is not read")
+    else:
+        hdr_sz = hdr_w
+        vdp, vdn = struct.unpack_from("<II", data, p + 16)
+        total = 0
+        for i in range(vdn):
+            vn, a, bb, fl = struct.unpack_from("<IIII", data, p + vdp + 32 * i)
+            total += vn * (a & 0xFF) + (((a >> 8) | ((bb >> 28) << 24)) if fl & ri._VDATA_PACKED_IB else bb & 0xFFFFFFF)
+        stream = data[p : p + hdr_sz + total]
+        p += hdr_sz + total
+    vdp, vdn = struct.unpack_from("<II", stream, 16)
+    if vdn != n_vd:
+        raise LevelError(f"land mesh: {vdn} vertex buffers where the header says {n_vd}")
+    vdata, at = [], hdr_sz
+    for i in range(vdn):
+        vn, a, bb, fl, dp, dn = struct.unpack_from("<IIIIII", stream, vdp + 32 * i)
+        stride, isz = a & 0xFF, bb & 0xFFFFFFF
+        packed = ((a >> 8) | ((bb >> 28) << 24)) if fl & ri._VDATA_PACKED_IB else isz
+        decl = [(t >> 16, u, ui) for t, u, ui, _s in (struct.unpack_from("<iihH", stream, dp + 12 * k) for k in range(dn))]
+        vdata.append(ri._Vdata(vn, stride, isz, packed, fl, decl, at))
+        at += vn * stride + packed
+    if at > len(stream):
+        raise LevelError("land mesh vertex data ends early")
+
+    cache: dict[int, tuple[np.ndarray, np.ndarray]] = {}
+
+    def buffers(i: int) -> tuple[np.ndarray, np.ndarray]:
+        if i not in cache:
+            vd = vdata[i]
+            t, usage, _ui = vd.decl[0]
+            if usage != ri._USAGE_POS or t != ri._SHORT4 or vd.stride % 2:
+                raise LevelError(f"land mesh vertex buffer {i}: position type {t} is not read")
+            vb = np.frombuffer(stream, "<i2", vd.verts * vd.stride // 2, vd.at).reshape(vd.verts, vd.stride // 2)
+            ib_at = vd.at + vd.verts * vd.stride
+            wide = bool(vd.flags & ri._VDATA_I32) or (vd.verts > 65536 and not vd.flags & 0x20)
+            count = vd.idx_bytes // (4 if wide else 2)
+            if vd.flags & ri._VDATA_PACKED_IB:
+                idx = ri.decode_index_sequence(stream[ib_at : ib_at + vd.packed], count)
+            else:
+                idx = np.frombuffer(stream, "<u4" if wide else "<u2", count, ib_at).astype(np.uint32)
+            cache[i] = (vb[:, :3].astype(np.float32) / 32767.0, idx)
+        return cache[i]
+
+    a0, _e0 = _sub_block(data, p)
+    cells: list[list[tuple[int, int, int, int, int, int]]] = []
+    q = a0
+    for _c in range(mx * my):
+        ca, ce = _sub_block(data, q)
+        la, le = _sub_block(data, ca)
+        lod0: list = []
+        if la < le:
+            ma, me = _sub_block(data, la)
+            lod0 = _mesh_elems(data, ma, me)
+        cells.append(lod0)
+        q = ce
+    ba, _be = _sub_block(data, q)
+    boxes = np.frombuffer(data, "<f4", mx * my * 6, ba).reshape(-1, 6)
+    y0, y1 = float(boxes[:, 1].min()), float(boxes[:, 4].max())
+    half_y, mid_y = 0.5 * (y1 - y0), 0.5 * (y1 + y0)
+    vs, fs, nbase = [], [], 0
+    for c, elems in enumerate(cells):
+        cx, cy = c % mx + ox, c // mx + oy
+        centre = np.array([lcs * (cx + 0.5), mid_y, lcs * (cy + 0.5)], np.float32)
+        scale = np.array([lcs * 0.5, half_y, lcs * 0.5], np.float32)
+        for vd, _sv, _nv, si, nf, bv in elems:
+            if nf <= 0:
+                continue
+            pos, idx = buffers(vd)
+            tri = idx[si : si + 3 * nf].astype(np.int64) + bv
+            if len(tri) < 3 * nf or tri.max() >= len(pos):
+                raise LevelError(f"land mesh cell {c} indexes past its vertices")
+            used, local = np.unique(tri, return_inverse=True)
+            vs.append(pos[used] * scale + centre)
+            fs.append(local.reshape(-1, 3) + nbase)
+            nbase += len(used)
+    if not vs:
+        return None
+    return LandMesh(np.concatenate(vs).astype(np.float32), np.concatenate(fs).astype(np.uint32), float(lcs), (mx, my))
 
 
 @dataclass
