@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0
+## 0.7.0
 
 - Levels of game builds 2.61 and later: their land is read from the rendered land mesh (the finest LOD of every
   cell), as the levels no longer carry the land ray tracer the extractor read until now. Air maps, naval maps
@@ -8,10 +8,14 @@
   and the heightmap's surroundings out to tens of kilometres are back on the others.
 - Maps: only the levels a multiplayer mission is played on (from the install's missions). Hangar scenes, the test
   drive and test flight ranges, tutorial and unused levels are no longer listed as new maps.
-- Content beside the maps (`status` / `extract --content`, where the tool's kit has them): the catalogue
+- Content beside the maps (`status` / `extract --content` / `extract content:<id>`): the catalogue
   (`catalog.json`: vehicles, soldier squads, weapons, rounds, soldier equipment such as drones, grenades, launchers
   and supply boxes, and modifications such as scopes, vests, belts and upgrades) and the ranges catalogue
   (`ranges.json`). `status` reports the install's items that the catalogue does not have yet, by kind.
+- A game file rewritten within the same second as its extract record is compared by its content.
+
+## 0.6.0
+
 - `plugin.json`: the manifest 3DHeat's Games page reads to know what this tool does, which games it is
   for and how to call it. The release archive carries it and the tool's icon (`icon-64.png`) beside the
   program.
