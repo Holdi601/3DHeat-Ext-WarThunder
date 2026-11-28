@@ -13,6 +13,8 @@
   and supply boxes, and modifications such as scopes, vests, belts and upgrades) and the ranges catalogue
   (`ranges.json`). `status` reports the install's items that the catalogue does not have yet, by kind.
 - A game file rewritten within the same second as its extract record is compared by its content.
+- Levels with a tree whose mesh carries a broken vertex no longer fail with "the mesh has vertices that are not
+  finite": the triangles at that vertex are left out, as the game draws them as nothing.
 
 ## 0.6.0
 

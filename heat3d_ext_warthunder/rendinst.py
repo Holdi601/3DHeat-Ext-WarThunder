@@ -190,7 +190,15 @@ class Resource:
             base += len(used)
         if not vs:
             return np.zeros((0, 3), np.float32), np.zeros((0, 3), np.int64), np.zeros(0, np.int32)
-        return np.concatenate(vs).astype(np.float32), np.concatenate(fs), np.concatenate(ms)
+        v, f, m = np.concatenate(vs).astype(np.float32), np.concatenate(fs), np.concatenate(ms)
+        bad = ~np.isfinite(v).all(1)
+        if bad.any():
+            # A few of the game's own meshes carry a NaN in a vertex (a tree of the 2.61 builds, half floats):
+            # the game draws those triangles as nothing, so they are left out here too.
+            keep = ~bad[f].any(1)
+            v[bad] = 0.0
+            f, m = f[keep], m[keep]
+        return v, f, m
 
     def faces(self, lod: int) -> int:
         return sum(max(e.numf, 0) for e in self.lods[lod].elems)

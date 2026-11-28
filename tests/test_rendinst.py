@@ -61,6 +61,15 @@ def test_resource_lods_and_elements(packed):
     assert len(f2) == 12 and set(m2.tolist()) == {0}
 
 
+def test_vertex_not_finite_drops_its_triangles():
+    v = _CUBE_V.copy()
+    v[6, 2] = np.nan  # one corner of the game's mesh is NaN
+    res = read_resource(levelsynth.rendinst_resource([(80.0, [(v, _CUBE_F, 0)])], box=((-1.0, 0.0, -1.0), (1.0, 2.0, 1.0))), "t")
+    vv, f, m = res.lod_mesh(0)
+    assert np.isfinite(vv).all()
+    assert len(f) == len(m) == 12 - int((_CUBE_F == 6).any(1).sum())
+
+
 def test_render_index_materials_and_look(tmp_path):
     res_dir = tmp_path / "res"
     res_dir.mkdir()
